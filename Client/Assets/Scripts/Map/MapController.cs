@@ -144,14 +144,14 @@ public class MapController : MonoBehaviour
 
     public void MarkMovementAndAttackFields(Game game, Unit selected_unit, Hex selected_hex)
     {
-        if (!Stun.IsStuned(selected_unit.ccs) && selected_unit.class_type == game.class_on_turn)
+        if (!Stun.IsStuned(selected_unit) && selected_unit.class_type == game.class_on_turn)
         {
             MovementBehaviour movement_behaviour = selected_unit.GetBehaviour<MovementBehaviour>() as MovementBehaviour;
             AttackBehaviour attack_behaviour = selected_unit.GetBehaviour<AttackBehaviour>() as AttackBehaviour;
 
             if (movement_behaviour != null)
                 MarkAvailableMoves(movement_behaviour, selected_hex);
-            if (!Disarm.IsDissarmed(selected_unit.ccs) && attack_behaviour != null)
+            if (!Disarm.IsDissarmed(selected_unit) && attack_behaviour != null)
                 MarkAttackMoves(attack_behaviour, selected_hex);
         }
     }

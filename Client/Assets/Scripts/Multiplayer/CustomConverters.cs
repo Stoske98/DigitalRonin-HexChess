@@ -4,9 +4,35 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 public static class CustomConverters
 {
+    public enum GameObjectEnum
+    {
+        HEX = 0,
+
+        LIGHT_SWORDSMAN = 1,
+        DARK_SWORDSMAN = 2,
+        LIGHT_ARCHER = 3,
+        DARK_ARCHER = 4,
+        LIGHT_KNIGHT = 5,
+        DARK_KNIGHT = 6,
+        LIGHT_TANK = 7,
+        DARK_TANK = 8,
+        LIGHT_JESTER = 9,
+        DARK_JESTER = 10,
+        LIGHT_WIZARD = 11,
+        DARK_WIZARD = 12,
+        LIGHT_QUEEN = 13,
+        DARK_QUEEN = 14,
+        LIGHT_KING = 15,
+        DARK_KING = 16,
+
+        TRAP = 17,
+        LIGHT_STONE = 18,
+        DARK_STONE = 19,
+    }
     public class GameConverter : JsonConverter<Game>
     {
         public override void WriteJson(JsonWriter writer, Game value, JsonSerializer serializer)
@@ -60,6 +86,7 @@ public static class CustomConverters
             return obj;
         }
     }
+
     public class ObjectListConverter : JsonConverter<List<IObject>>
     {
         public override void WriteJson(JsonWriter writer, List<IObject> value, JsonSerializer serializer)
@@ -94,6 +121,75 @@ public static class CustomConverters
             return obj_list;
         }
     }
+
+    public class DictionaryConverter : JsonConverter<Dictionary<KeyCode, Behaviour>>
+    {
+        public override void WriteJson(JsonWriter writer, Dictionary<KeyCode, Behaviour> dictionary, JsonSerializer serializer)
+        {
+            writer.WriteStartArray();
+
+            foreach (var element in dictionary)
+            {
+                JObject jo = new JObject();
+
+                jo.Add("KeyCode", element.Key.ToString());
+                jo.Add("Type", element.Value.GetType().Name);
+                jo.Add("Value", JToken.FromObject(element.Value, serializer));
+
+                jo.WriteTo(writer);
+            }
+
+            writer.WriteEndArray();
+        }
+
+        public override Dictionary<KeyCode, Behaviour> ReadJson(JsonReader reader, Type objectType, Dictionary<KeyCode, Behaviour> existingValue, bool hasExistingValue, JsonSerializer serializer)
+        {
+            var obj_list = new Dictionary<KeyCode, Behaviour>();
+
+            JArray jsonArray = JArray.Load(reader);
+
+            foreach (JObject jObject in jsonArray.Children<JObject>())
+            {
+                var str_key_code = jObject.GetValue("KeyCode").ToString();
+                Enum.TryParse(str_key_code, out KeyCode enum_value);
+
+                var type = jObject.GetValue("Type").ToString();
+                var value = jObject.GetValue("Value").CreateReader();
+                var obj = serializer.Deserialize(value, Type.GetType(type)) as Behaviour;
+
+                obj_list.Add(enum_value, obj);
+            }
+
+            return obj_list;
+        }        
+    }
+
+    /* public class BehaviourConverter : JsonConverter<Behaviour>
+     {
+         public override void WriteJson(JsonWriter writer, Behaviour value, JsonSerializer serializer)
+         {
+             writer.WriteStartObject();
+
+             writer.WritePropertyName("Type");
+             writer.WriteValue(value.GetType().Name);
+
+             writer.WritePropertyName("Value");
+             serializer.Serialize(writer, value);
+
+             writer.WriteEndObject();
+         }
+
+         public override Behaviour ReadJson(JsonReader reader, Type objectType, Behaviour existingValue, bool hasExistingValue, JsonSerializer serializer)
+         {
+             JObject jsonObject = JObject.Load(reader);
+
+             var type = jsonObject.GetValue("Type").ToString();
+             var value = jsonObject.GetValue("Value").CreateReader();
+             var obj = serializer.Deserialize(value, Type.GetType(type)) as Behaviour;
+
+             return obj;
+         }
+     }*/
     public class BehaviourListConverter : JsonConverter<List<Behaviour>>
     {
         public override void WriteJson(JsonWriter writer, List<Behaviour> value, JsonSerializer serializer)
@@ -168,7 +264,10 @@ public static class CustomConverters
         {
             writer.WriteStartObject();
             writer.WritePropertyName("$type");
-            writer.WriteValue("Hex Game Object");
+            writer.WriteValue("Game Object");
+
+            writer.WritePropertyName("Tag");
+            serializer.Serialize(writer, value.tag);
 
             writer.WritePropertyName("Name");
             serializer.Serialize(writer, value.name);
@@ -186,6 +285,9 @@ public static class CustomConverters
         {
             JObject json_object = JObject.Load(reader);
 
+            JToken tag_token = json_object["Tag"];
+            string tag = tag_token.ToObject<string>();
+
             JToken name_token = json_object["Name"];
             string name = name_token.ToObject<string>();
 
@@ -195,16 +297,91 @@ public static class CustomConverters
             JToken rotationToken = json_object.GetValue("Rotation");
             Quaternion rotation = rotationToken.ToObject<Quaternion>();
 
-            GameObject hex_gameObject = new GameObject();
+            
+            if(Enum.TryParse(tag,out GameObjectEnum value))
+            {
+                switch (value) 
+                {
+                    case GameObjectEnum.HEX:
+                        return CreateHex(tag,name,position,rotation);
+                    case GameObjectEnum.LIGHT_SWORDSMAN:
+                        return CreateUnitGameObjectByPath(ClassType.Light, UnitType.Swordsman, position, rotation);
+                    case GameObjectEnum.DARK_SWORDSMAN:
+                        return CreateUnitGameObjectByPath(ClassType.Dark, UnitType.Swordsman, position, rotation);
+                    case GameObjectEnum.LIGHT_ARCHER:
+                        return CreateUnitGameObjectByPath(ClassType.Light, UnitType.Archer, position, rotation);
+                    case GameObjectEnum.DARK_ARCHER:
+                        return CreateUnitGameObjectByPath(ClassType.Dark, UnitType.Archer, position, rotation);
+                    case GameObjectEnum.LIGHT_KNIGHT:
+                        return CreateUnitGameObjectByPath(ClassType.Light, UnitType.Knight, position, rotation);
+                    case GameObjectEnum.DARK_KNIGHT:
+                        return CreateUnitGameObjectByPath(ClassType.Dark, UnitType.Knight, position, rotation);
+                    case GameObjectEnum.LIGHT_TANK:
+                        return CreateUnitGameObjectByPath(ClassType.Light, UnitType.Tank, position, rotation);
+                    case GameObjectEnum.DARK_TANK:
+                        return CreateUnitGameObjectByPath(ClassType.Dark, UnitType.Tank, position, rotation);
+                    case GameObjectEnum.LIGHT_JESTER:
+                        return CreateUnitGameObjectByPath(ClassType.Light, UnitType.Jester, position, rotation);
+                    case GameObjectEnum.DARK_JESTER:
+                        return CreateUnitGameObjectByPath(ClassType.Dark, UnitType.Jester, position, rotation);
+                    case GameObjectEnum.LIGHT_WIZARD:
+                        return CreateUnitGameObjectByPath(ClassType.Light, UnitType.Wizard, position, rotation);
+                    case GameObjectEnum.DARK_WIZARD:
+                        return CreateUnitGameObjectByPath(ClassType.Dark, UnitType.Wizard, position, rotation);
+                    case GameObjectEnum.LIGHT_QUEEN:
+                        return CreateUnitGameObjectByPath(ClassType.Light, UnitType.Queen, position, rotation);
+                    case GameObjectEnum.DARK_QUEEN:
+                        return CreateUnitGameObjectByPath(ClassType.Dark, UnitType.Queen, position, rotation);
+                    case GameObjectEnum.LIGHT_KING:
+                        return CreateUnitGameObjectByPath(ClassType.Light, UnitType.King, position, rotation);
+                    case GameObjectEnum.DARK_KING:
+                        return CreateUnitGameObjectByPath(ClassType.Dark, UnitType.King, position, rotation);
+                    case GameObjectEnum.TRAP:
+                        return CreateTrap(tag, name, position, rotation, ClassType.Dark);
+                    case GameObjectEnum.LIGHT_STONE:
+                        return CreateUnitGameObjectByPath(ClassType.Light, UnitType.Stone, position, rotation);
+                    case GameObjectEnum.DARK_STONE:
+                        return CreateUnitGameObjectByPath(ClassType.Dark, UnitType.Stone, position, rotation);
+                    
+                    default: 
+                        break;
+                }
+            }
+            return null;
+        }
+        public  GameObject CreateUnitGameObjectByPath(ClassType class_type, UnitType unit_type, Vector3 position, Quaternion rotation)
+        {
+            GameObject game_object = UnityEngine.Object.Instantiate(Resources.Load<GameObject>("Prefabs/" + unit_type.ToString() + "/" + class_type.ToString() + "/prefab"));
+            game_object.name = class_type.ToString() + "_" + unit_type.ToString();
+            game_object.transform.position = position;
+            game_object.transform.rotation = rotation;
+            game_object.transform.SetParent(GameManager.Instance.map_controller.units_container);
+            return game_object;
+        }
+        private GameObject CreateTrap(string tag, string name, Vector3 position, Quaternion rotation, ClassType class_type)
+        {
+            GameObject game_object = UnityEngine.Object.Instantiate(Resources.Load<GameObject>("Prefabs/Trap/prefab"));
 
-            hex_gameObject.name = name;
-            hex_gameObject.transform.position = position;
-            hex_gameObject.transform.rotation = rotation;
+            game_object.tag = tag;
+            game_object.name = name;
+            game_object.transform.position = position;
+            game_object.transform.rotation = rotation;
 
-            hex_gameObject.AddComponent<MeshFilter>();
-            hex_gameObject.AddComponent<MeshRenderer>();
+            return game_object;
+        }
+        private GameObject CreateHex(string tag, string name, Vector3 position, Quaternion rotation)
+        {
+            GameObject game_object = new GameObject();
 
-            Mesh mesh = hex_gameObject.GetComponent<MeshFilter>().mesh;
+            game_object.tag = tag;
+            game_object.name = name;
+            game_object.transform.position = position;
+            game_object.transform.rotation = rotation;
+
+            game_object.AddComponent<MeshFilter>();
+            game_object.AddComponent<MeshRenderer>();
+
+            Mesh mesh = game_object.GetComponent<MeshFilter>().mesh;
             mesh.Clear();
 
             float angle = 0;
@@ -230,11 +407,11 @@ public static class CustomConverters
 
             mesh.RecalculateNormals();
 
-            hex_gameObject.transform.SetParent(GameManager.Instance.map_controller.fields_container);
-            return hex_gameObject;
+            game_object.transform.SetParent(GameManager.Instance.map_controller.fields_container);
+            return game_object;
         }
     }
-    public class UnitGameObjectConverter : JsonConverter<GameObject>
+  /*  public class UnitGameObjectConverter : JsonConverter<GameObject>
     {
         public override void WriteJson(JsonWriter writer, GameObject value, JsonSerializer serializer)
         {
@@ -275,7 +452,7 @@ public static class CustomConverters
 
             return hex_gameObject;
         }
-    }
+    }*/
     public class Vector2IntConverter : JsonConverter<Vector2Int>
     {
         public override void WriteJson(JsonWriter writer, Vector2Int value, JsonSerializer serializer)
@@ -380,6 +557,26 @@ public static class CustomConverters
 
             foreach (var item in jsonArray)
                 value.Enqueue((float)item);
+
+
+            return value;
+        }
+    }
+    public class StringQueueConverter : JsonConverter<Queue<string>>
+    {
+        public override void WriteJson(JsonWriter writer, Queue<string> value, JsonSerializer serializer)
+        {
+            JArray array = new JArray(value);
+            array.WriteTo(writer);
+        }
+
+        public override Queue<string> ReadJson(JsonReader reader, Type objectType, Queue<string> existingValue, bool hasExistingValue, JsonSerializer serializer)
+        {
+            Queue<string> value = new Queue<string>();
+            JArray jsonArray = JArray.Load(reader);
+
+            foreach (var item in jsonArray)
+                value.Enqueue((string)item);
 
 
             return value;

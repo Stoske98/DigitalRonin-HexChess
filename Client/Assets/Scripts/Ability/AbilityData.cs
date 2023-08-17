@@ -10,11 +10,10 @@
     public int amount = 0;
     public int cc;
 }
-
-public class LevelUpdateData
+public class AbilityUpdate
 {
-    public int cooldowm;
-    public int range;
-    public int amount;
-    public int cc;
+    public int decrease_cooldowm { get; set; }
+    public int increase_range { get; set; }
+    public int increase_amount { get; set; }
+    public int increase_cc { get; set; }
 }

@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -10,7 +11,13 @@ public abstract class Map
     [JsonRequired] protected float height_of_hex { get; set; }
     public List<Hex> hexes { get; set; }
 
-    [JsonIgnore] public readonly List<Vector2Int> neighbors_vectors = new List<Vector2Int> { new Vector2Int(0, 1), new Vector2Int(0, -1), new Vector2Int(-1, 0), new Vector2Int(1, 0), new Vector2Int(-1, 1), new Vector2Int(1, -1) };
+    [JsonIgnore] 
+    public readonly List<Vector2Int> neighbors_vectors = new List<Vector2Int> { new Vector2Int(0, 1), new Vector2Int(1, -1), new Vector2Int(-1, 0),
+                                                                                new Vector2Int(1, 0), new Vector2Int(-1, 1), new Vector2Int(0, -1) };
+
+    [JsonIgnore]
+    public readonly List<Vector2Int> diagonals_neighbors_vectors = new List<Vector2Int>() { new Vector2Int(2, -1), new Vector2Int(1, -2), new Vector2Int(-1, -1),
+                                                                                        new Vector2Int(-2, 1), new Vector2Int(-1, 2), new Vector2Int(1, 1) };
 
     [JsonConstructor]
     public Map() 
@@ -38,11 +45,12 @@ public abstract class Map
 
         return null;
     }
-    public Hex GetHex(Unit _unit)
+    public Hex GetHex(IObject obj)
     {
         foreach (Hex hex in hexes)
-            if (hex.GetUnit() == _unit)
-                return hex;
+            foreach (IObject _ogj in hex.objects)
+                if (_ogj == obj)
+                    return hex;
 
         return null;
     }
@@ -90,7 +98,6 @@ public abstract class Map
     {
         return height_of_hex;
     }
-
     public List<Hex> GetAllHexesInDirection(Direction direction, Hex center_hex, bool count_unwalkable_fields)
     {
         int range = (columns > rows ? columns : rows) * 2;
@@ -134,10 +141,31 @@ public abstract class Map
         }
         return null;
     }
+    public List<Hex> GetEnemyHexesInDirection(Direction direction, Hex center_hex, ClassType unit_class_type, int range)
+    {
+        switch (direction)
+        {
+            case Direction.UP:
+                return DirectionEnemyHexes(Direction.UP, center_hex, range, unit_class_type);
+            case Direction.DOWN:
+                return DirectionEnemyHexes(Direction.DOWN, center_hex, range, unit_class_type);
+            case Direction.UPPER_RIGHT:
+                return DirectionEnemyHexes(Direction.UPPER_RIGHT, center_hex, range, unit_class_type);
+            case Direction.UPPER_LEFT:
+                return DirectionEnemyHexes(Direction.UPPER_LEFT, center_hex, range, unit_class_type);
+            case Direction.LOWER_RIGHT:
+                return DirectionEnemyHexes(Direction.LOWER_RIGHT, center_hex, range, unit_class_type);
+            case Direction.LOWER_LEFT:
+                return DirectionEnemyHexes(Direction.LOWER_LEFT, center_hex, range, unit_class_type);
+            default:
+                break;
+        }
+        return null;
+    }
     private List<Hex> DirectionHexes(Direction direction, Hex center_hex, int range, bool count_unwalkable_fields)
     {
         List<Hex> direction_hexes = new List<Hex>();
-        Vector2Int direction_coordinates = DirectionCoordinates(direction);
+        Vector2Int direction_coordinates = DirectionToCoordinates(direction);
 
         for (int i = 1; i < range + 1; i++)
         {
@@ -157,8 +185,27 @@ public abstract class Map
         }
         return direction_hexes;
     }
+    private List<Hex> DirectionEnemyHexes(Direction direction, Hex center_hex, int range, ClassType unit_class_type)
+    {
+        List<Hex> direction_hexes = new List<Hex>();
+        Vector2Int direction_coordinates = DirectionToCoordinates(direction);
 
-    private Vector2Int DirectionCoordinates(Direction direction)
+        for (int i = 1; i < range + 1; i++)
+        {
+            Hex hex = GetHex(i * direction_coordinates.x + center_hex.coordinates.x, i * direction_coordinates.y + center_hex.coordinates.y);
+            if (hex != null && hex.GetUnit() != null && hex.GetUnit().class_type != unit_class_type)
+                direction_hexes.Add(hex);
+        }
+        return direction_hexes;
+    }
+    public Vector2Int TransformCoordinatesToUnitCoordinates(Vector2Int coordinates)
+    {
+        int x = coordinates.x != 0 ? Math.Sign(coordinates.x) : 0;
+        int y = coordinates.y != 0 ? Math.Sign(coordinates.y) : 0;
+
+        return new Vector2Int(x, y);
+    }
+    public Vector2Int DirectionToCoordinates(Direction direction)
     {
         switch (direction)
         {
@@ -175,11 +222,44 @@ public abstract class Map
             case Direction.LOWER_LEFT:
                 return new Vector2Int(-1, 1);
             default:
-                break;
+                return new Vector2Int();
         }
-        return new Vector2Int();
+    }
+
+    public Direction CoordinatesToDirection(Vector2Int coordinates)
+    {
+        if (coordinates == new Vector2Int(0, 1))
+        {
+            return Direction.UP;
+        }
+        else if (coordinates == new Vector2Int(0, -1))
+        {
+            return Direction.DOWN;
+        }
+        else if (coordinates == new Vector2Int(1, -1))
+        {
+            return Direction.UPPER_RIGHT;
+        }
+        else if (coordinates == new Vector2Int(-1, 0))
+        {
+            return Direction.UPPER_LEFT;
+        }
+        else if (coordinates == new Vector2Int(1, 0))
+        {
+            return Direction.LOWER_RIGHT;
+        }
+        else if (coordinates == new Vector2Int(-1, 1))
+        {
+            return Direction.LOWER_LEFT;
+        }
+        else
+        {
+            throw new ArgumentException("Invalid coordinates");
+        }
     }
 }
+
+
 
 public enum Direction
 {

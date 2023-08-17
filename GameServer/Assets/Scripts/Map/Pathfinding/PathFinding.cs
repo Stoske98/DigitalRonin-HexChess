@@ -6,7 +6,7 @@ public class PathFinding
 {
     public static class PathFinder
     {
-        public static List<Hex> FindPath_BFS(Hex start, Hex end)
+        public static List<Hex> FindPath_BFS(Hex start, Hex end, Map map)
         {
 
             HashSet<Hex> visited = new HashSet<Hex>();
@@ -26,7 +26,7 @@ public class PathFinding
                     break;
                 }
 
-                foreach (var neighbor in current.neighbors)
+                foreach (var neighbor in current.GetNeighbors(map))
                 {
                     if (neighbor.IsWalkable())
                     {
@@ -46,7 +46,7 @@ public class PathFinding
             return path;
         }
 
-        public static List<Hex> FindPath_GreedyBestFirstSearch(Hex start, Hex end)
+        public static List<Hex> FindPath_GreedyBestFirstSearch(Hex start, Hex end, Map map)
         {
 
             Comparison<Hex> heuristicComparison = (lhs, rhs) =>
@@ -74,7 +74,7 @@ public class PathFinding
                     break;
                 }
 
-                foreach (var neighbor in current.neighbors)
+                foreach (var neighbor in current.GetNeighbors(map))
                 {
                     if (neighbor.IsWalkable())
                     {
@@ -93,10 +93,10 @@ public class PathFinding
 
             return path;
         }
-        public static List<Hex> FindPath_Dijkstra(Hex start, Hex end, List<Hex> map)
+        public static List<Hex> FindPath_Dijkstra(Hex start, Hex end, Map map)
         {
 
-            foreach (Hex hex in map)
+            foreach (Hex hex in map.hexes)
             {
                 hex.path_data.cost = int.MaxValue;
             }
@@ -120,7 +120,7 @@ public class PathFinding
                     break;
                 }
 
-                foreach (var neighbor in current.neighbors)
+                foreach (var neighbor in current.GetNeighbors(map))
                 {
                     if (neighbor.IsWalkable())
                     {
@@ -146,9 +146,9 @@ public class PathFinding
             return path;
         }
 
-        public static List<Hex> FindPath_AStar(Hex start, Hex end, List<Hex> map)
+        public static List<Hex> FindPath_AStar(Hex start, Hex end, Map map)
         {
-            foreach (Hex hex in map)
+            foreach (Hex hex in map.hexes)
             {
                 hex.path_data.cost = int.MaxValue;
             }
@@ -179,7 +179,7 @@ public class PathFinding
                     break;
                 }
 
-                foreach (var neighbor in current.neighbors)
+                foreach (var neighbor in current.GetNeighbors(map))
                 {
                     if (neighbor.IsWalkable())
                     {
@@ -204,11 +204,11 @@ public class PathFinding
             return path;
         }
 
-        public static List<Hex> BFS_HexesMoveRange(Hex start, float MoveRange, List<Hex> map)
+        public static List<Hex> BFS_HexesMoveRange(Hex start, float MoveRange, Map map)
         {
             List<Hex> tilesInRange = new List<Hex>();
 
-            foreach (Hex hex in map)
+            foreach (Hex hex in map.hexes)
             {
                 hex.path_data.cost = int.MaxValue;
             }
@@ -227,7 +227,7 @@ public class PathFinding
             {
                 Hex current = frontier.Dequeue();
 
-                foreach (var neighbor in current.neighbors)
+                foreach (var neighbor in current.GetNeighbors(map))
                 {
                     if (neighbor.IsWalkable())
                     {

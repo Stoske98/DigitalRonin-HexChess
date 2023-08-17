@@ -3,389 +3,1272 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public static class Spawner
-{
-    public static void SpawnUnit(Game _game, UnitType _unit_type, ClassType _class_type, Hex _hex)
+{//SWORDSMEN LIGHT & DARK
+    private static Unit SpawnLightSwordsman(Game _game, Hex _hex, ClassType _class_type, UnitType _unit_type)
     {
-        Unit _unit = null;
-        Stats stats = null;
-        List<AbilityBehaviour> _abilities = null;
+        Unit unit = new Unit(_game, _class_type, _unit_type);
+        List<Level> levels = new List<Level>()
+        {
+            //level 1 
+            new Level()
+            {
+                update_stats = new StatsUpdate()
+                {
+                    increase_max_health = 1,
+                    increase_attack_range = 1,
+                    increase_damage = 1,
+                    increase_attack_speed = 0.25f,
+                },
+                behaviours_to_add = new List<Behaviour>()
+                {
+                    new NormalMovement(unit),
+                    new MeleeAttack(unit),
+                    new SwordsmanSpecial(unit, new AbilityData(), Direction.UP)
+                },
+
+            },
+            //level 2 
+            new Level()
+            {
+                update_stats = new StatsUpdate()
+                {
+                    increase_max_health = 1,
+                    increase_damage = 1,
+                },
+                behaviours_to_add = new List<Behaviour>()
+                {
+                    new Dash(unit, new AbilityData() 
+                    {
+                        range = 2, amount = 1
+                    })
+                }
+            },
+            //level 3 
+            new Level()
+            {
+                update_stats = new StatsUpdate()
+                {
+                    increase_max_health = 1,
+                    increase_damage = 1,
+                },
+            }
+        };
+
+        unit.AddLevels(levels);
+        unit.LevelUp();
+
+        unit.game_object = CreateUnitGameObjectByPath(_class_type, _unit_type);
+        unit.game_object.transform.SetParent(MapContainer.Instance.units_container);
+
+        if (_game.map.PlaceObject(unit, _hex.coordinates.x, _hex.coordinates.y))
+            _game.object_manager.AddObject(unit);
+
+        return unit;
+    }
+    private static Unit SpawnDarkSwordsman(Game _game, Hex _hex, ClassType _class_type, UnitType _unit_type)
+    {
+        Unit unit = new Unit(_game, _class_type, _unit_type);
+        List<Level> levels = new List<Level>()
+        {
+            //level 1 
+            new Level()
+            {
+                update_stats = new StatsUpdate()
+                {
+                    increase_max_health = 1,
+                    increase_attack_range = 1,
+                    increase_damage = 1,
+                    increase_attack_speed = 0.25f,
+                },
+                behaviours_to_add = new List<Behaviour>()
+                {
+                    new NormalMovement(unit),
+                    new MeleeAttack(unit),
+                    new SwordsmanSpecial(unit, new AbilityData(), Direction.DOWN)
+                },
+
+            },
+            //level 2 
+            new Level()
+            {
+                update_stats = new StatsUpdate()
+                {
+                    increase_max_health = 1,
+                    increase_damage = 1,
+                },  
+                behaviours_to_add = new List<Behaviour>()
+                {
+                    new Blink(unit, new AbilityData()
+                    {
+                        range = 1, amount = 1
+                    })
+                }
+            },
+            //level 3 
+            new Level()
+            {
+                update_stats = new StatsUpdate()
+                {
+                    increase_max_health = 1,
+                    increase_damage = 1,
+                },
+            }
+        };
+
+        unit.AddLevels(levels);
+        unit.LevelUp();
+
+        unit.game_object = CreateUnitGameObjectByPath(_class_type, _unit_type);
+        unit.game_object.transform.SetParent(MapContainer.Instance.units_container);
+
+        if (_game.map.PlaceObject(unit, _hex.coordinates.x, _hex.coordinates.y))
+            _game.object_manager.AddObject(unit);
+
+        return unit;
+    }
+
+    //ARCHER LIGHT & DARK
+    private static Unit SpawnLightArcher(Game _game, Hex _hex, ClassType _class_type, UnitType _unit_type)
+    {
+        Unit unit = new Unit(_game, _class_type, _unit_type);
+        List<Level> levels = new List<Level>()
+        {
+            //level 1 
+            new Level()
+            {
+                update_stats = new StatsUpdate()
+                {
+                    increase_max_health = 2,
+                    increase_attack_range = 2,
+                    increase_damage = 1,
+                    increase_attack_speed = 0.25f,
+                },
+                behaviours_to_add = new List<Behaviour>()
+                {
+                    new NormalMovement(unit),
+                    new RangedAttack(unit),
+                    new ArcherSpecial(unit, new AbilityData())
+                },
+
+            },
+            //level 2 
+            new Level()
+            {
+                update_stats = new StatsUpdate()
+                {
+                    increase_max_health = 1,
+                    increase_damage = 1,
+                },
+
+                behaviours_to_add = new List<Behaviour>()
+                {
+                    new Hunt(unit, new AbilityData() { amount = 25 })
+                },
+
+            },
+            //level 3 
+            new Level()
+            {
+                update_stats = new StatsUpdate()
+                {
+                    increase_max_health = 1,
+                    increase_damage = 1,
+                },
+            }
+        };
+
+        unit.AddLevels(levels);
+        unit.LevelUp();
+
+        unit.game_object = CreateUnitGameObjectByPath(_class_type, _unit_type);
+        unit.game_object.transform.SetParent(MapContainer.Instance.units_container);
+
+        if (_game.map.PlaceObject(unit, _hex.coordinates.x, _hex.coordinates.y))
+            _game.object_manager.AddObject(unit);
+
+        return unit;
+    }
+    private static Unit SpawnDarkArcher(Game _game, Hex _hex, ClassType _class_type, UnitType _unit_type)
+    {
+        Unit unit = new Unit(_game, _class_type, _unit_type);
+        List<Level> levels = new List<Level>()
+        {
+            //level 1 
+            new Level()
+            {
+                update_stats = new StatsUpdate()
+                {
+                    increase_max_health = 2,
+                    increase_attack_range = 2,
+                    increase_damage = 1,
+                    increase_attack_speed = 0.25f,
+                },
+                behaviours_to_add = new List<Behaviour>()
+                {
+                    new NormalMovement(unit),
+                    new RangedAttack(unit),
+                    new ArcherSpecial(unit, new AbilityData())
+                },
+
+            },
+             //level 2 
+            new Level()
+            {
+                update_stats = new StatsUpdate()
+                {
+                    increase_max_health = 1,
+                    increase_damage = 1,
+                },
+                behaviours_to_add = new List<Behaviour>()
+                {
+                    new TrapAbility(unit, new AbilityData()
+                    {
+                         range = 2, amount = 1, max_cooldown = 3, current_cooldown = 0, cc = 2
+                    }),
+                },
+            },
+            //level 3 
+            new Level()
+            {
+                update_stats = new StatsUpdate()
+                {
+                    increase_max_health = 1,
+                    increase_damage = 1,
+                },
+                 behaviour_to_switch = new Dictionary<KeyCode, Behaviour>
+                {
+                     {KeyCode.Q,  new TrapAbilityFinal(unit, new AbilityData()
+                     {
+                         range = 2, amount = 1, max_cooldown = 3, current_cooldown = 0, cc = 2
+                     })}
+                },
+            }
+        };
+
+        unit.AddLevels(levels);
+        unit.LevelUp();
+
+        unit.game_object = CreateUnitGameObjectByPath(_class_type, _unit_type);
+        unit.game_object.transform.SetParent(MapContainer.Instance.units_container);
+
+        if (_game.map.PlaceObject(unit, _hex.coordinates.x, _hex.coordinates.y))
+            _game.object_manager.AddObject(unit);
+
+        return unit;
+    }
+
+    //TANK LIGHT & DARK
+    private static Unit SpawnLightTank(Game _game, Hex _hex, ClassType _class_type, UnitType _unit_type)
+    {
+        Unit unit = new Unit(_game, _class_type, _unit_type);
+        List<Level> levels = new List<Level>()
+        {
+            //level 1 
+            new Level()
+            {
+                update_stats = new StatsUpdate()
+                {
+                    increase_max_health = 4,
+                    increase_attack_range = 1,
+                    increase_damage = 1,
+                    increase_attack_speed = 0.25f,
+                },
+                behaviours_to_add = new List<Behaviour>()
+                {
+                    new DirectionMovement(unit, 2),
+                    new MeleeAttack(unit),
+                    new TankAttackStance(unit, new AbilityData()
+                    {
+                        range = 2, max_cooldown = 2, current_cooldown = 0, cc = 1
+                    })
+                },
+
+            },
+             //level 2 
+            new Level()
+            {
+                update_stats = new StatsUpdate()
+                {
+                    increase_max_health = 1,
+                    increase_damage = 1,
+                },
+
+                behaviours_to_add = new List<Behaviour>()
+                {
+                    new Earthshaker(unit, new AbilityData()
+                    {
+                        range = 1, amount = 1, max_cooldown = 2, current_cooldown = 0 , cc = 2
+                    })
+                },
+            },
+            //level 3 
+            new Level()
+            {
+                update_stats = new StatsUpdate()
+                {
+                    increase_max_health = 1,
+                    increase_damage = 1,
+                },
+            }
+        };
+
+        unit.AddLevels(levels);
+        unit.LevelUp();
+
+        unit.game_object = CreateUnitGameObjectByPath(_class_type, _unit_type);
+        unit.game_object.transform.SetParent(MapContainer.Instance.units_container);
+
+        if (_game.map.PlaceObject(unit, _hex.coordinates.x, _hex.coordinates.y))
+            _game.object_manager.AddObject(unit);
+
+        return unit;
+    }
+    private static Unit SpawnDarkTank(Game _game, Hex _hex, ClassType _class_type, UnitType _unit_type)
+    {
+        Unit unit = new Unit(_game, _class_type, _unit_type);
+        List<Level> levels = new List<Level>()
+        {
+            //level 1 
+            new Level()
+            {
+                update_stats = new StatsUpdate()
+                {
+                    increase_max_health = 4,
+                    increase_attack_range = 1,
+                    increase_damage = 1,
+                    increase_attack_speed = 0.25f,
+                },
+                behaviours_to_add = new List<Behaviour>()
+                {
+                    new DirectionMovement(unit, 2),
+                    new MeleeAttack(unit),
+                    new TankAttackStance(unit, new AbilityData()
+                    {
+                        range = 2, max_cooldown = 2, current_cooldown = 0, cc = 1
+                    })
+                },
+
+            },
+             //level 2 
+            new Level()
+            {
+                update_stats = new StatsUpdate()
+                {
+                    increase_max_health = 1,
+                    increase_damage = 1,
+                },
+
+                behaviours_to_add=new List<Behaviour>()
+                {
+                    new Fear(unit, new AbilityData()
+                    {
+                        range = 1, amount = 1, max_cooldown = 2, current_cooldown = 0
+                    })
+                }
+            },
+            //level 3 
+            new Level()
+            {
+                update_stats = new StatsUpdate()
+                {
+                    increase_max_health = 1,
+                    increase_damage = 1,
+                },
+            }
+        };
+
+        unit.AddLevels(levels);
+        unit.LevelUp();
+
+        unit.game_object = CreateUnitGameObjectByPath(_class_type, _unit_type);
+        unit.game_object.transform.SetParent(MapContainer.Instance.units_container);
+
+        if (_game.map.PlaceObject(unit, _hex.coordinates.x, _hex.coordinates.y))
+            _game.object_manager.AddObject(unit);
+
+        return unit;
+    }
+
+    //KNIGHT LIGHT & DARK
+    private static Unit SpawnLightKnight(Game _game, Hex _hex, ClassType _class_type, UnitType _unit_type)
+    {
+        Unit unit = new Unit(_game, _class_type, _unit_type);
+        List<Level> levels = new List<Level>()
+        {
+            //level 1 
+            new Level()
+            {
+                update_stats = new StatsUpdate()
+                {
+                    increase_max_health = 3,
+                    increase_attack_range = 1,
+                    increase_damage = 1,
+                    increase_attack_speed = 0.25f,
+                },
+                behaviours_to_add = new List<Behaviour>()
+                {
+                    new KnightMovement(unit),
+                    new MeleeAttack(unit),
+                    new KnightSpecial(unit, new AbilityData()
+                    {
+                        amount = 1
+                    })
+                },
+
+            },
+             //level 2 
+            new Level()
+            {
+                update_stats = new StatsUpdate()
+                {
+                    increase_max_health = 1,
+                    increase_damage = 1,
+                },
+
+                behaviours_to_add = new List<Behaviour>()
+                {
+                    new Joust(unit, new AbilityData()
+                    {
+                        range = 2, amount = 1, max_cooldown = 3, current_cooldown = 0
+                    })
+                },
+            },
+            //level 3 
+            new Level()
+            {
+                update_stats = new StatsUpdate()
+                {
+                    increase_max_health = 1,
+                    increase_damage = 1,
+                },
+            }
+        };
+
+        unit.AddLevels(levels);
+        unit.LevelUp();
+
+        unit.game_object = CreateUnitGameObjectByPath(_class_type, _unit_type);
+        unit.game_object.transform.SetParent(MapContainer.Instance.units_container);
+
+
+        if (_game.map.PlaceObject(unit, _hex.coordinates.x, _hex.coordinates.y))
+            _game.object_manager.AddObject(unit);
+
+        return unit;
+    }
+    private static Unit SpawnDarkKnight(Game _game, Hex _hex, ClassType _class_type, UnitType _unit_type)
+    {
+        Unit unit = new Unit(_game, _class_type, _unit_type);
+        List<Level> levels = new List<Level>()
+        {
+            //level 1 
+            new Level()
+            {
+                update_stats = new StatsUpdate()
+                {
+                    increase_max_health = 3,
+                    increase_attack_range = 1,
+                    increase_damage = 1,
+                    increase_attack_speed = 0.25f,
+                },
+                behaviours_to_add = new List<Behaviour>()
+                {
+                    new KnightMovement(unit),
+                    new MeleeAttack(unit),
+                    new KnightSpecial(unit, new AbilityData()
+                    {
+                        amount = 1
+                    })
+                },
+
+            },
+             //level 2 
+            new Level()
+            {
+                update_stats = new StatsUpdate()
+                {
+                    increase_max_health = 1,
+                    increase_damage = 1,
+                },
+
+                behaviours_to_add = new List<Behaviour>()
+                {
+                    new Warstrike(unit, new AbilityData()
+                    {
+                        range = 2, amount = 1, max_cooldown = 3, current_cooldown = 0, cc = 2
+                    })
+                }
+            },
+            //level 3 
+            new Level()
+            {
+                update_stats = new StatsUpdate()
+                {
+                    increase_max_health = 1,
+                    increase_damage = 1,
+                },
+            }
+        };
+
+        unit.AddLevels(levels);
+        unit.LevelUp();
+
+        unit.game_object = CreateUnitGameObjectByPath(_class_type, _unit_type);
+        unit.game_object.transform.SetParent(MapContainer.Instance.units_container);
+
+        if (_game.map.PlaceObject(unit, _hex.coordinates.x, _hex.coordinates.y))
+            _game.object_manager.AddObject(unit);
+
+        return unit;
+    }
+
+    //WIZARD LIGHT & DARK
+    private static Unit SpawnLightWizard(Game _game, Hex _hex, ClassType _class_type, UnitType _unit_type)
+    {
+        Unit unit = new Unit(_game, _class_type, _unit_type);
+        List<Level> levels = new List<Level>()
+        {
+            //level 1 
+            new Level()
+            {
+                update_stats = new StatsUpdate()
+                {
+                    increase_max_health = 3,
+                },
+                behaviours_to_add = new List<Behaviour>()
+                {
+                    new NoAttack(unit),
+                    new TeleportMovement(unit, 2),
+                    new WizardSpecial(unit, new AbilityData()
+                    {
+                        range = 2
+                    }),
+                    new Blessing(unit, new AbilityData()
+                    {
+                        range = 2, amount = 1, max_cooldown = 2, current_cooldown = 0
+                    })
+                },
+
+            },
+             //level 2 
+            new Level()
+            {
+                update_stats = new StatsUpdate()
+                {
+                    increase_max_health = 1,
+                },
+
+                behaviours_to_add = new List<Behaviour>()
+                {
+                    new Skyfall(unit, new AbilityData()
+                    {
+                        range = 2, amount = 1, max_cooldown = 4, current_cooldown = 0
+                    })
+                },
+            },
+            //level 3 
+            new Level()
+            {
+                update_stats = new StatsUpdate()
+                {
+                    increase_max_health = 1,
+                },
+
+                behaviours_to_add = new List<Behaviour>()
+                {
+                     new FireBall(unit, new AbilityData()
+                    {
+                       amount = 1, max_cooldown = 6, current_cooldown = 0
+                    })
+                },
+            }
+        };
+
+        unit.AddLevels(levels);
+        unit.LevelUp();
+
+        unit.game_object = CreateUnitGameObjectByPath(_class_type, _unit_type);
+        unit.game_object.transform.SetParent(MapContainer.Instance.units_container);
+
+        if (_game.map.PlaceObject(unit, _hex.coordinates.x, _hex.coordinates.y))
+            _game.object_manager.AddObject(unit);
+
+        return unit;
+    }
+    private static Unit SpawnDarkWizard(Game _game, Hex _hex, ClassType _class_type, UnitType _unit_type)
+    {
+        Unit unit = new Unit(_game, _class_type, _unit_type);
+        List<Level> levels = new List<Level>()
+        {
+            //level 1 
+            new Level()
+            {
+                update_stats = new StatsUpdate()
+                {
+                    increase_max_health = 3,
+                    increase_attack_range = 1,
+                    increase_damage = 1,
+                    increase_attack_speed = 0.25f,
+                },
+                behaviours_to_add = new List<Behaviour>()
+                {
+                    new NoAttack(unit),
+                    new TeleportMovement(unit, 2),
+                    new WizardSpecial(unit, new AbilityData()
+                    {
+                        range = 2
+                    }),
+                    new Necromancy(unit, new AbilityData()
+                    {
+                         range = 2, amount = 1, max_cooldown = 2, current_cooldown = 0
+                    })
+                },
+
+            },
+             //level 2 
+            new Level()
+            {
+                update_stats = new StatsUpdate()
+                {
+                    increase_max_health = 1,
+                },
+
+                behaviours_to_add = new List<Behaviour>()
+                {
+                    new Curse(unit, new AbilityData()
+                    {
+                        range = 2, amount = 1, max_cooldown = 4, current_cooldown = 0, cc = 2
+                    })
+                }
+            },
+            //level 3 
+            new Level()
+            {
+                update_stats = new StatsUpdate()
+                {
+                    increase_max_health = 1,
+                },
+
+                behaviours_to_add = new List<Behaviour>()
+                {
+
+                }
+            }
+        };
+
+        unit.AddLevels(levels);
+        unit.LevelUp();
+
+        unit.game_object = CreateUnitGameObjectByPath(_class_type, _unit_type);
+        unit.game_object.transform.SetParent(MapContainer.Instance.units_container);
+
+        if (_game.map.PlaceObject(unit, _hex.coordinates.x, _hex.coordinates.y))
+            _game.object_manager.AddObject(unit);
+
+        return unit;
+    }
+
+    //JESTER LIGHT & DARK
+    private static Unit SpawnLightJester(Game _game, Hex _hex, ClassType _class_type, UnitType _unit_type)
+    {
+        Unit unit = new Unit(_game, _class_type, _unit_type);
+
+        List<Level> levels = new List<Level>()
+        {
+            //level 1 
+            new Level()
+            {
+                update_stats = new StatsUpdate()
+                {
+                    increase_max_health = 3,
+                    increase_attack_range = 1,
+                    increase_damage = 1,
+                    increase_attack_speed = 0.25f,
+                },
+                behaviours_to_add = new List<Behaviour>()
+                {
+                    new NormalMovement(unit,2),
+                    new MeleeAttack(unit),
+                    new JesterSpecial(unit, new AbilityData() { range = 2 })
+                },
+
+            },
+            //level 2 
+            new Level()
+            {
+                update_stats = new StatsUpdate()
+                {
+                    increase_max_health = 1,
+                    increase_damage = 1,
+                },
+                behaviours_to_add = new List<Behaviour>()
+                {
+                    new TheTricksOfTradeFake(unit, new AbilityData()),
+                },
+            },
+            //level 3 
+            new Level()
+            {
+                update_stats = new StatsUpdate()
+                {
+                    increase_max_health = 1,
+                    increase_damage = 1,
+                },
+                behaviour_to_switch = new Dictionary<KeyCode, Behaviour>()
+                {
+                    {
+                        KeyCode.S, new JesterSpecialFinal(unit, new AbilityData(){range = 2})
+                    }
+                }
+            }
+        };
+
+        unit.AddLevels(levels);
+        unit.LevelUp();
+
+        unit.game_object = CreateUnitGameObjectByPath(_class_type, _unit_type);
+        unit.game_object.transform.SetParent(MapContainer.Instance.units_container);
+
+        if (_game.map.PlaceObject(unit, _hex.coordinates.x, _hex.coordinates.y))
+            _game.object_manager.AddObject(unit);
+
+        return unit;
+    }
+    private static Unit SpawnDarkJester(Game _game, Hex _hex, ClassType _class_type, UnitType _unit_type)
+    {
+        Unit unit = new Unit(_game, _class_type, _unit_type);
+
+        List<Level> levels = new List<Level>()
+        {
+            //level 1 
+            new Level()
+            {
+                update_stats = new StatsUpdate()
+                {
+                    increase_max_health = 3,
+                    increase_attack_range = 1,
+                    increase_damage = 1,
+                    increase_attack_speed = 0.25f,
+                },
+                behaviours_to_add = new List<Behaviour>()
+                {
+                    new NormalMovement(unit,2),
+                    new MeleeAttack(unit),
+                    new JesterSpecial(unit, new AbilityData() { range = 2 })
+                },
+
+            },
+            //level 2 
+            new Level()
+            {
+                update_stats = new StatsUpdate()
+                {
+                    increase_max_health = 1,
+                    increase_damage = 1,
+                },
+                behaviours_to_add = new List<Behaviour>()
+                {
+                    new TheFakeFool(unit, new AbilityData()
+                    {
+                        range = 1, amount = 1
+                    }),
+                }
+            },
+            //level 3 
+            new Level()
+            {
+                update_stats = new StatsUpdate()
+                {
+                    increase_max_health = 1,
+                    increase_damage = 1,
+                },
+
+                behaviour_to_switch = new Dictionary<KeyCode, Behaviour>()
+                {
+                    {
+                        KeyCode.S, new JesterSpecialFinal(unit, new AbilityData(){range = 2})
+                    },
+                    {
+                        KeyCode.Q, new TheFakeFoolFinal(unit, new AbilityData(){ range = 1, amount = 1})
+                    }
+                }
+            }
+        };
+
+        unit.AddLevels(levels);
+        unit.LevelUp();
+
+        unit.game_object = CreateUnitGameObjectByPath(_class_type, _unit_type);
+        unit.game_object.transform.SetParent(MapContainer.Instance.units_container);
+
+        if (_game.map.PlaceObject(unit, _hex.coordinates.x, _hex.coordinates.y))
+            _game.object_manager.AddObject(unit);
+
+        return unit;
+    }
+    //QUEEN LIGHT & DARK
+    private static Unit SpawnLightQueen(Game _game, Hex _hex, ClassType _class_type, UnitType _unit_type)
+    {
+        Unit unit = new Unit(_game, _class_type, _unit_type);
+        List<Level> levels = new List<Level>()
+        {
+            //level 1 
+            new Level()
+            {
+                update_stats = new StatsUpdate()
+                {
+                    increase_max_health = 3,
+                    increase_attack_range = 1,
+                    increase_damage = 2,
+                    increase_attack_speed = 0.25f,
+                },
+                behaviours_to_add = new List<Behaviour>()
+                {
+                    new DirectionMovement(unit,3),
+                    new MeleeAttack(unit),
+                    new QueenSpecial(unit,new AbilityData()
+                    {
+                        range = 3
+                    }),
+                },
+
+            },
+            //level 2 
+            new Level()
+            {
+                update_stats = new StatsUpdate()
+                {
+                    increase_max_health = 1,
+                    increase_damage = 1,
+                },
+                behaviours_to_add= new List<Behaviour>()
+                {
+                    new QueensCommand(unit,new AbilityData()
+                    {
+                        range = 3
+                    }),
+                }
+            },
+            //level 3 
+            new Level()
+            {
+                update_stats = new StatsUpdate()
+                {
+                    increase_max_health = 1,
+                    increase_damage = 1,
+                },
+            }
+        };
+
+        unit.AddLevels(levels);
+        unit.LevelUp();
+
+        unit.game_object = CreateUnitGameObjectByPath(_class_type, _unit_type);
+        unit.game_object.transform.SetParent(MapContainer.Instance.units_container);
+
+        if (_game.map.PlaceObject(unit, _hex.coordinates.x, _hex.coordinates.y))
+            _game.object_manager.AddObject(unit);
+
+        return unit;
+    }
+    private static Unit SpawnDarkQueen(Game _game, Hex _hex, ClassType _class_type, UnitType _unit_type)
+    {
+        Unit unit = new Unit(_game, _class_type, _unit_type);
+        List<Level> levels = new List<Level>()
+        {
+            //level 1 
+            new Level()
+            {
+                update_stats = new StatsUpdate()
+                {
+                    increase_max_health = 3,
+                    increase_attack_range = 1,
+                    increase_damage = 2,
+                    increase_attack_speed = 0.25f,
+                },
+                behaviours_to_add = new List<Behaviour>()
+                {
+                    new DirectionMovement(unit,3),
+                    new MeleeAttack(unit),
+                    new QueenSpecial(unit,new AbilityData()
+                    {
+                        range = 3
+                    }),
+                },
+
+            },
+            //level 2 
+            new Level()
+            {
+                update_stats = new StatsUpdate()
+                {
+                    increase_max_health = 1,
+                    increase_damage = 1,
+                },
+                behaviours_to_add= new List<Behaviour>()
+                {
+                    new Haunt(unit,new AbilityData()
+                    {
+                        range = 3
+                    }),
+                }
+            },
+            //level 3 
+            new Level()
+            {
+                update_stats = new StatsUpdate()
+                {
+                    increase_max_health = 1,
+                    increase_damage = 1,
+                },
+            }
+        };
+
+        unit.AddLevels(levels);
+        unit.LevelUp();
+
+        unit.game_object = CreateUnitGameObjectByPath(_class_type, _unit_type);
+        unit.game_object.transform.SetParent(MapContainer.Instance.units_container);
+
+        if (_game.map.PlaceObject(unit, _hex.coordinates.x, _hex.coordinates.y))
+            _game.object_manager.AddObject(unit);
+
+        return unit;
+    }
+
+    //KING LIGHT & DARK
+    private static Unit SpawnLightKing(Game _game, Hex _hex, ClassType _class_type, UnitType _unit_type)
+    {
+        Unit unit = new Unit(_game, _class_type, _unit_type);
+        List<Level> levels = new List<Level>()
+        {
+            //level 1 
+            new Level()
+            {
+                update_stats = new StatsUpdate()
+                {
+                    increase_max_health = 5
+                },
+                behaviours_to_add = new List<Behaviour>()
+                {
+                    new NormalMovement(unit),
+                    new NoAttack(unit),
+                    new KingSpecial(unit, new AbilityData()
+                    {
+                        range = 1,
+                    })
+                },
+
+            },
+            //level 2 
+            new Level()
+            {
+                update_stats = new StatsUpdate()
+                {
+                },
+            },
+            //level 3 
+            new Level()
+            {
+                update_stats = new StatsUpdate()
+                {
+                },
+            }
+        };
+
+        unit.AddLevels(levels);
+        unit.LevelUp();
+
+        unit.game_object = CreateUnitGameObjectByPath(_class_type, _unit_type);
+        unit.game_object.transform.SetParent(MapContainer.Instance.units_container);
+
+        if (_game.map.PlaceObject(unit, _hex.coordinates.x, _hex.coordinates.y))
+            _game.object_manager.AddObject(unit);
+
+        return unit;
+    }
+    private static Unit SpawnDarkKing(Game _game, Hex _hex, ClassType _class_type, UnitType _unit_type)
+    {
+        Unit unit = new Unit(_game, _class_type, _unit_type);
+        List<Level> levels = new List<Level>()
+        {
+            //level 1 
+            new Level()
+            {
+                update_stats = new StatsUpdate()
+                {
+                    increase_max_health = 5
+                },
+                behaviours_to_add = new List<Behaviour>()
+                {
+                    new NormalMovement(unit),
+                    new NoAttack(unit),
+                    new KingSpecial(unit, new AbilityData()
+                    {
+                        range = 1,
+                    })
+                },
+
+            },
+            //level 2 
+            new Level()
+            {
+                update_stats = new StatsUpdate()
+                {
+                },
+            },
+            //level 3 
+            new Level()
+            {
+                update_stats = new StatsUpdate()
+                {
+                },
+            }
+        };
+
+        unit.AddLevels(levels);
+        unit.LevelUp();
+
+        unit.game_object = CreateUnitGameObjectByPath(_class_type, _unit_type);
+        unit.game_object.transform.SetParent(MapContainer.Instance.units_container);
+
+        if (_game.map.PlaceObject(unit, _hex.coordinates.x, _hex.coordinates.y))
+            _game.object_manager.AddObject(unit);
+
+        return unit;
+    }
+    public static Unit SpawnUnit(Game _game, UnitType _unit_type, ClassType _class_type, Hex _hex)
+    {
         switch (_unit_type)
         {
-            case UnitType.SWORDSMAN:
-                stats = new Stats()
-                {
-                    max_health = 1,
-                    current_health = 1,
-                    damage = 1,
-                    attack_range = 1,
-                    attack_speed = 0.25f,
-                };
-
-                if (_class_type == ClassType.LIGHT)
-                    _abilities = new List<AbilityBehaviour>() { };
+            case UnitType.Swordsman:
+                if (_class_type == ClassType.Light)
+                    return SpawnLightSwordsman(_game, _hex, _class_type, _unit_type);
                 else
-                    _abilities = new List<AbilityBehaviour>() { };
-
-                _unit = new Unit(_class_type, _unit_type, stats);
-
-                _unit.behaviours.Add(new NormalMovement(_unit));
-                _unit.behaviours.Add(new MeleeAttack(_unit));
-
-                foreach (var ability in _abilities)
-                    _unit.behaviours.Add(ability);
-
-                _unit.game_object.GetComponent<Renderer>().material.color = Color.white;
-                break;
-            case UnitType.KNIGHT:
-
-                stats = new Stats()
-                {
-                    max_health = 3,
-                    current_health = 3,
-                    damage = 1,
-                    attack_range = 1,
-                    attack_speed = 0.25f
-                };
-
-                _unit = new Unit(_class_type, _unit_type, stats);
-
-
-                KnightPassive knight_passive = new KnightPassive(_unit, new AbilityData() { amount = 1 });
-                if (_class_type == ClassType.LIGHT)
-                {
-                    Joust joust = new Joust(_unit, new AbilityData() { range = 2, amount = 1, max_cooldown = 3, current_cooldown = 3 });
-                    _abilities = new List<AbilityBehaviour>() { knight_passive, joust };
-                }
+                    return SpawnDarkSwordsman(_game, _hex, _class_type, _unit_type);
+            case UnitType.Archer:
+                if (_class_type == ClassType.Light)
+                    return SpawnLightArcher(_game, _hex, _class_type, _unit_type);
                 else
-                {
-                    Warstrike warstrike = new Warstrike(_unit, new AbilityData() { range = 2, amount = 1, max_cooldown = 3, current_cooldown = 3 });
-                    _abilities = new List<AbilityBehaviour>() { knight_passive, warstrike };
-                }
-
-                _unit.behaviours.Add(new KnightMovement(_unit));
-                _unit.behaviours.Add(new MeleeAttack(_unit));
-
-                foreach (var ability in _abilities)
-                    _unit.behaviours.Add(ability);
-
-                _unit.game_object.GetComponent<Renderer>().material.color = Color.green;
-                break;
-            case UnitType.TANK:
-
-                stats = new Stats()
-                {
-                    max_health = 4,
-                    current_health = 4,
-                    damage = 1,
-                    attack_range = 1,
-                    attack_speed = 0.25f
-                };
-
-                _unit = new Unit(_class_type, _unit_type, stats);
-
-
-                if (_class_type == ClassType.LIGHT)
-                {
-                    Earthshaker earthshaker = new Earthshaker(_unit, new AbilityData() { range = 1, amount = 1, max_cooldown = 2, current_cooldown = 2 });
-                    _abilities = new List<AbilityBehaviour>() { earthshaker };
-                }
+                    return SpawnDarkArcher(_game, _hex, _class_type, _unit_type);
+            case UnitType.Knight:
+                if (_class_type == ClassType.Light)
+                    return SpawnLightKnight(_game, _hex, _class_type, _unit_type);
                 else
-                {
-                    Fear fear = new Fear(_unit, new AbilityData() { range = 1, amount = 1, max_cooldown = 2, current_cooldown = 2 });
-                    _abilities = new List<AbilityBehaviour>() { fear };
-                }
-
-                _unit.behaviours.Add(new DirectionMovement(_unit, 2));
-                _unit.behaviours.Add(new MeleeAttack(_unit));
-
-                foreach (var ability in _abilities)
-                    _unit.behaviours.Add(ability);
-
-                _unit.game_object.GetComponent<Renderer>().material.color = Color.black;
-                break;
-            case UnitType.ARCHER:
-
-                stats = new Stats()
-                {
-                    max_health = 2,
-                    current_health = 2,
-                    damage = 1,
-                    attack_range = 2,
-                    attack_speed = 0.25f
-                };
-
-                _unit = new Unit(_class_type, _unit_type, stats);
-
-                if (_class_type == ClassType.LIGHT)
-                {
-                    Powershoot powershoot = new Powershoot(_unit, new AbilityData() { amount = 1, max_cooldown = 2, current_cooldown = 2 });
-                    _abilities = new List<AbilityBehaviour>() { powershoot };
-                }
+                    return SpawnDarkKnight(_game, _hex, _class_type, _unit_type);
+            case UnitType.Tank:
+                if (_class_type == ClassType.Light)
+                    return SpawnLightTank(_game, _hex, _class_type, _unit_type);
                 else
-                {
-                    TrapAbility trap = new TrapAbility(_unit, new AbilityData() { range = 2, amount = 1, max_cooldown = 3, current_cooldown = 3 });
-                    _abilities = new List<AbilityBehaviour>() { trap };
-                }
-
-                _unit.behaviours.Add(new NormalMovement(_unit));
-                _unit.behaviours.Add(new RangedAttack(_unit));
-
-                foreach (var ability in _abilities)
-                    _unit.behaviours.Add(ability);
-
-                _unit.game_object.GetComponent<Renderer>().material.color = Color.cyan;
-                break;
-            case UnitType.WIZARD:
-
-                stats = new Stats()
-                {
-                    max_health = 3,
-                    current_health = 3,
-                    damage = 0,
-                    attack_range = 0,
-                    attack_speed = 0.0f
-                };
-
-                _unit = new Unit(_class_type, _unit_type, stats);
-
-                WizzardPassive wizard_passive = new WizzardPassive(_unit, new AbilityData() { range = 2 });
-                if (_class_type == ClassType.LIGHT)
-                {
-                    Blessing bless = new Blessing(_unit, new AbilityData() { range = 2, amount = 1, max_cooldown = 2, current_cooldown = 2 });
-                    Skyfall skyfall = new Skyfall(_unit, new AbilityData() { range = 2, amount = 1, max_cooldown = 4, current_cooldown = 4 });
-                    FireBall fireball = new FireBall(_unit, new AbilityData() { amount = 1, max_cooldown = 6, current_cooldown = 6 });
-
-                    _abilities = new List<AbilityBehaviour>() { wizard_passive, bless, skyfall, fireball };
-                }
+                    return SpawnDarkTank(_game, _hex, _class_type, _unit_type);
+            case UnitType.Jester:
+                if (_class_type == ClassType.Light)
+                    return SpawnLightJester(_game, _hex, _class_type, _unit_type);
                 else
-                {
-                    Necromancy necromancy = new Necromancy(_unit, new AbilityData() { range = 2, amount = 1, max_cooldown = 2, current_cooldown = 2 });
-                    Curse curse = new Curse(_unit, new AbilityData() { range = 2, amount = 1, max_cooldown = 4, current_cooldown = 4 });
-                    // Vampirism vampirism = new Vampirism(new AbilityData() { quantity = 1 });
-
-                    _abilities = new List<AbilityBehaviour>() { wizard_passive, necromancy, curse };
-                }
-
-                _unit.behaviours.Add(new TeleportMovement(_unit, wizard_passive.ability_data.range));
-                _unit.behaviours.Add(new NoAttack(_unit));
-
-                foreach (var ability in _abilities)
-                    _unit.behaviours.Add(ability);
-
-                _unit.game_object.GetComponent<Renderer>().material.color = Color.blue;
-                break;
-            case UnitType.JESTER:
-
-                stats = new Stats()
-                {
-                    max_health = 3,
-                    current_health = 3,
-                    damage = 1,
-                    attack_range = 1,
-                    attack_speed = 0.25f
-                };
-
-                _unit = new Unit(_class_type, _unit_type, stats);
-
-                JesterPassive jester_passive = new JesterPassive(_unit, new AbilityData() { range = 2 });
-                jester_passive.illusions = new List<Unit>() { CreateIllusion(_unit, _game.match_id), CreateIllusion(_unit, _game.match_id) };
-
-                foreach (var illusion in jester_passive.illusions)
-                {
-                    _game.objects.Add(illusion);
-                    _game.units.Add(illusion);
-                }
-
-                if (_class_type == ClassType.LIGHT)
-                {
-                    _abilities = new List<AbilityBehaviour>() { jester_passive };
-                }
+                    return SpawnDarkJester(_game, _hex, _class_type, _unit_type);
+            case UnitType.Wizard:
+                if (_class_type == ClassType.Light)
+                    return SpawnLightWizard(_game, _hex, _class_type, _unit_type);
                 else
-                {
-                    _abilities = new List<AbilityBehaviour>() { jester_passive };
-                }
-
-                _unit.behaviours.Add(new NormalMovement(_unit, 2));
-                _unit.behaviours.Add(new MeleeAttack(_unit));
-
-                foreach (var ability in _abilities)
-                    _unit.behaviours.Add(ability);
-
-                _unit.game_object.GetComponent<Renderer>().material.color = Color.red;
-                break;
-            case UnitType.QUEEN:
-
-                stats = new Stats()
-                {
-                    max_health = 3,
-                    current_health = 3,
-                    damage = 2,
-                    attack_range = 1,
-                    attack_speed = 0.25f
-                };
-
-                _unit = new Unit(_class_type, _unit_type, stats);
-
-                QueenSpecial queen_special = new QueenSpecial(_unit, new AbilityData() { range = 3, });
-                if (_class_type == ClassType.LIGHT)
-                {
-                    _abilities = new List<AbilityBehaviour>() { queen_special };
-                }
+                    return SpawnDarkWizard(_game, _hex, _class_type, _unit_type);
+            case UnitType.Queen:
+                if (_class_type == ClassType.Light)
+                    return SpawnLightQueen(_game, _hex, _class_type, _unit_type);
                 else
-                {
-                    _abilities = new List<AbilityBehaviour>() { queen_special };
-                }
-
-                _unit.behaviours.Add(new DirectionMovement(_unit, 3));
-                _unit.behaviours.Add(new MeleeAttack(_unit));
-
-                foreach (var ability in _abilities)
-                    _unit.behaviours.Add(ability);
-
-                _unit.game_object.GetComponent<Renderer>().material.color = Color.magenta;
-                break;
-            case UnitType.KING:
-                stats = new Stats()
-                {
-                    max_health = 5,
-                    current_health = 5,
-                    damage = 0,
-                    attack_range = 0,
-                    attack_speed = 0.0f
-                };
-
-                _unit = new Unit(_class_type, _unit_type, stats);
-
-                KingPassive king_passive = new KingPassive(_unit, new AbilityData());
-                if (_class_type == ClassType.LIGHT)
-                    _abilities = new List<AbilityBehaviour>() { king_passive };
+                    return SpawnDarkQueen(_game, _hex, _class_type, _unit_type);
+            case UnitType.King:
+                if (_class_type == ClassType.Light)
+                    return SpawnLightKing(_game, _hex, _class_type, _unit_type);
                 else
-                    _abilities = new List<AbilityBehaviour>() { king_passive };
-
-                _unit.behaviours.Add(new NormalMovement(_unit));
-                _unit.behaviours.Add(new NoAttack(_unit));
-
-                foreach (var ability in _abilities)
-                    _unit.behaviours.Add(ability);
-
-                _unit.game_object.GetComponent<Renderer>().material.color = Color.yellow;
-                break;
+                    return SpawnDarkKing(_game, _hex, _class_type, _unit_type);
             default:
-                break;
-        }
-
-        if (_game != null && _unit != null && _hex != null)
-        {
-            _unit.match_id = _game.match_id;
-            _unit.RegisterEvents();
-            if(_game.PlaceObject(_unit, _hex))
-            {
-                _game.units.Add(_unit);
-                _game.objects.Add(_unit);
-            }
-            _unit.game_object.transform.SetParent(MapContainer.Instance.units_container);
+                return null;
         }
     }
 
-    public static void CreateUnitGameObjects(Unit _unit)
+    public static Unit CreateLightJesterIllusion(Game _game, Unit _unit_parent)
     {
+        Unit illusion = new Unit(_game, _unit_parent.class_type, _unit_parent.unit_type);
+
+        List<Level> levels = new List<Level>()
         {
-            string name = _unit.game_object.name;
-            Vector3 position = _unit.game_object.transform.position;
-            Quaternion rotation = _unit.game_object.transform.rotation;
-
-            GameObject.Destroy(_unit.game_object);
-            #region CreateSphereGameObject
-            _unit.game_object = GameObject.CreatePrimitive(PrimitiveType.Capsule);
-            _unit.game_object.GetComponent<Collider>().enabled = false;
-
-            GameObject go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            if (_unit.class_type == ClassType.LIGHT)
-                go.GetComponent<Renderer>().material.color = Color.white;
-            else
-                go.GetComponent<Renderer>().material.color = Color.black;
-            go.transform.SetParent(_unit.game_object.transform);
-
-            go.GetComponent<Collider>().enabled = false;
-            go.transform.localScale = new Vector3(1.25f, 1, 1.25f);
-
-            _unit.game_object.name = name;
-            _unit.game_object.transform.position = position;
-            _unit.game_object.transform.rotation = rotation;
-            _unit.game_object.transform.SetParent(MapContainer.Instance.units_container);
-            #endregion
-
-            switch (_unit.unit_type)
+            //level 1 
+            new Level()
             {
-                case UnitType.SWORDSMAN:
-                    _unit.game_object.GetComponent<Renderer>().material.color = Color.white;
-                    break;
-                case UnitType.KNIGHT:
-                    _unit.game_object.GetComponent<Renderer>().material.color = Color.green;
-                    break;
-                case UnitType.TANK:
-                    _unit.game_object.GetComponent<Renderer>().material.color = Color.black;
-                    break;
-                case UnitType.ARCHER:
-                    _unit.game_object.GetComponent<Renderer>().material.color = Color.cyan;
-                    break;
-                case UnitType.WIZARD:
-                    _unit.game_object.GetComponent<Renderer>().material.color = Color.blue;
-                    break;
-                case UnitType.JESTER:
-                    _unit.game_object.GetComponent<Renderer>().material.color = Color.red;
-                    break;
-                case UnitType.QUEEN:
-                    _unit.game_object.GetComponent<Renderer>().material.color = Color.magenta;
-                    break;
-                case UnitType.KING:
-                    _unit.game_object.GetComponent<Renderer>().material.color = Color.yellow;
-                    break;
-                default:
-                    break;
+                update_stats = new StatsUpdate()
+                {
+                    increase_max_health = 3,
+                    increase_attack_range = 1,
+                    increase_damage = 1,
+                    increase_attack_speed = 0.25f,
+                },
+                behaviours_to_add = new List<Behaviour>()
+                {
+                    new NoMovement(illusion),
+                    new NoAttack(illusion),
+                    new JesterFakeSpecial(illusion, new AbilityData() { range = 2})
+                },
+
+            },
+            //level 2 
+            new Level()
+            {
+                update_stats = new StatsUpdate()
+                {
+                    increase_max_health = 1,
+                    increase_damage = 1,
+                },
+                behaviours_to_add = new List<Behaviour>()
+                {
+                    new TheTricsOfTrade(illusion, new AbilityData())
+                },
+            },
+            //level 3 
+            new Level()
+            {
+                update_stats = new StatsUpdate()
+                {
+                    increase_max_health = 1,
+                    increase_damage = 1,
+                },
+                behaviour_to_switch = new Dictionary<KeyCode, Behaviour>()
+                {
+                    {
+                        KeyCode.S, new JesterFakeSpecialFinal(illusion, new AbilityData(){range = 2})
+                    }
+                }
             }
+        };
 
-        }
-    }
+        illusion.AddLevels(levels);
+        illusion.LevelUp();
 
-    private static Unit CreateIllusion(Unit _unit_parent, int match_id)
-    {
-        Unit illusion;
-        if (_unit_parent.class_type == ClassType.LIGHT)
-        {
-            illusion = new Unit(_unit_parent.class_type, _unit_parent.unit_type, UnitStatsToIllusion(_unit_parent));
-            illusion.match_id = match_id;
-            illusion.behaviours.Add(new NormalMovement(illusion, 2));
-            illusion.behaviours.Add(new NoAttack(illusion));
-            illusion.behaviours.Add(new TheTricsOfTrade(illusion, new AbilityData() { range = 1, amount = 1 }));
-        }
-        else
-        {
-            illusion = new Unit(_unit_parent.class_type, _unit_parent.unit_type, UnitStatsToIllusion(_unit_parent));
-            illusion.match_id = match_id;
-            illusion.behaviours.Add(new NormalMovement(illusion, 2));
-            illusion.behaviours.Add(new NoAttack(illusion));
-            illusion.behaviours.Add(new TheFool(illusion, new AbilityData() { range = 1, amount = 1 }));
-        }
-
-        illusion.RegisterEvents();
-        illusion.game_object.GetComponent<UnityEngine.Renderer>().material.color = UnityEngine.Color.red;
-        illusion.game_object.transform.position = new UnityEngine.Vector3(-999, -999, -999);
-        illusion.game_object.name += "Illusion: " + _unit_parent.class_type.ToString();
+        illusion.game_object = CreateUnitGameObjectByPath(_unit_parent.class_type, _unit_parent.unit_type);
         illusion.game_object.transform.SetParent(MapContainer.Instance.units_container);
-        illusion.game_object.GetComponent<UnityEngine.Collider>().enabled = false;
+        illusion.game_object.transform.position = new Vector3(-999, -999, -999);
+        illusion.game_object.name += "Illusion: " + _unit_parent.class_type.ToString();
+
+        _game.object_manager.AddObject(illusion);
 
         return illusion;
     }
-
-    private static Stats UnitStatsToIllusion(Unit _unit)
+    public static Unit CreateDarkJesterIllusion(Game _game, Unit _unit_parent)
     {
-        return new Stats
+        Unit illusion = new Unit(_game, _unit_parent.class_type, _unit_parent.unit_type);
+
+        List<Level> levels = new List<Level>()
         {
-            max_health = _unit.stats.max_health,
-            current_health = _unit.stats.current_health,
-            damage = _unit.stats.damage
+            //level 1 
+            new Level()
+            {
+                update_stats = new StatsUpdate()
+                {
+                    increase_max_health = 3,
+                    increase_attack_range = 1,
+                    increase_damage = 1,
+                    increase_attack_speed = 0.25f,
+                },
+                behaviours_to_add = new List<Behaviour>()
+                {
+                    new NoMovement(illusion),
+                    new NoAttack(illusion),
+                    new JesterFakeSpecial(illusion, new AbilityData() { range = 2})
+                },
+
+            },
+            //level 2 
+            new Level()
+            {
+                update_stats = new StatsUpdate()
+                {
+                    increase_max_health = 1,
+                    increase_damage = 1,
+                },
+                behaviours_to_add = new List<Behaviour>()
+                {
+                    new TheFool(illusion, new AbilityData()
+                    {
+                        range = 1, amount = 1
+                    })
+                },
+            },
+            //level 3 
+            new Level()
+            {
+                update_stats = new StatsUpdate()
+                {
+                    increase_max_health = 1,
+                    increase_damage = 1,
+                },
+                behaviour_to_switch = new Dictionary<KeyCode, Behaviour>()
+                {
+                    {
+                        KeyCode.S, new JesterFakeSpecialFinal(illusion, new AbilityData(){range = 2})
+                    },
+                    {
+                        KeyCode.Q, new TheFoolFinal(illusion, new AbilityData(){ range = 1, amount = 1})
+                    }
+                }
+            }
         };
+
+        illusion.AddLevels(levels);
+        illusion.LevelUp();
+
+        illusion.game_object = CreateUnitGameObjectByPath(_unit_parent.class_type, _unit_parent.unit_type);
+        illusion.game_object.transform.SetParent(MapContainer.Instance.units_container);
+        illusion.game_object.transform.position = new Vector3(-999, -999, -999);
+        illusion.game_object.name += "Illusion: " + _unit_parent.class_type.ToString();
+
+        _game.object_manager.AddObject(illusion);
+
+        return illusion;
+    }
+    public static Unit CreateStone(Game _game, ClassType class_type)
+    {
+        Unit stone = new Unit(_game, class_type, UnitType.Stone);
+        stone.is_immune_to_magic = true;
+        List<Level> levels = new List<Level>()
+        {
+            //level 1 
+            new Level()
+            {
+                update_stats = new StatsUpdate()
+                {
+                    increase_max_health = 1,
+                },
+                behaviours_to_add = new List<Behaviour>()
+                {
+                    new NoMovement(stone),
+                    new NoAttack(stone),
+                },
+
+            }
+        };
+
+        stone.AddLevels(levels);
+        stone.LevelUp();
+
+        stone.game_object = CreateUnitGameObjectByPath(stone.class_type, stone.unit_type);
+        stone.game_object.transform.SetParent(MapContainer.Instance.units_container);
+        stone.game_object.transform.position = new Vector3(-999, -999, -999);
+        stone.game_object.name += "Stone: " + class_type.ToString();
+
+        _game.object_manager.AddObject(stone);
+
+        return stone;
+
+    }
+    public static GameObject CreateUnitGameObjectByPath(ClassType class_type, UnitType unit_type)
+    {
+        GameObject game_object = UnityEngine.Object.Instantiate(Resources.Load<GameObject>("Prefabs/" + unit_type.ToString() + "/" + class_type.ToString() + "/prefab"));
+
+        game_object.name = class_type.ToString() + "_" + unit_type.ToString();
+
+        if (class_type == ClassType.Dark)
+            game_object.transform.eulerAngles = new Vector3(0, 180, 0);
+
+        return game_object;
     }
 }
 

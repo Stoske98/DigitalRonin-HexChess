@@ -19,10 +19,16 @@ public class TeleportMovement : MovementBehaviour
             unit.game_object.transform.LookAt(path[1].game_object.transform);
             unit.game_object.transform.position = path[1].game_object.transform.position;
 
-            path[1].PlaceObject(unit);
-            NetworkManager.Instance.games[unit.match_id].game_events.OnEndMovement_Global?.Invoke(path[1]);
+            current_hex = path[0];
+            next_hex = path[1];
 
-            path[1].TriggerModifier(unit, path[1]);
+            current_hex.RemoveObject(unit);
+            next_hex.PlaceObject(unit);
+
+            next_hex.TriggerModifier(unit);
+
+            unit.events.OnEndMovement_Local?.Invoke(next_hex);
+            NetworkManager.Instance.games[unit.match_id].game_events.OnEndMovement_Global?.Invoke(next_hex);
 
             path.Clear();
 
@@ -33,7 +39,7 @@ public class TeleportMovement : MovementBehaviour
     {
         List<Hex> _available_moves = new List<Hex>();
 
-        foreach (Hex hex in NetworkManager.Instance.games[unit.match_id].HexesInRange(_unit_hex, range))
+        foreach (Hex hex in NetworkManager.Instance.games[unit.match_id].map.HexesInRange(_unit_hex, range))
             if (hex.IsWalkable())
                 _available_moves.Add(hex);
 

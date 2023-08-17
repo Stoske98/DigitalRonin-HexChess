@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-
 public class Earthshaker : InstantleAbility
 {
     List<Unit> enemies;
@@ -9,9 +8,9 @@ public class Earthshaker : InstantleAbility
     {
         foreach (Unit enemy in enemies)
         {
-            enemy.RecieveDamage(new MagicDamage(unit, ability_data.amount));
-            if(!enemy.IsDeath())
-                enemy.ccs.Add(new Stun(2));
+            enemy.ReceiveDamage(new MagicDamage(unit, ability_data.amount));
+            if(!enemy.IsDead())
+                enemy.ccs.Add(new Stun(ability_data.cc));
         }
         enemies.Clear();
         Exit();
@@ -21,21 +20,28 @@ public class Earthshaker : InstantleAbility
     {
         List<Hex> _ability_moves = new List<Hex>();
 
-        foreach (Hex hex in NetworkManager.Instance.games[unit.match_id].HexesInRange(_unit_hex, ability_data.range))
-            if (!hex.IsWalkable() && hex.GetUnit().class_type != unit.class_type)
+        foreach (Hex hex in NetworkManager.Instance.games[unit.match_id].map.HexesInRange(_unit_hex, ability_data.range))
+        {
+            Unit enemy = hex.GetUnit();
+            if (enemy != null && enemy.class_type != unit.class_type)
                 _ability_moves.Add(hex);
+        }
 
         return _ability_moves;
     }
 
     public override void SetAbility()
     {
-        Hex _cast_unit_hex = NetworkManager.Instance.games[unit.match_id].GetHex(unit);
+        Hex _cast_unit_hex = NetworkManager.Instance.games[unit.match_id].map.GetHex(unit);
         if (_cast_unit_hex != null)
         {
-            foreach (Hex _hex in NetworkManager.Instance.games[unit.match_id].HexesInRange(_cast_unit_hex, ability_data.range))
-                if (!_hex.IsWalkable() && _hex.GetUnit().class_type != unit.class_type)
-                    enemies.Add(_hex.GetUnit());
+            foreach (Hex _hex in NetworkManager.Instance.games[unit.match_id].map.HexesInRange(_cast_unit_hex, ability_data.range))
+            {
+                Unit enemy = _hex.GetUnit();
+                if (enemy != null && enemy.class_type != unit.class_type)
+                    enemies.Add(enemy);
+
+            }
         }
     }
 }

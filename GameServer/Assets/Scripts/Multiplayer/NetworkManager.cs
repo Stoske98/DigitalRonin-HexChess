@@ -5,9 +5,10 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
-using Unity.VisualScripting;
+using System.Linq;
 using UnityEngine;
-using UnityEngine.Rendering;
+using UnityEngine.InputSystem;
+
 
 public class Player
 {
@@ -69,7 +70,6 @@ public class NetworkManager : MonoBehaviour
 
     public Dictionary<long,Game> games = new Dictionary<long, Game>();
     Queue<Game> games_to_add = new Queue<Game>();
-
     private void Awake()
     {
         Instance = this;
@@ -102,7 +102,42 @@ public class NetworkManager : MonoBehaviour
             {
                 Game game_to_add = games_to_add.Dequeue();
                 games.Add(game_to_add.match_id, game_to_add);
+                game_to_add.Init();
+
+                string json = NetworkManager.Serialize(game_to_add);
+                File.WriteAllText("ChallengeRoyaleGame.json", json);
             }
+        }
+
+        if(Keyboard.current.spaceKey.wasPressedThisFrame)
+        {
+             if (games[2] is ChallengeRoyaleGame ch_royale)
+             {
+                 List<Unit> units = ch_royale.object_manager.objects.OfType<Unit>().ToList();
+                 ch_royale.shard_controller.UpgradeClass(ClassType.Dark, UnitType.Swordsman, units);
+
+                 foreach (Unit unit in units)
+                 {
+                     if(unit.class_type == ClassType.Dark && unit.unit_type == UnitType.Swordsman)
+                     {
+                         Debug.Log(unit.unit_type.ToString());
+                         foreach (var item in unit.behaviours)
+                         {
+                             Debug.Log(item.GetType());
+                         }
+                     }
+                 }
+                 Debug.Log("Count Units: " + units.Count);
+             }
+
+            /*if (games[2] != null)
+            {
+                List<Unit> units = games[2].object_manager.objects.OfType<Unit>().ToList();
+                foreach (Unit unit in units)
+                {
+                    Debug.Log(unit.class_type.ToString() + "_" + unit.unit_type.ToString());
+                }
+            }*/
         }
 
     }
@@ -132,7 +167,13 @@ public class NetworkManager : MonoBehaviour
 
     public void DisconnectPlayer(Connection connection)
     {
-        players.Remove(connection.Id);
+        if (players.TryGetValue(connection.Id, out Player player)) 
+        {
+            if(games.TryGetValue(player.match_id, out Game game))
+                game.players.Remove(player);
+
+            players.Remove(connection.Id);
+        }
         Server.DisconnectClient(connection);
     }
     private IEnumerator KeepAliveClients()
@@ -160,11 +201,6 @@ public class NetworkManager : MonoBehaviour
             {
                 Map map = new ChallengeRoyaleMap(4, 4, 1.05f, 1);
                 Game game = new ChallengeRoyaleGame(_match_id, map, 30, 10);
-
-                string json = NetworkManager.Serialize(game);
-                //Debug.Log(json);
-                File.WriteAllText("ChallengeRoyaleGame.json", json);
-
                 games_to_add.Enqueue(game);
             }
     }
@@ -193,12 +229,19 @@ public class NetworkManager : MonoBehaviour
             case OpCode.ON_MOVE:
                 msg = new NetMove(e.Message);
                 break;
-            case OpCode.ON_TARGETABLE_ABILITY:
-                msg = new NetTargetableAbilility(e.Message);
+            case OpCode.ON_SINGLE_TARGET_ABILITY:
+                msg = new NetSingleTargetAbilility(e.Message);
+                break;
+            case OpCode.ON_MULTIPLE_TARGETS_ABILITY:
+                msg = new NetMultipeTargetsAbilility(e.Message);
                 break;
             case OpCode.ON_INSTANT_ABILITY:
                 msg = new NetInstantAbility(e.Message);
                 break;
+            case OpCode.ON_END_TURN:
+                msg = new NetEndTurn(e.Message);
+                break;
+
             default:
                 break;
         }
@@ -213,8 +256,9 @@ public class NetworkManager : MonoBehaviour
     public static Action<NetMessage, Connection> S_ON_SYNC_REQUEST;
     public static Action<NetMessage, Connection> S_ON_ATTACK_REQUEST;
     public static Action<NetMessage, Connection> S_ON_MOVE_REQUEST;
-    public static Action<NetMessage, Connection> S_ON_TARGETABLE_ABILITY_REQUEST;
+    public static Action<NetMessage, Connection> S_ON_SINGLE_TARGET_ABILITY_REQUEST;
     public static Action<NetMessage, Connection> S_ON_INSTANT_ABILITY_REQUEST;
+    public static Action<NetMessage, Connection> S_ON_MULTIPLE_TARGETS_ABILITY_REQUEST;
     #endregion
 
     public static string Serialize<T>(T obj)

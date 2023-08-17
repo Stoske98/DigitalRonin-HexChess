@@ -1,23 +1,30 @@
-﻿using System.Collections.Generic;
+﻿using Newtonsoft.Json;
+using System.Collections.Generic;
 
-public class Curse : TargetableAbility
+public class Curse : TargetableAbility, ITargetableSingleHex
 {
+    List<Unit> enemies;
+    [JsonIgnore] public Hex targetable_hex { get; set; }
     public Curse() : base() {  }
     public Curse(Unit _unit, AbilityData _ability_data) : base(_unit, _ability_data) { }
     public override void Execute()
     {
-        targetable_hex.GetUnit().RecieveDamage(new MagicDamage(unit, ability_data.amount));
-        if (!targetable_hex.IsWalkable())
-            targetable_hex.GetUnit().ccs.Add(new Disarm(2));
+        Unit enemy = targetable_hex.GetUnit();
+        enemy.ReceiveDamage(new MagicDamage(unit, ability_data.amount));
 
-        foreach (Hex hex in NetworkManager.Instance.games[unit.match_id].HexesInRange(targetable_hex, ability_data.range))
-            if (!hex.IsWalkable() && hex.GetUnit().class_type != unit.class_type)
+        if (!enemy.IsDead())
+            targetable_hex.GetUnit().ccs.Add(new Disarm(ability_data.cc));
+
+        foreach (Hex hex in NetworkManager.Instance.games[unit.match_id].map.HexesInRange(targetable_hex, ability_data.range))
+        {
+            Unit _unit = hex.GetUnit();
+            if (_unit != null && _unit.class_type != unit.class_type)
             {
-                Unit enemy = hex.GetUnit();
-                enemy.RecieveDamage(new MagicDamage(unit, ability_data.amount));
-                if (!enemy.IsDeath())
+                _unit.ReceiveDamage(new MagicDamage(unit, ability_data.amount));
+                if (!_unit.IsDead())
                     FearEnemy(hex);
             }
+        }
         Exit();
     }
 
@@ -25,23 +32,21 @@ public class Curse : TargetableAbility
     {
         List<Hex> _available_moves = new List<Hex>();
 
-        foreach (Hex hex in NetworkManager.Instance.games[unit.match_id].HexesInRange(_unit_hex, ability_data.range))
-            if (!hex.IsWalkable() && hex.GetUnit().class_type != unit.class_type)
+        foreach (Hex hex in NetworkManager.Instance.games[unit.match_id].map.HexesInRange(_unit_hex, ability_data.range))
+        {
+            Unit enemy = hex.GetUnit();
+            if (enemy != null && enemy.class_type != unit.class_type)
                 _available_moves.Add(hex);
+        }
 
         return _available_moves;
-    }
-
-    public override void SetAbility(Hex _targetable_hex)
-    {
-        targetable_hex = _targetable_hex;
     }
     private void FearEnemy(Hex _enemy_hex)
     {
         int column = _enemy_hex.coordinates.x - targetable_hex.coordinates.x;
         int row = _enemy_hex.coordinates.y - targetable_hex.coordinates.y;
 
-        Hex hex = NetworkManager.Instance.games[unit.match_id].GetHex(_enemy_hex.coordinates.x + column, _enemy_hex.coordinates.y + row);
+        Hex hex = NetworkManager.Instance.games[unit.match_id].map.GetHex(_enemy_hex.coordinates.x + column, _enemy_hex.coordinates.y + row);
 
         if (hex != null && hex.IsWalkable())
         {

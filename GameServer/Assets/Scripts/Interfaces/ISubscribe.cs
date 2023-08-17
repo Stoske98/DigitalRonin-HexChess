@@ -8,10 +8,5 @@ public interface ISubscribe
     void UnregisterEvents();
 }
 
-public interface IUpgradable
-{
-    void Upgrade();
-}
-
 
 

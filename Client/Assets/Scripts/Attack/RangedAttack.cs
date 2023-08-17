@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+﻿using System.Reflection;
 using UnityEngine;
 
 public class RangedAttack : AttackBehaviour
@@ -12,12 +12,12 @@ public class RangedAttack : AttackBehaviour
     {
         if (Time.time >= time + unit.stats.attack_speed)
         {
-            target.RecieveDamage(new PhysicalDamage(unit, unit.stats.damage));
+            Missile missile = new Missile(target, damage, 55, 7);
+            GameManager.Instance.game.object_manager.AddObject(missile);
             target = null;
 
             Exit();
         }
     }
-
 }
 

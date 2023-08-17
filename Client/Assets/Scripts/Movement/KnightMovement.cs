@@ -16,7 +16,7 @@ public class KnightMovement : MovementBehaviour
     {
         List<Hex> _available_moves = new List<Hex>();
 
-        foreach (Hex hex in GameManager.Instance.game.HexesInRange(_unit_hex, range))
+        foreach (Hex hex in GameManager.Instance.game.map.HexesInRange(_unit_hex, range))
             if (hex.IsWalkable() && (Mathf.Abs(hex.coordinates.x - _unit_hex.coordinates.x) == range
                 || Mathf.Abs(hex.coordinates.y - _unit_hex.coordinates.y) == range
                 || Mathf.Abs(hex.S - _unit_hex.S) == range))

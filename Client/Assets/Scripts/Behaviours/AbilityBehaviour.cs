@@ -11,6 +11,7 @@ public abstract class AbilityBehaviour : Behaviour
     }
     public override void Enter()
     {
+        base.Enter();
     }
     public override void Exit()
     {

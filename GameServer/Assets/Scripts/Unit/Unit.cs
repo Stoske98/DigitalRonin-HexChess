@@ -2,36 +2,22 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UIElements;
 
-
-public class UpdateManager
-{
-    public int max_level = 3;
-    public int level { set; get; }
-    public string description { get; set; }
-    public Unit unit { get; set; }
-    public void LevelUp()
-    {
-        if(level < max_level)
-        {
-            level++;
-            foreach (var behaviour in unit.behaviours)
-                if (behaviour is IUpgradable upgradable_behaviour)
-                    upgradable_behaviour.Upgrade();
-        }
-    }
-}
-public class Unit : ISubscribe, IObject
+public class Unit : IActiveObject, ISubscribe, IDamageableObject
 {
     public string id { get; set; }
+    public int level { get; set; }
     public Stats stats { get; set; }
     public ClassType class_type { get; set; }
     public UnitType unit_type { get; set; }
+    public Visibility visibility { get; set; }
+    public bool is_immune_to_magic { get; set; }
     [JsonIgnore] public int match_id { get; set; }
-    [JsonConverter(typeof(CustomConverters.UnitGameObjectConverter))] public GameObject game_object { get; set; }
+    [JsonConverter(typeof(CustomConverters.GameObjectConverter))] public GameObject game_object { get; set; }
     [JsonConverter(typeof(CustomConverters.BehaviourListConverter))] public List<Behaviour> behaviours { get; set; }
     [JsonConverter(typeof(CustomConverters.CCListConverter))] public List<CC> ccs { set; get; }
-
+    public List<Level> levels { get; set; }
     //JSON IGNORE
     [JsonIgnore] public Queue<Behaviour> to_do_behaviours { set; get; }
     [JsonIgnore] public Quaternion target_rotation { set; get; }
@@ -44,39 +30,23 @@ public class Unit : ISubscribe, IObject
         to_do_behaviours = new Queue<Behaviour>();
         ccs = new List<CC>();
         events = new UnitEvents();
+        levels = new List<Level>();
     }
-
-    //CHANGE CONSTRUCTOR
-    public Unit(ClassType _class_type, UnitType _unit_type, Stats _stats)
+    public Unit(Game _game, ClassType _class_type, UnitType _unit_type)
     {
-        id = Guid.NewGuid().ToString();
-        stats = _stats;
+        id = _game.random_seeds_generator.GetRandomIdsSeed();
+        match_id = _game.match_id;
+        level = 0;
         class_type = _class_type;
         unit_type = _unit_type;
+        is_immune_to_magic = false;
 
+        stats = new Stats();
         events = new UnitEvents();
         behaviours = new List<Behaviour>();
         to_do_behaviours = new Queue<Behaviour>();
         ccs = new List<CC>();
-
-        //////////////////////////////////////////
-        if (NetworkManager.Instance.gameobject_visibility)
-        {
-            game_object = GameObject.CreatePrimitive(PrimitiveType.Capsule);
-            game_object.name = class_type.ToString() + "_" + unit_type.ToString();
-            game_object.GetComponent<Collider>().enabled = false;
-
-            GameObject go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            if (class_type == ClassType.LIGHT)
-                go.GetComponent<Renderer>().material.color = Color.white;
-            else
-                go.GetComponent<Renderer>().material.color = Color.black;
-            go.transform.SetParent(game_object.transform);
-
-            go.GetComponent<Collider>().enabled = false;
-            go.transform.localScale = new Vector3(1.25f, 1, 1.25f);
-        }else
-            game_object = new GameObject(class_type.ToString() + "_" + unit_type.ToString());
+        visibility = Visibility.BOTH;
 
     }
     public void Update()
@@ -84,10 +54,26 @@ public class Unit : ISubscribe, IObject
         if (to_do_behaviours.Count > 0)
             to_do_behaviours.Peek().Execute();
     }
+    public void LevelUp()
+    {
+        levels[level].LevelUp(this);
+    }
+    public void AddLevels(List<Level> _levels)
+    {
+        levels = _levels;
+    }
     public void AddBehaviourToWork(Behaviour _behaviour)
     {
         if (_behaviour != null)
-            to_do_behaviours.Enqueue(_behaviour);
+        {
+            if (to_do_behaviours.Count == 0)
+            {
+                to_do_behaviours.Enqueue(_behaviour);
+                _behaviour.Enter();
+            }
+            else
+                to_do_behaviours.Enqueue(_behaviour);
+        }
     }
     public void AddBehaviour(Behaviour _behaviour)
     {
@@ -127,35 +113,113 @@ public class Unit : ISubscribe, IObject
                     }
                 }
             }
-        }else if (typeof(T) == typeof(Ability))
+        }
+        else if (typeof(T) == typeof(Ability))
         {
-            if (_code == KeyCode.S)
-                return GetAbilityByPosition(0); //special
-            if (_code == KeyCode.Q)
-                return GetAbilityByPosition(1); //ability 1
-            if (_code == KeyCode.W)
-                return GetAbilityByPosition(2); //ability 2
-            if (_code == KeyCode.E)
-                return GetAbilityByPosition(3); //ability 3
-            if (_code == KeyCode.R)
-                return GetAbilityByPosition(4); //ability 4
+            if (_code == KeyCode.S || _code == KeyCode.Q || _code == KeyCode.W || _code == KeyCode.E || _code == KeyCode.R)
+                return GetAbilityByPosition(_code);
         }
         return default;
     }
-    private Behaviour GetAbilityByPosition(int _pos)
+    public void AddMovementBehaviour(MovementBehaviour movement_behaviour)
     {
         int counter = 0;
-        foreach (Behaviour behaviour in behaviours)
+        foreach (var behaviour in behaviours)
         {
-            if (behaviour is AbilityBehaviour ability_behaviour)
+            if (behaviour is MovementBehaviour)
+                break;
+
+            counter++;
+        }
+
+        if (counter == behaviours.Count)
+            behaviours.Add(movement_behaviour);
+        else
+            behaviours[counter] = movement_behaviour;
+    }
+    public void AddAttackBehaviour(AttackBehaviour attack_behaviour)
+    {
+        int counter = 0;
+        foreach (var behaviour in behaviours)
+        {
+            if (behaviour is AttackBehaviour)
+                break;
+
+            counter++;
+        }
+
+        if (counter == behaviours.Count)
+            behaviours.Add(attack_behaviour);
+        else
+            behaviours[counter] = attack_behaviour;
+    }
+    public void SwitchAbilityBehaviourWithNewOne(Behaviour behaviour, KeyCode key_code)
+    {
+        int counter = 0;
+        int ability_position_counter = 0;
+        int ability_position = AbilityPosition(key_code);
+
+        if (ability_position > -1)
+        {
+            foreach (Behaviour _behaviour in behaviours)
             {
-                if (counter == _pos)
-                    return ability_behaviour;
-                else
-                    counter++;
+                if (_behaviour is AbilityBehaviour ability_behaviour)
+                {
+                    if (ability_position_counter == ability_position)
+                        break;
+                    else
+                        ability_position_counter++;
+                }
+                counter++;
             }
         }
+        if (behaviours[counter] is ISubscribe unsubscriber)
+            unsubscriber.UnregisterEvents();
+
+        if(behaviour is ISubscribe subscibers)
+            subscibers.RegisterEvents();
+
+        behaviours[counter] = behaviour;
+
+    }
+    private Behaviour GetAbilityByPosition(KeyCode key_code)
+    {
+        int counter = 0;
+        int ability_position = AbilityPosition(key_code);
+
+        if (ability_position > -1)
+        {
+            foreach (Behaviour behaviour in behaviours)
+            {
+                if (behaviour is AbilityBehaviour ability_behaviour)
+                {
+                    if (counter == ability_position)
+                        return ability_behaviour;
+                    else
+                        counter++;
+                }
+            }
+
+        }
         return null;
+    }
+
+    private int AbilityPosition(KeyCode key_code)
+    {
+        int position = -1;
+
+        if (key_code == KeyCode.S)
+            position = 0; //special
+        else if (key_code == KeyCode.Q)
+            position = 1; //ability 1
+        else if (key_code == KeyCode.W)
+            position = 2; //ability 2
+        else if (key_code == KeyCode.E)
+            position = 3; //ability 3
+        else if (key_code == KeyCode.R)
+            position = 4; //ability 4
+
+        return position;
     }
     public void Move(Hex _unit_hex, Hex _desired_hex)
     {
@@ -177,27 +241,29 @@ public class Unit : ISubscribe, IObject
         }
         else Debug.Log("ERROR: ATTACK NULL !!!");
     }
-
-    public void UseAbility(Ability ability, Hex targetable_hex = null)
+    public void UseInstantAbility(InstantleAbility instant)
     {
-        if(behaviours.Contains(ability))
-        {
-            if (ability is TargetableAbility targetable)
-            {
-                if (targetable_hex != null)
-                {
-                    targetable.SetAbility(targetable_hex);
-                    AddBehaviourToWork(targetable);
-                }
-            }
-            else if (ability is InstantleAbility instant)
-            {
-                instant.SetAbility();
-                AddBehaviourToWork(instant);
-            }
-        }
-        else Debug.Log("ERROR: ABILITY NULL !!!");
+        instant.SetAbility();
+        //Change cooldown logic
+        instant.ability_data.current_cooldown = instant.ability_data.max_cooldown;
+        AddBehaviourToWork(instant);
     }
+    public void UseSingleTargetableAbility(TargetableAbility targetable_ability, Hex hex)
+    {
+        ((ITargetableSingleHex)targetable_ability).SetAbility(hex);
+        //Change cooldown logic
+        targetable_ability.ability_data.current_cooldown = targetable_ability.ability_data.max_cooldown;
+        AddBehaviourToWork(targetable_ability);
+
+    }
+    public void UseMultipleTargetableAbility(TargetableAbility targetable_ability, List<Hex> hexes)
+    {
+        ((ITargetMultipleHexes)targetable_ability).SetAbility(hexes);
+        //Change cooldown logic
+        targetable_ability.ability_data.current_cooldown = targetable_ability.ability_data.max_cooldown;
+        AddBehaviourToWork(targetable_ability);
+    }
+
     public void ChangeBehaviour()
     {
         if(to_do_behaviours.Count > 0)
@@ -205,44 +271,67 @@ public class Unit : ISubscribe, IObject
 
         if (to_do_behaviours.Count > 0)
             to_do_behaviours.Peek().Enter();
-    }
-    public virtual void RecieveDamage(Damage damage)
+    }   
+    public void ReceiveDamage(Damage damage)
     {
-        stats.current_health -= damage.amount;
-        Hex _unit_hex = NetworkManager.Instance.games[match_id].GetHex(this);
+        events.OnBeforeReceivingDamage_Local?.Invoke(damage);
 
-        if (stats.current_health <= 0)
+        Hex _unit_hex = NetworkManager.Instance.games[match_id].map.GetHex(this);
+        if (damage is PhysicalDamage physical_damage)
         {
-            stats.current_health = 0;
-            _unit_hex?.RemoveUnit();
+            if (physical_damage.miss)
+            {
+                Debug.Log("MISS");
+                return;
+            }
 
-            //--should be removed--
-            game_object.SetActive(false);
+            if (physical_damage is CritDamage crit_damage)
+                Debug.Log("CRITICAL");
+
+            stats.current_health -= damage.amount;
+
+            events.OnRecieveDamage_Local?.Invoke(_unit_hex);
+
+            if (IsDead())
+                Die(_unit_hex);
         }
+        else
+        {
+            stats.current_health -= damage.amount;
 
-        events.OnRecieveDamage_Local?.Invoke(_unit_hex);
+            events.OnRecieveDamage_Local?.Invoke(_unit_hex);
+
+            if (IsDead())
+                Die(_unit_hex);
+
+        }
     }
-
-    public bool IsDeath()
+    public void Die(Hex hex)
     {
-       return stats.current_health == 0;
+        stats.current_health = 0;
+        hex.RemoveObject(this);
+        to_do_behaviours.Clear(); 
+        IObject.ObjectVisibility(this, Visibility.NONE);
+    }
+    public bool IsDead()
+    {
+       return stats.current_health <= 0;
     }
 
     public virtual void RegisterEvents()
     {
-
         foreach (Behaviour behaviour in behaviours.ToArray())
         {
-            if(behaviour is PassiveAbility passive)
-                  passive.RegisterEvents();
+            if (behaviour is ISubscribe subscriber)
+                subscriber.RegisterEvents();
         }
     }
     public virtual void UnregisterEvents()
     {
         foreach (Behaviour behaviour in behaviours.ToArray())
         {
-            if (behaviour is PassiveAbility passive)
-                passive.UnregisterEvents();
+            if (behaviour is ISubscribe subscriber)
+                subscriber.UnregisterEvents();
         }
     }
 
@@ -250,28 +339,75 @@ public class Unit : ISubscribe, IObject
     {
         foreach (CC cc in ccs)
             cc.UpdateCooldown();
+
+        ccs.RemoveAll(obj => obj.current_cooldown == 0);
     }
 
     public void UpdateAbilitiesCooldown()
     {
-        // ?
         foreach (Behaviour behaviour in behaviours)
-            if(behaviour is ICooldown cooldown_ability)
+            if(behaviour is Ability cooldown_ability)
                 cooldown_ability.UpdateCooldown();
     }
 
-    public void Info(Hex _hex)
-    {
-        Debug.Log("---------------------------------------------------------------------------");
-        Debug.Log(GetType().ToString() + "\nClass [" +class_type.ToString() + "]\nHex ["+ _hex .coordinates.x+ "][" + _hex.coordinates.y + "] " + "\nHP: " + stats.current_health);
-        Debug.Log("---------------------------------------------------------------------------");
-    }
-
 }
-public class UnitEvents
+
+public class Level
 {
-    public Action<Hex, Hex> OnStartMovement_Local;
-    public Action<Hex> OnRecieveDamage_Local;
+    public StatsUpdate update_stats { get; set; }
+    [JsonConverter(typeof(CustomConverters.BehaviourListConverter))] public List<Behaviour> behaviours_to_add { get; set; }
+    [JsonConverter(typeof(CustomConverters.DictionaryConverter))] public Dictionary<KeyCode, Behaviour> behaviour_to_switch { get; set; }
+
+    public Level()
+    {
+        behaviours_to_add = new List<Behaviour>();
+        behaviour_to_switch = new Dictionary<KeyCode, Behaviour>();
+    }
+    public void LevelUp(Unit unit)
+    {
+        unit.level++;
+        //update stats
+        unit.stats.max_health += update_stats.increase_max_health;
+        unit.stats.current_health += update_stats.increase_max_health;
+        unit.stats.damage += update_stats.increase_damage;
+        unit.stats.attack_range += update_stats.increase_attack_range;
+        unit.stats.attack_speed += update_stats.increase_attack_speed;
+
+        //update abilities
+        foreach (var behaviour in unit.behaviours)
+            if (behaviour is IUpgradable upgradable_behaviour)
+                upgradable_behaviour.Upgrade();
+
+        //switch ability behaviour with new one
+        foreach (KeyCode key_code in behaviour_to_switch.Keys)
+            if (key_code == KeyCode.S || key_code == KeyCode.Q || key_code == KeyCode.W || key_code == KeyCode.E || key_code == KeyCode.R)
+                unit.SwitchAbilityBehaviourWithNewOne(behaviour_to_switch[key_code], key_code);
+
+        //add new behaviour
+        foreach (var behaviour in behaviours_to_add)
+        {
+            if (behaviour is MovementBehaviour movement_behaviour)
+            {
+                //remove exist movement behaviour and add new one
+                unit.AddMovementBehaviour(movement_behaviour);
+
+            }
+            else if (behaviour is AttackBehaviour attack_behaviour)
+            {
+                //remove exist attack behaviour and add new one
+                unit.AddAttackBehaviour(attack_behaviour);
+            }
+            else
+            {
+                // add to behaviour
+                unit.behaviours.Add(behaviour);
+
+                if (behaviour is ISubscribe subsciber)
+                    subsciber.RegisterEvents();
+            }
+        }
+
+    }
 }
 
 

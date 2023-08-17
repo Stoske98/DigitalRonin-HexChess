@@ -8,13 +8,13 @@ public class Fear : InstantleAbility
 
     public override void Execute()
     {
-        Hex _cast_unit_hex = NetworkManager.Instance.games[unit.match_id].GetHex(unit);
+        Hex _cast_unit_hex = NetworkManager.Instance.games[unit.match_id].map.GetHex(unit);
         foreach (Unit enemy in enemies)
         {
-            enemy.RecieveDamage(new MagicDamage(unit,ability_data.amount));
-            if (!enemy.IsDeath())
+            enemy.ReceiveDamage(new MagicDamage(unit,ability_data.amount));
+            if (!enemy.IsDead())
             {
-                Hex _enemy_hex = NetworkManager.Instance.games[unit.match_id].GetHex(enemy);
+                Hex _enemy_hex = NetworkManager.Instance.games[unit.match_id].map.GetHex(enemy);
                 if(_enemy_hex != null)
                     FearEnemy(_cast_unit_hex, _enemy_hex);
 
@@ -29,21 +29,29 @@ public class Fear : InstantleAbility
     {
         List<Hex> _ability_moves = new List<Hex>();
 
-        foreach (Hex hex in NetworkManager.Instance.games[unit.match_id].HexesInRange(_unit_hex, ability_data.range))
-            if (!hex.IsWalkable() && hex.GetUnit().class_type != unit.class_type)
+
+        foreach (Hex hex in NetworkManager.Instance.games[unit.match_id].map.HexesInRange(_unit_hex, ability_data.range))
+        {
+            Unit enemy = hex.GetUnit();
+            if (enemy != null && enemy.class_type != unit.class_type)
                 _ability_moves.Add(hex);
+        }
 
         return _ability_moves;
     }
 
     public override void SetAbility()
     {
-        Hex _cast_unit_hex = NetworkManager.Instance.games[unit.match_id].GetHex(unit);
+        Hex _cast_unit_hex = NetworkManager.Instance.games[unit.match_id].map.GetHex(unit);
         if (_cast_unit_hex != null)
         {
-            foreach (Hex _hex in NetworkManager.Instance.games[unit.match_id].HexesInRange(_cast_unit_hex, ability_data.range))
-                if (!_hex.IsWalkable() && _hex.GetUnit().class_type != unit.class_type)
-                    enemies.Add(_hex.GetUnit());
+            foreach (Hex _hex in NetworkManager.Instance.games[unit.match_id].map.HexesInRange(_cast_unit_hex, ability_data.range))
+            {
+                Unit enemy = _hex.GetUnit();
+                if (enemy != null && enemy.class_type != unit.class_type)
+                    enemies.Add(enemy);
+
+            }
         }
     }
 
@@ -52,7 +60,7 @@ public class Fear : InstantleAbility
         int column = _enemy_hex.coordinates.x - _cast_unit_hex.coordinates.x;
         int row = _enemy_hex.coordinates.y - _cast_unit_hex.coordinates.y;
 
-        Hex hex = NetworkManager.Instance.games[unit.match_id].GetHex(_enemy_hex.coordinates.x + column, _enemy_hex.coordinates.y + row);
+        Hex hex = NetworkManager.Instance.games[unit.match_id].map.GetHex(_enemy_hex.coordinates.x + column, _enemy_hex.coordinates.y + row);
 
         if (hex != null && hex.IsWalkable())
         {

@@ -1,5 +1,10 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using UnityEditor.PackageManager.Requests;
 using UnityEngine;
+using static UnityEngine.InputSystem.OnScreen.OnScreenStick;
+
 public class Reciever
 {
     private MemoryStream received_game_data_stream = new MemoryStream();
@@ -11,8 +16,10 @@ public class Reciever
         NetworkManager.C_ON_SYNC_RESPONESS += OnSyncResponess;
         NetworkManager.C_ON_MOVE_RESPONESS += OnMoveResponess;
         NetworkManager.C_ON_ATTACK_RESPONESS += OnAttackResponess;
-        NetworkManager.C_ON_TARGETABLE_ABILITY_RESPONESS += OnTargetableAbilityResponess;
+        NetworkManager.C_ON_SINGLE_TARGET_ABILITY_RESPONESS += OnSingleTargetableAbilityResponess;
+        NetworkManager.C_ON_MULTIPLE_TARGETS_ABILITY_RESPONESS += OnMultipleTargetableAbilityResponess;
         NetworkManager.C_ON_INSTANT_ABILITY_RESPONESS += OnInstantAbilityResponess;
+        NetworkManager.C_ON_END_TURN_RESPONESS += OnEndTurnResponess;
     }
 
     public void UnSubscibe()
@@ -23,8 +30,10 @@ public class Reciever
         NetworkManager.C_ON_SYNC_RESPONESS -= OnSyncResponess;
         NetworkManager.C_ON_MOVE_RESPONESS -= OnMoveResponess;
         NetworkManager.C_ON_ATTACK_RESPONESS -= OnAttackResponess;
-        NetworkManager.C_ON_TARGETABLE_ABILITY_RESPONESS -= OnTargetableAbilityResponess;
+        NetworkManager.C_ON_SINGLE_TARGET_ABILITY_RESPONESS -= OnSingleTargetableAbilityResponess;
+        NetworkManager.C_ON_MULTIPLE_TARGETS_ABILITY_RESPONESS -= OnMultipleTargetableAbilityResponess;
         NetworkManager.C_ON_INSTANT_ABILITY_RESPONESS -= OnInstantAbilityResponess;
+        NetworkManager.C_ON_END_TURN_RESPONESS -= OnEndTurnResponess;
     }
     private void OnKeepAliveResponess(NetMessage message)
     {
@@ -40,7 +49,7 @@ public class Reciever
     private void OnAuthenticationResponess(NetMessage message)
     {
         NetAuthentication responess = message as NetAuthentication;
-        NetworkManager.Instance.player.player_date = responess.player_data;
+        NetworkManager.Instance.player.player_data = responess.player_data;
 
         received_game_data_stream?.Dispose();
         received_game_data_stream = null;
@@ -59,8 +68,8 @@ public class Reciever
 
         Game game = GameManager.Instance.game;
 
-        Hex unit_hex = game.GetHex(responess.col,responess.row);
-        Hex desired_hex = game.GetHex(responess.desired_col, responess.desired_row);
+        Hex unit_hex = game.map.GetHex(responess.col,responess.row);
+        Hex desired_hex = game.map.GetHex(responess.desired_col, responess.desired_row);
 
         Unit unit = unit_hex?.GetUnit();
 
@@ -72,8 +81,7 @@ public class Reciever
                 unit.Move(unit_hex, desired_hex);
         }
 
-        //remove 
-        game.EndTurn();
+        game.class_on_turn = ClassType.None;
     }    
     private void OnAttackResponess(NetMessage message)
     {
@@ -81,8 +89,8 @@ public class Reciever
 
         Game game = GameManager.Instance.game;
 
-        Hex attacker_hex = game.GetHex(responess.attacker_col, responess.attacker_row);
-        Hex target_hex = game.GetHex(responess.target_col, responess.target_row);
+        Hex attacker_hex = game.map.GetHex(responess.attacker_col, responess.attacker_row);
+        Hex target_hex = game.map.GetHex(responess.target_col, responess.target_row);
 
         Unit attacker = attacker_hex?.GetUnit();
         Unit target = target_hex?.GetUnit();
@@ -95,29 +103,53 @@ public class Reciever
                 attacker.Attack(target);
         }
 
-        //remove 
-        game.EndTurn();
+        game.class_on_turn = ClassType.None;
     }
-    private void OnTargetableAbilityResponess(NetMessage message)
+    private void OnSingleTargetableAbilityResponess(NetMessage message)
     {
-        NetTargetableAbilility responess = message as NetTargetableAbilility;
+        NetSingleTargetAbilility responess = message as NetSingleTargetAbilility;
 
         Game game = GameManager.Instance.game;
 
-        Hex unit_hex = game.GetHex(responess.col, responess.row);
-        Hex desired_hex = game.GetHex(responess.desired_col, responess.desired_row);
+        Hex unit_hex = game.map.GetHex(responess.col, responess.row);
+        Hex desired_hex = game.map.GetHex(responess.desired_col, responess.desired_row);
 
         Unit unit = unit_hex?.GetUnit();
 
         if (unit != null && unit.id == responess.unit_id && desired_hex != null)
         {
             Ability ability = unit.GetBehaviour<Ability>(responess.key_code) as Ability;
-            if (ability != null && ability is TargetableAbility targetable_ability && targetable_ability.GetAbilityMoves(unit_hex).Contains(desired_hex)) //check cd also when is it develop
-                unit.UseAbility(targetable_ability, desired_hex);
+            if (ability != null && ability is TargetableAbility targetable_ability && targetable_ability.GetAbilityMoves(unit_hex).Contains(desired_hex) && targetable_ability is ITargetableSingleHex)
+            {
+                unit.UseSingleTargetableAbility(targetable_ability, desired_hex);
+            }    
         }
 
-        //remove 
-        game.EndTurn();
+        game.class_on_turn = ClassType.None;
+    }
+    private void OnMultipleTargetableAbilityResponess(NetMessage message)
+    {
+        NetMultipeTargetsAbilility responess = message as NetMultipeTargetsAbilility;
+
+        Game game = GameManager.Instance.game;
+
+        Hex unit_hex = game.map.GetHex(responess.col, responess.row);
+        Unit unit = unit_hex?.GetUnit();
+
+        List<Hex> _desired_hexes = new List<Hex>();
+        foreach (var coordinate in responess.hexes_coordiantes)
+            _desired_hexes.Add(game.map.GetHex(coordinate.x, coordinate.y));
+
+        if (unit != null && unit.id == responess.unit_id && _desired_hexes.Count > 0)
+        {
+            Ability ability = unit.GetBehaviour<Ability>(responess.key_code) as Ability;
+            if (ability != null && ability is TargetableAbility targetable_ability && targetable_ability is ITargetMultipleHexes)
+            {
+                unit.UseMultipleTargetableAbility(targetable_ability, _desired_hexes);
+            }
+        }
+
+        game.class_on_turn = ClassType.None;
     }
     private void OnInstantAbilityResponess(NetMessage message)
     {
@@ -125,18 +157,26 @@ public class Reciever
 
         Game game = GameManager.Instance.game;
 
-        Hex unit_hex = game.GetHex(responess.col, responess.row);
+        Hex unit_hex = game.map.GetHex(responess.col, responess.row);
         Unit unit = unit_hex?.GetUnit();
         if (unit != null && unit.id == responess.unit_id)
         {
             Ability ability = unit.GetBehaviour<Ability>(responess.key_code) as Ability;
-            if (ability != null && ability is InstantleAbility instant_ability)//check cd also when is it develop
-                unit.UseAbility(instant_ability, null);
+            if (ability != null && ability is InstantleAbility instant_ability)
+                unit.UseInstantAbility(instant_ability);
 
         }
 
-        //remove 
-        game.EndTurn();
+        game.class_on_turn = ClassType.None;
+    }
+
+    private void OnEndTurnResponess(NetMessage message)
+    {
+        NetEndTurn responess = message as NetEndTurn;
+
+        Game game = GameManager.Instance.game;
+        game.class_on_turn = responess.class_on_turn;
+        game.EndTurn();    
     }
 
     private void OnReceiveByteArrayFragment(NetSync responess)
@@ -157,7 +197,6 @@ public class Reciever
             CreateGameFromJson(json);
             received_game_data_stream.Dispose();
             received_game_data_stream = null;
-            //TO:DO receive 30 more message after fragment_index == total_fragments - true, i dont know why 
         }
     }
     private void CreateGameFromJson(string _json)
@@ -166,17 +205,19 @@ public class Reciever
 
         if (game != null)
         {
-            foreach (var obj in game.objects)
-                if (obj is Unit unit)
-                {
-                    game.units.Add(unit);
-                    unit.RegisterEvents();
-                    Spawner.CreateUnitGameObjects(unit);
-                }
+            GameManager.Instance.game = game;
+            game.object_manager.Init();
+
+            foreach (var obj in game.object_manager.objects)
+            {
+                if (obj is ISubscribe subscriber)
+                    subscriber.RegisterEvents();
+
+                IObject.ObjectVisibility(obj,obj.visibility);
+            }
 
             foreach (Hex hex in game.map.hexes)
             {
-                hex.SetNeighbors(game.map);
                 hex.hex_mesh = hex.game_object.GetComponent<MeshRenderer>();
                 hex.SetMaterial(GameManager.Instance.map_controller.field_material);
             }
@@ -185,6 +226,8 @@ public class Reciever
             GameManager.Instance.map_controller.SetMap(game.map);
 
             string json = NetworkManager.Serialize(game);
+
+            File.WriteAllText("ChallengeRoyaleGame.json", json);
         }
     }
 

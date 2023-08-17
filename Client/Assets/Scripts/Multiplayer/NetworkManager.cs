@@ -11,7 +11,7 @@ public class Player
 {
     public string device_id { get; set; }
     public int match_id { get; set; }
-    public PlayerData player_date { get; set; }
+    public PlayerData player_data { get; set; }
 }
 public class PlayerData
 {
@@ -109,11 +109,17 @@ public class NetworkManager : MonoBehaviour
             case OpCode.ON_MOVE:
                 msg = new NetMove(e.Message);
                 break;
-            case OpCode.ON_TARGETABLE_ABILITY:
-                msg = new NetTargetableAbilility(e.Message);
+            case OpCode.ON_SINGLE_TARGET_ABILITY:
+                msg = new NetSingleTargetAbilility(e.Message);
+                break;
+            case OpCode.ON_MULTIPLE_TARGETS_ABILITY:
+                msg = new NetMultipeTargetsAbilility(e.Message);
                 break;
             case OpCode.ON_INSTANT_ABILITY:
                 msg = new NetInstantAbility(e.Message);
+                break;
+            case OpCode.ON_END_TURN:
+                msg = new NetEndTurn(e.Message);
                 break;
             default:
                 break;
@@ -149,8 +155,10 @@ public class NetworkManager : MonoBehaviour
     public static Action<NetMessage> C_ON_SYNC_RESPONESS;
     public static Action<NetMessage> C_ON_MOVE_RESPONESS;
     public static Action<NetMessage> C_ON_ATTACK_RESPONESS;
-    public static Action<NetMessage> C_ON_TARGETABLE_ABILITY_RESPONESS;
+    public static Action<NetMessage> C_ON_SINGLE_TARGET_ABILITY_RESPONESS;
+    public static Action<NetMessage> C_ON_MULTIPLE_TARGETS_ABILITY_RESPONESS;
     public static Action<NetMessage> C_ON_INSTANT_ABILITY_RESPONESS;
+    public static Action<NetMessage> C_ON_END_TURN_RESPONESS;
     #endregion
 
     public static string Serialize<T>(T obj)

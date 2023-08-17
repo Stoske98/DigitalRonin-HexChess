@@ -30,7 +30,7 @@ public class DirectionMovement : MovementBehaviour
     {
         base.SetPath(_unit_hex, _desired_hex); 
         
-        path = PathFinding.PathFinder.FindPath_AStar(_unit_hex, _desired_hex, GameManager.Instance.game.GetMapHexes());
+        path = PathFinding.PathFinder.FindPath_AStar(_unit_hex, _desired_hex, GameManager.Instance.game.map);
         unit.events.OnStartMovement_Local?.Invoke(_unit_hex, _desired_hex);
     }
 }

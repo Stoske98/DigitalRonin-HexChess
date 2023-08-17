@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor.Experimental.GraphView;
 using UnityEditor.Playables;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -16,11 +17,11 @@ public class PlayerInputHandler : MonoBehaviour
 
     public void SwitchActionMap(string new_action_map)
     {
-        Debug.Log("Current map DISABLE: " + player_input_controller.currentActionMap.name);
+         Debug.Log("Current map DISABLE: " + player_input_controller.currentActionMap.name);
         player_input_controller.currentActionMap?.Disable();
         player_input_controller.currentActionMap = player_input_controller.actions.FindActionMap(new_action_map);
         player_input_controller.currentActionMap?.Enable();
-        Debug.Log("Current map ENABLE: " + player_input_controller.currentActionMap.name);
+         Debug.Log("Current map ENABLE: " + player_input_controller.currentActionMap.name);
     }
     public void OnMouseScreenPosition(InputAction.CallbackContext value)
     {
@@ -37,7 +38,7 @@ public class PlayerInputHandler : MonoBehaviour
             if (_hex != null && _unit != null)
             {
                 game_manager.map_controller.ResetFields();
-                SelectUnit(_unit,_hex);
+                SelectUnit(_unit, _hex);
 
                 SwitchActionMap("SelectedUnitHandler");
             }
@@ -65,10 +66,10 @@ public class PlayerInputHandler : MonoBehaviour
                 return;
             }
             //MOVE           
-            if (_hex != null && _hex.IsWalkable() && !selected_unit.IsWork() && selected_unit.class_type == game_manager.game.class_on_turn)
+            if (_hex != null && _hex.IsWalkable() && !selected_unit.IsWork() && !Stun.IsStuned(selected_unit) && selected_unit.class_type == game_manager.game.class_on_turn)
             {
                 MovementBehaviour movement_behaviour = selected_unit.GetBehaviour<MovementBehaviour>() as MovementBehaviour;
-                if(movement_behaviour != null && movement_behaviour.GetAvailableMoves(selected_hex).Contains(_hex))
+                if (movement_behaviour != null && movement_behaviour.GetAvailableMoves(selected_hex).Contains(_hex))
                 {
                     game_manager.map_controller.ResetFields();
 
@@ -95,7 +96,7 @@ public class PlayerInputHandler : MonoBehaviour
 
             if (_unit != null && selected_unit.class_type == game_manager.game.class_on_turn)
             {
-                if(!selected_unit.IsWork() && _unit.class_type != selected_unit.class_type)
+                if (!selected_unit.IsWork() && !Stun.IsStuned(selected_unit) && !Disarm.IsDissarmed(selected_unit) && _unit.class_type != selected_unit.class_type)
                 {
                     AttackBehaviour attack_behaviour = selected_unit.GetBehaviour<AttackBehaviour>() as AttackBehaviour;
                     if (attack_behaviour != null && attack_behaviour.GetAttackMoves(selected_hex).Contains(_hex))
@@ -113,7 +114,7 @@ public class PlayerInputHandler : MonoBehaviour
                         };
                         Sender.SendToServer_Reliable(request);
                     }
-                }              
+                }
 
                 return;
             }
@@ -123,7 +124,7 @@ public class PlayerInputHandler : MonoBehaviour
     }
     public void OnSpecialAbilityHandler(InputAction.CallbackContext value)
     {
-        if(value.started)
+        if (value.started)
             OnAbilityPress(KeyCode.S);
     }
     public void OnAbility1Handler(InputAction.CallbackContext value)
@@ -146,7 +147,7 @@ public class PlayerInputHandler : MonoBehaviour
         if (value.started)
             OnAbilityPress(KeyCode.R);
     }
-    public void OnSelectTargetableAbilityHandler(InputAction.CallbackContext value)
+    public void OnSelectSingleTargetAbilityHandler(InputAction.CallbackContext value)
     {
         if (value.started)
         {
@@ -154,7 +155,7 @@ public class PlayerInputHandler : MonoBehaviour
 
             if (_hex != null && targetable_ability.GetAbilityMoves(selected_hex).Contains(_hex))
             {
-                NetTargetableAbilility request = new NetTargetableAbilility()
+                NetSingleTargetAbilility request = new NetSingleTargetAbilility()
                 {
                     unit_id = selected_unit.id,
                     col = selected_hex.coordinates.x,
@@ -165,19 +166,79 @@ public class PlayerInputHandler : MonoBehaviour
                 };
                 Sender.SendToServer_Reliable(request);
 
-                DeselectTargetableAbility();
+                DeselectTargetAbilityHandler();
             }
         }
     }
-    public void OnDeselectTargetableAbilityHandler(InputAction.CallbackContext value)
+    public void OnDeselectSingleTargetAbilityHandler(InputAction.CallbackContext value)
     {
         if (value.started)
         {
-            DeselectTargetableAbility();
+            DeselectTargetAbilityHandler();
 
             if (!selected_unit.IsWork() && selected_unit.class_type == game_manager.game.class_on_turn)
                 game_manager.map_controller.MarkMovementAndAttackFields(game_manager.game, selected_unit, selected_hex);
         }
+    }
+    public void OnSelectMultipleTargetsAbilityHandler(InputAction.CallbackContext value)
+    {
+        if (value.started)
+        {
+            Hex _hex = game_manager.map_controller.GetCurrentHex();
+
+            ITargetMultipleHexes targetable_multiple_hexes = targetable_ability as ITargetMultipleHexes;
+            if (_hex != null && targetable_ability.GetAbilityMoves(selected_hex).Contains(_hex))
+            {
+                if (targetable_multiple_hexes.targetable_hexes.Count < targetable_multiple_hexes.max_hexes)
+                {
+                    if (!targetable_multiple_hexes.targetable_hexes.Contains(_hex))
+                        targetable_multiple_hexes.targetable_hexes.Add(_hex);
+                    else
+                        targetable_multiple_hexes.targetable_hexes.Remove(_hex);
+                } else
+                {
+                    if (targetable_multiple_hexes.targetable_hexes.Contains(_hex))
+                        targetable_multiple_hexes.targetable_hexes.Remove(_hex);
+                }
+            }
+        }
+    }
+    public void OnDeselectMultipleTargetsAbilityHandler(InputAction.CallbackContext value)
+    {
+        if (value.started)
+        {
+            DeselectMultipleTargetsAbility();           
+        }
+    }
+    private void DeselectMultipleTargetsAbility()
+    {
+        ITargetMultipleHexes multiple_targets = targetable_ability as ITargetMultipleHexes;
+        if ((multiple_targets.has_condition && multiple_targets.max_hexes == multiple_targets.targetable_hexes.Count) || (!multiple_targets.has_condition && multiple_targets.targetable_hexes.Count > 0))
+        {
+            List<Vector2Int> hexes_coordinates = new List<Vector2Int>();
+            foreach (var hex in multiple_targets.targetable_hexes)
+                hexes_coordinates.Add(hex.coordinates);
+
+            NetMultipeTargetsAbilility request = new NetMultipeTargetsAbilility()
+            {
+                unit_id = selected_unit.id,
+                col = selected_hex.coordinates.x,
+                row = selected_hex.coordinates.y,
+                hexes_coordiantes = hexes_coordinates,
+                key_code = key_code
+            };
+            Sender.SendToServer_Reliable(request);
+
+            DeselectTargetAbilityHandler();
+        }
+        else
+        {
+            DeselectTargetAbilityHandler();
+
+            if (!selected_unit.IsWork() && selected_unit.class_type == game_manager.game.class_on_turn)
+                game_manager.map_controller.MarkMovementAndAttackFields(game_manager.game, selected_unit, selected_hex);
+        }
+        multiple_targets.targetable_hexes.Clear();
     }
     public void SelectUnit(Unit _unit, Hex _hex)
     {
@@ -198,7 +259,7 @@ public class PlayerInputHandler : MonoBehaviour
         SwitchActionMap("BasicHandler");
     }
 
-    public void DeselectTargetableAbility()
+    private void DeselectTargetAbilityHandler()
     {
         game_manager.map_controller.ResetFields();
 
@@ -211,7 +272,7 @@ public class PlayerInputHandler : MonoBehaviour
     private void OnAbilityPress(KeyCode _key_code)
     {
         Ability ability = selected_unit.GetBehaviour<Ability>(_key_code) as Ability;
-        if (!selected_unit.IsWork() && ability != null && /*ability.HasCooldownExpired()*/ selected_unit.class_type == game_manager.game.class_on_turn)
+        if (!selected_unit.IsWork() && !Stun.IsStuned(selected_unit) && ability != null && ability.HasCooldownExpired() && selected_unit.class_type == game_manager.game.class_on_turn)
         {
             game_manager.map_controller.ResetFields();
             if (ability is InstantleAbility)
@@ -226,14 +287,18 @@ public class PlayerInputHandler : MonoBehaviour
 
                 Sender.SendToServer_Reliable(request);
 
-            }else if(ability is TargetableAbility targetable)
+            }
+            else if (ability is TargetableAbility targetable)
             {
                 targetable_ability = targetable;
                 key_code = _key_code;
 
                 game_manager.map_controller.MarkAbilityMoves(ability, selected_hex);
 
-                SwitchActionMap("TargetableAbilityHandler");
+                if (ability is ITargetableSingleHex)
+                    SwitchActionMap("SingleTargetAbilityHandler");
+                else
+                    SwitchActionMap("MultipleTargetsAbilityHandler");
             }
         }
     }

@@ -19,7 +19,7 @@ public class UITest : MonoBehaviour
     public Text class_on_turn;
 
 
-    private void Start()
+   /* private void Start()
     {
         Invoke("Subscribe", 2.0f);
     }
@@ -49,5 +49,5 @@ public class UITest : MonoBehaviour
     {
         move.text = "Move: " + game.move;
         class_on_turn.text = "Class On Turn: " + game.class_on_turn.ToString();
-    }
+    }*/
 }

@@ -1,14 +1,16 @@
-﻿using System.Collections.Generic;
+﻿using Newtonsoft.Json;
+using System.Collections.Generic;
 
-public class Powershoot : TargetableAbility
+public class Powershoot : TargetableAbility, ITargetableSingleHex
 {
     Unit enemy = null;
+    [JsonIgnore] public Hex targetable_hex { get; set; }
     public Powershoot() : base() { }
     public Powershoot(Unit _unit, AbilityData _ability_data) : base(_unit, _ability_data) { }
     public override void Execute()
     {
         if (enemy != null)
-            enemy.RecieveDamage(new MagicDamage(unit, ability_data.amount));
+            enemy.ReceiveDamage(new MagicDamage(unit, ability_data.amount));
 
         enemy = null;
         Exit();
@@ -29,7 +31,7 @@ public class Powershoot : TargetableAbility
 
         return _ability_moves;
     }
-    public override void SetAbility(Hex _target_hex)
+    public void SetAbility(Hex _target_hex)
     {
         enemy = TryToGetEnemyUnit(_target_hex);
     }
@@ -60,7 +62,7 @@ public class Powershoot : TargetableAbility
     private Unit TryToGetEnemyUnit(Hex target_hex)
     {
         Game game = GameManager.Instance.game;
-        Hex _cast_unit_hex = game.GetHex(unit);
+        Hex _cast_unit_hex = game.map.GetHex(unit);
         if(_cast_unit_hex != null)
         {
             Unit enemy = CheckIsEnemyOnDirection(target_hex, game.GetAllHexesInDirection(Direction.UP, _cast_unit_hex));

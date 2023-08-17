@@ -1,4 +1,4 @@
-﻿public abstract class CC : ICooldown
+﻿public abstract class CC
 {
     public int max_cooldown { get; set; }
 

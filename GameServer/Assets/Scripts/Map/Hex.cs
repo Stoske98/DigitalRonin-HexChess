@@ -7,12 +7,8 @@ public class Hex
     public Vector2Int coordinates { set; get; }
     public int S { set; get; }
     [JsonRequired] private bool is_walkable { set; get; }
-    [JsonIgnore] public List<Hex> neighbors { set; get; }
     [JsonConverter(typeof(CustomConverters.GameObjectConverter))] public GameObject game_object { set; get; }
     [JsonRequired] [JsonConverter(typeof(CustomConverters.ObjectListConverter))] public List<IObject> objects { get; set; }
-
-    //JSON IGNORE
-    [JsonIgnore] public readonly List<Vector2Int> neighbors_vectors = new List<Vector2Int> { new Vector2Int(0, 1), new Vector2Int(0, -1), new Vector2Int(-1, 0), new Vector2Int(1, 0), new Vector2Int(-1, 1), new Vector2Int(1, -1) };
     [JsonIgnore]  public HexPathData path_data{ set; get; }
 
     [JsonIgnore] public MeshRenderer hex_mesh;
@@ -21,16 +17,13 @@ public class Hex
     [JsonConstructor]
     public Hex() 
     {
-        neighbors = new List<Hex>();
         path_data = new HexPathData();
         objects = new List<IObject>();
-        //is_walkable = true;
     }
     public Hex(Vector2Int _coordinates)
     {
         coordinates = _coordinates;
         S = -coordinates.x - coordinates.y;
-        neighbors = new List<Hex>();
         path_data = new HexPathData();
         objects = new List<IObject>();
         is_walkable = true;
@@ -78,16 +71,19 @@ public class Hex
         }
           
         game_object.transform.SetParent(MapContainer.Instance.fields_container);
+        game_object.tag = "HEX";
     }
 
-    public void SetNeighbors(Map map)
+    public List<Hex> GetNeighbors(Map map)
     {
-        foreach (Vector2Int vector2 in neighbors_vectors)
+        List<Hex> neighbors = new List<Hex>();
+        foreach (Vector2Int vector2 in map.neighbors_vectors)
         {
             Hex neighbor = map.GetHex(coordinates.x + vector2.x, coordinates.y + vector2.y);
             if (neighbor != null)
                 neighbors.Add(neighbor);
         }
+        return neighbors;
     }
 
     public void SetMaterial(Material _material)
@@ -115,7 +111,14 @@ public class Hex
         }
         return null;
     }
+   /* public IDamageableObject GetDamageableObject()
+    {
+        foreach (IObject obj in objects)
+            if (obj is IDamageableObject damageable_object)
+                return damageable_object;
 
+        return null;
+    }*/
     public void PlaceObject(IObject _obj)
     {
         objects.Add(_obj);
@@ -137,24 +140,16 @@ public class Hex
 
         is_walkable = true;
     }
-
-    public void RemoveUnit()
-    {
-        objects.RemoveAll(obj => obj is Unit);
-
-        if (!is_walkable)
-            foreach (var obj in objects)
-                if (obj is Unit)
-                    return;
-
-        is_walkable = true;
-    }
-    public void TriggerModifier(Unit _unit, Hex _hex)
+    public void TriggerModifier(Unit _unit)
     {
         foreach (IObject obj in objects.ToArray())
         {
             if (obj is HexModifier modifier)
-                modifier.Trigger(_unit, _hex);
+            {
+                modifier.Trigger(_unit, this);
+                if (modifier.should_be_removed)
+                    NetworkManager.Instance.games[_unit.match_id].object_manager.RemoveObject(modifier);
+            }
         }
 
         objects.RemoveAll(obj => obj.GetType().IsSubclassOf(typeof(HexModifier)) && ((HexModifier)obj).should_be_removed == true);

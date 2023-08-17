@@ -16,7 +16,7 @@ public class NormalMovement : MovementBehaviour
     {
         List<Hex> _available_moves = new List<Hex>();
 
-        foreach (Hex hex in PathFinding.PathFinder.BFS_HexesMoveRange(_unit_hex, range, GameManager.Instance.game.GetMapHexes()))
+        foreach (Hex hex in PathFinding.PathFinder.BFS_HexesMoveRange(_unit_hex, range, GameManager.Instance.game.map))
             if(hex.IsWalkable())
                 _available_moves.Add(hex);
 
@@ -26,7 +26,7 @@ public class NormalMovement : MovementBehaviour
     {
         base.SetPath(_unit_hex, _desired_hex);
 
-        path = PathFinding.PathFinder.FindPath_AStar(_unit_hex, _desired_hex, GameManager.Instance.game.GetMapHexes());
+        path = PathFinding.PathFinder.FindPath_AStar(_unit_hex, _desired_hex, GameManager.Instance.game.map);
         unit.events.OnStartMovement_Local?.Invoke(_unit_hex, _desired_hex);
     }
 }

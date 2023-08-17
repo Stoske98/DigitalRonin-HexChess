@@ -3,7 +3,27 @@
 --- !u!78 &1
 TagManager:
   serializedVersion: 2
-  tags: []
+  tags:
+  - HEX
+  - LIGHT_KING
+  - DARK_KING
+  - LIGHT_JESTER
+  - DARK_JESTER
+  - LIGHT_ARCHER
+  - DARK_ARCHER
+  - LIGHT_KNIGHT
+  - DARK_KNIGHT
+  - LIGHT_QUEEN
+  - DARK_QUEEN
+  - LIGHT_SWORDSMAN
+  - DARK_SWORDSMAN
+  - LIGHT_TANK
+  - DARK_TANK
+  - LIGHT_WIZARD
+  - DARK_WIZARD
+  - TRAP
+  - LIGHT_STONE
+  - DARK_STONE
   layers:
   - Default
   - TransparentFX

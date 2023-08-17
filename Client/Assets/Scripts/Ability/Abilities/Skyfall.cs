@@ -1,20 +1,24 @@
-﻿using System.Collections.Generic;
+﻿using Newtonsoft.Json;
+using System.Collections.Generic;
 
-public class Skyfall : TargetableAbility
+public class Skyfall : TargetableAbility, ITargetableSingleHex
 {
+    [JsonIgnore] public Hex targetable_hex { get; set; }
     public Skyfall() : base() { }
     public Skyfall(Unit _unit, AbilityData _ability_data) : base(_unit, _ability_data) { }
     public override void Execute()
     {
-        targetable_hex.GetUnit().RecieveDamage(new MagicDamage(unit, ability_data.amount));
-        if(!targetable_hex.IsWalkable())
-            targetable_hex.GetUnit().ccs.Add(new Stun(2));
+        Unit enemy = targetable_hex.GetUnit();
+        enemy.ReceiveDamage(new MagicDamage(unit, ability_data.amount));
+        if (!enemy.IsDead())
+            enemy.ccs.Add(new Stun(ability_data.cc));
 
-        foreach (Hex hex in targetable_hex.neighbors)
-            if (!hex.IsWalkable() && hex.GetUnit().class_type != unit.class_type)
-                hex.GetUnit().RecieveDamage(new MagicDamage(unit, ability_data.amount));
-
-        Exit();
+        foreach (Hex hex in targetable_hex.GetNeighbors(GameManager.Instance.game.map))
+        {
+            Unit _unit = hex.GetUnit();
+            if (_unit != null && _unit.class_type != unit.class_type)
+                _unit.ReceiveDamage(new MagicDamage(unit, ability_data.amount));
+        }
 
     }
 
@@ -22,15 +26,13 @@ public class Skyfall : TargetableAbility
     {
         List<Hex> _available_moves = new List<Hex>();
 
-        foreach (Hex hex in GameManager.Instance.game.HexesInRange(_unit_hex, ability_data.range))
-            if (!hex.IsWalkable() && hex.GetUnit().class_type != unit.class_type)
+        foreach (Hex hex in GameManager.Instance.game.map.HexesInRange(_unit_hex, ability_data.range))
+        {
+            Unit enemy = hex.GetUnit();
+            if (enemy != null && enemy.class_type != unit.class_type)
                 _available_moves.Add(hex);
+        }
 
         return _available_moves;
-    }
-
-    public override void SetAbility(Hex _targetable_hex)
-    {
-        targetable_hex = _targetable_hex;
     }
 }

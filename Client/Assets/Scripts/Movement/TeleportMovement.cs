@@ -14,15 +14,21 @@ public class TeleportMovement : MovementBehaviour
     }
     public override void Execute()
     {
-        if(Time.time >= time + 1.5f)
+        if (Time.time >= time + 1.5f)
         {
             unit.game_object.transform.LookAt(path[1].game_object.transform);
             unit.game_object.transform.position = path[1].game_object.transform.position;
 
-            path[1].PlaceObject(unit);
-            GameManager.Instance.game.game_events.OnEndMovement_Global?.Invoke(path[1]);
+            current_hex = path[0];
+            next_hex = path[1];
 
-            path[1].TriggerModifier(unit, path[1]);
+            current_hex.RemoveObject(unit);
+            next_hex.PlaceObject(unit);
+
+            next_hex.TriggerModifier(unit);
+
+            unit.events.OnEndMovement_Local?.Invoke(next_hex);
+            GameManager.Instance.game.game_events.OnEndMovement_Global?.Invoke(next_hex);
 
             path.Clear();
 
@@ -33,7 +39,7 @@ public class TeleportMovement : MovementBehaviour
     {
         List<Hex> _available_moves = new List<Hex>();
 
-        foreach (Hex hex in GameManager.Instance.game.HexesInRange(_unit_hex, range))
+        foreach (Hex hex in GameManager.Instance.game.map.HexesInRange(_unit_hex, range))
             if (hex.IsWalkable())
                 _available_moves.Add(hex);
 
@@ -51,6 +57,3 @@ public class TeleportMovement : MovementBehaviour
         unit.events.OnStartMovement_Local?.Invoke(_unit_hex, _desired_hex);
     }
 }
-
-
-
