@@ -32,4 +32,14 @@ public class FlyingMovement : MovementBehaviour
 
         unit.events.OnStartMovement_Local?.Invoke(_unit_hex, _desired_hex);
     }
+    public override void Enter()
+    {
+        base.Enter();
+        unit.animator?.SetBool("Run", true);
+    }
+    public override void Exit()
+    {
+        base.Exit();
+        unit.animator?.SetBool("Run", false);
+    }
 }

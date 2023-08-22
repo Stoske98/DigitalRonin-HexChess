@@ -64,4 +64,14 @@ public class GhostMovement : MovementBehaviour
         path.Add(_unit_hex);
         path.Add(_desired_hex);
     }
+    public override void Enter()
+    {
+        base.Enter();
+        unit.animator?.SetBool("Run", true);
+    }
+    public override void Exit()
+    {
+        base.Exit();
+        unit.animator?.SetBool("Run", false);
+    }
 }

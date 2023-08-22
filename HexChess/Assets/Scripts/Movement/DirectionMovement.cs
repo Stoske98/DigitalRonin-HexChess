@@ -33,6 +33,16 @@ public class DirectionMovement : MovementBehaviour
         path = PathFinding.PathFinder.FindPath_AStar(_unit_hex, _desired_hex, GameManager.Instance.game.map);
         unit.events.OnStartMovement_Local?.Invoke(_unit_hex, _desired_hex);
     }
+    public override void Enter()
+    {
+        base.Enter();
+        unit.animator?.SetBool("Run", true);
+    }
+    public override void Exit()
+    {
+        base.Exit();
+        unit.animator?.SetBool("Run", false);
+    }
 }
 
 

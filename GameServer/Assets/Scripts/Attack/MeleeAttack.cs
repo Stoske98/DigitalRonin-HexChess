@@ -7,7 +7,7 @@ public class MeleeAttack : AttackBehaviour
     }
     public override void Execute()
     {
-        if(unit.IsDead())
+        if (target == null || unit.IsDead())
         {
             target = null;
             Exit();

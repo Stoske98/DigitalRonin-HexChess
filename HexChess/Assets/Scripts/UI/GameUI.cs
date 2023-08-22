@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-
 public class GameUI : MonoBehaviour
 {
     #region GameUI Singleton
@@ -184,4 +183,27 @@ public class GameUI : MonoBehaviour
             }
         }
     }
+
+    public void OnHoverUpgradeClassUI(RectTransform rect)
+    {
+        LeanTween.value(gameObject, rect.sizeDelta.x, 350, 0.6f)
+            .setOnUpdate((float width) => UpdateWidth(rect, width))
+            .setEase(LeanTweenType.easeInOutCubic);
+    }
+
+    public void OnUnhoverUpgradeClassUI(RectTransform rect)
+    {
+        LeanTween.value(gameObject, rect.sizeDelta.x, 98, 0.6f)
+            .setOnUpdate((float width) => UpdateWidth(rect, width))
+            .setEase(LeanTweenType.easeInOutCubic);
+    }
+
+    private void UpdateWidth(RectTransform rectTransform, float width)
+    {
+        // Update the RectTransform's width during the animation
+        Vector2 newSize = rectTransform.sizeDelta;
+        newSize.x = width;
+        rectTransform.sizeDelta = newSize;
+    }
+
 }

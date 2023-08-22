@@ -62,12 +62,10 @@ public abstract class MovementBehaviour : Behaviour
     public override void Enter()
     {
         base.Enter();
-        unit.animator?.SetBool("Run", true);
     }
     public override void Exit()
     {
         base.Exit();
-        unit.animator?.SetBool("Run", false);
     }
     public List<Hex> GetPath()
     {

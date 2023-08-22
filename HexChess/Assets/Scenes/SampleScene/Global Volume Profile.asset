@@ -15,7 +15,7 @@ MonoBehaviour:
   active: 1
   shadows:
     m_OverrideState: 1
-    m_Value: {x: 0.8697169, y: 0.83209825, z: 1, w: -0.28311428}
+    m_Value: {x: 0.86971706, y: 0.83209825, z: 1, w: -0.22299404}
   midtones:
     m_OverrideState: 1
     m_Value: {x: 1, y: 0.9660275, z: 0.98856574, w: 0.05055596}
@@ -77,13 +77,13 @@ MonoBehaviour:
   active: 1
   rotation:
     m_OverrideState: 1
-    m_Value: 0
+    m_Value: 180
   skyIntensityMode:
     m_OverrideState: 1
     m_Value: 0
   exposure:
     m_OverrideState: 1
-    m_Value: -1
+    m_Value: -1.5
   multiplier:
     m_OverrideState: 1
     m_Value: 1
@@ -109,7 +109,7 @@ MonoBehaviour:
     m_OverrideState: 1
     m_Value: {fileID: 8900000, guid: 15ca18ce66d025142837e23a26560054, type: 3}
   distortionMode:
-    m_OverrideState: 1
+    m_OverrideState: 0
     m_Value: 0
   flowmap:
     m_OverrideState: 1
@@ -183,6 +183,49 @@ MonoBehaviour:
   m_ObsoleteScrollSpeed:
     m_OverrideState: 1
     m_Value: 1
+--- !u!114 &-274830942521407889
+MonoBehaviour:
+  m_ObjectHideFlags: 3
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7ddcec8a8eb2d684d833ac8f5d26aebd, type: 3}
+  m_Name: HDShadowSettings
+  m_EditorClassIdentifier: 
+  active: 1
+  maxShadowDistance:
+    m_OverrideState: 1
+    m_Value: 500
+  directionalTransmissionMultiplier:
+    m_OverrideState: 1
+    m_Value: 1
+  cascadeShadowSplitCount:
+    m_OverrideState: 1
+    m_Value: 4
+  cascadeShadowSplit0:
+    m_OverrideState: 1
+    m_Value: 0.05
+  cascadeShadowSplit1:
+    m_OverrideState: 1
+    m_Value: 0.15
+  cascadeShadowSplit2:
+    m_OverrideState: 1
+    m_Value: 0.3
+  cascadeShadowBorder0:
+    m_OverrideState: 1
+    m_Value: 0
+  cascadeShadowBorder1:
+    m_OverrideState: 1
+    m_Value: 0
+  cascadeShadowBorder2:
+    m_OverrideState: 1
+    m_Value: 0
+  cascadeShadowBorder3:
+    m_OverrideState: 1
+    m_Value: 0
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -204,10 +247,10 @@ MonoBehaviour:
   - {fileID: 3324790488792314905}
   - {fileID: -6457406534267469362}
   - {fileID: -5076010969215789603}
-  - {fileID: 1185767311270668500}
   - {fileID: 2143714804353841909}
   - {fileID: 4411450106377796518}
   - {fileID: 1086417515491997827}
+  - {fileID: -274830942521407889}
 --- !u!114 &1086417515491997827
 MonoBehaviour:
   m_ObjectHideFlags: 3
@@ -230,34 +273,6 @@ MonoBehaviour:
   balance:
     m_OverrideState: 1
     m_Value: -17
---- !u!114 &1185767311270668500
-MonoBehaviour:
-  m_ObjectHideFlags: 3
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9c1bfcd0f0fa7b8468f281d6bbbaf320, type: 3}
-  m_Name: LensDistortion
-  m_EditorClassIdentifier: 
-  active: 1
-  intensity:
-    m_OverrideState: 1
-    m_Value: 0.03
-  xMultiplier:
-    m_OverrideState: 1
-    m_Value: 1
-  yMultiplier:
-    m_OverrideState: 1
-    m_Value: 1
-  center:
-    m_OverrideState: 1
-    m_Value: {x: 0.5, y: 0.5}
-  scale:
-    m_OverrideState: 1
-    m_Value: 1
 --- !u!114 &1310878182601504581
 MonoBehaviour:
   m_ObjectHideFlags: 3
@@ -285,7 +300,7 @@ MonoBehaviour:
     m_Value: {r: 0.5, g: 0.5, b: 0.5, a: 1}
   tint:
     m_OverrideState: 1
-    m_Value: {r: 2.1185474, g: 1.688842, b: 1.7120695, a: 1}
+    m_Value: {r: 2.9960785, g: 2.3883834, b: 2.421232, a: 1}
   maxFogDistance:
     m_OverrideState: 1
     m_Value: 5000
@@ -306,7 +321,7 @@ MonoBehaviour:
     m_Value: 1000
   meanFreePath:
     m_OverrideState: 1
-    m_Value: 250
+    m_Value: 60
   enableVolumetricFog:
     m_OverrideState: 1
     m_Value: 1
@@ -361,7 +376,7 @@ MonoBehaviour:
   active: 1
   lift:
     m_OverrideState: 0
-    m_Value: {x: 1, y: 1, z: 1, w: 0}
+    m_Value: {x: 0.9523735, y: 0.9586244, z: 1, w: 0}
   gamma:
     m_OverrideState: 1
     m_Value: {x: 1, y: 1, z: 1, w: -0.058027074}
@@ -386,13 +401,13 @@ MonoBehaviour:
     m_Value: 2
   threshold:
     m_OverrideState: 1
-    m_Value: 0.55
+    m_Value: 1
   intensity:
     m_OverrideState: 1
-    m_Value: 0.25
+    m_Value: 0.3
   scatter:
     m_OverrideState: 1
-    m_Value: 0.7
+    m_Value: 0.667
   tint:
     m_OverrideState: 1
     m_Value: {r: 1, g: 1, b: 1, a: 1}
@@ -438,7 +453,7 @@ MonoBehaviour:
     m_Value: {x: 0.5, y: 0.5}
   intensity:
     m_OverrideState: 1
-    m_Value: 0.2
+    m_Value: 0.4
   smoothness:
     m_OverrideState: 1
     m_Value: 0.2
@@ -469,19 +484,19 @@ MonoBehaviour:
   active: 1
   mode:
     m_OverrideState: 1
-    m_Value: 2
+    m_Value: 3
   useFullACES:
     m_OverrideState: 0
     m_Value: 0
   toeStrength:
     m_OverrideState: 1
-    m_Value: 0.319
+    m_Value: 0.145
   toeLength:
     m_OverrideState: 1
-    m_Value: 0.576
+    m_Value: 0.75
   shoulderStrength:
     m_OverrideState: 1
-    m_Value: 0
+    m_Value: 0.5
   shoulderLength:
     m_OverrideState: 1
     m_Value: 0.5
@@ -490,7 +505,7 @@ MonoBehaviour:
     m_Value: 0.774
   gamma:
     m_OverrideState: 1
-    m_Value: 0.78
+    m_Value: 0.95
   lutTexture:
     m_OverrideState: 1
     m_Value: {fileID: 0}
@@ -692,16 +707,16 @@ MonoBehaviour:
     m_OverrideState: 1
     m_Value: 1
   cloudType:
-    m_OverrideState: 1
+    m_OverrideState: 0
     m_Value: 0
   skyAmbientMode:
     m_OverrideState: 1
     m_Value: 1
   windOrientation:
-    m_OverrideState: 1
+    m_OverrideState: 0
     m_Value: 0
   windSpeed:
-    m_OverrideState: 1
+    m_OverrideState: 0
     m_Value: 0
   fogType:
     m_OverrideState: 1

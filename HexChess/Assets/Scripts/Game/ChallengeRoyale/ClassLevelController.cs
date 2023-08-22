@@ -27,6 +27,9 @@ public class ClassLevelController
     }
     public int GetExpValue()
     {
+        if (UnitType.King == unit_type)
+            return 0;
+
         return exp_value[level - 1];
     }
     public int GetCostToUpgrade()

@@ -38,17 +38,17 @@ public class ChallengeRoyaleMap : Map
         Spawner.SpawnUnit(_game, UnitType.Swordsman, ClassType.Light, _game.map.GetHex(-2, -1));
         Spawner.SpawnUnit(_game, UnitType.Swordsman, ClassType.Light, _game.map.GetHex(2, -3));
 
-        Spawner.SpawnUnit(_game, UnitType.Tank, ClassType.Light, _game.map.GetHex(-1, -3));
-        Spawner.SpawnUnit(_game, UnitType.Tank, ClassType.Light, _game.map.GetHex(1, -4));
+        Spawner.SpawnUnit(_game, UnitType.Tank, ClassType.Light, _game.map.GetHex(-1, -2));
+        Spawner.SpawnUnit(_game, UnitType.Tank, ClassType.Light, _game.map.GetHex(1, -3));
 
         Spawner.SpawnUnit(_game, UnitType.Archer, ClassType.Light, _game.map.GetHex(-3, -1));
         Spawner.SpawnUnit(_game, UnitType.Archer, ClassType.Light, _game.map.GetHex(3, -4));
 
-        Spawner.SpawnUnit(_game, UnitType.Knight, ClassType.Light, _game.map.GetHex(1, -3));
-        Spawner.SpawnUnit(_game, UnitType.Knight, ClassType.Light, _game.map.GetHex(-1, -2));
+        Spawner.SpawnUnit(_game, UnitType.Knight, ClassType.Light, _game.map.GetHex(2, -4));
+        Spawner.SpawnUnit(_game, UnitType.Knight, ClassType.Light, _game.map.GetHex(-2, -2));
 
-        Spawner.SpawnUnit(_game, UnitType.Jester, ClassType.Light, _game.map.GetHex(-2, -2));
-        Spawner.SpawnUnit(_game, UnitType.Wizard, ClassType.Light, _game.map.GetHex(2, -4));
+        Spawner.SpawnUnit(_game, UnitType.Jester, ClassType.Light, _game.map.GetHex(-1, -3));
+        Spawner.SpawnUnit(_game, UnitType.Wizard, ClassType.Light, _game.map.GetHex(1, -4));
 
         //DARK
         Spawner.SpawnUnit(_game, UnitType.King, ClassType.Dark, _game.map.GetHex(0, 4));
@@ -58,17 +58,17 @@ public class ChallengeRoyaleMap : Map
         Spawner.SpawnUnit(_game, UnitType.Swordsman, ClassType.Dark, _game.map.GetHex(2, 1));
         Spawner.SpawnUnit(_game, UnitType.Swordsman, ClassType.Dark, _game.map.GetHex(-2, 3));
 
-        Spawner.SpawnUnit(_game, UnitType.Tank, ClassType.Dark, _game.map.GetHex(1, 3));
-        Spawner.SpawnUnit(_game, UnitType.Tank, ClassType.Dark, _game.map.GetHex(-1, 4));
+        Spawner.SpawnUnit(_game, UnitType.Tank, ClassType.Dark, _game.map.GetHex(1, 2));
+        Spawner.SpawnUnit(_game, UnitType.Tank, ClassType.Dark, _game.map.GetHex(-1, 3));
 
         Spawner.SpawnUnit(_game, UnitType.Archer, ClassType.Dark, _game.map.GetHex(3, 1));
         Spawner.SpawnUnit(_game, UnitType.Archer, ClassType.Dark, _game.map.GetHex(-3, 4));
 
-        Spawner.SpawnUnit(_game, UnitType.Knight, ClassType.Dark, _game.map.GetHex(-1, 3));
-        Spawner.SpawnUnit(_game, UnitType.Knight, ClassType.Dark, _game.map.GetHex(1, 2));
+        Spawner.SpawnUnit(_game, UnitType.Knight, ClassType.Dark, _game.map.GetHex(-2, 4));
+        Spawner.SpawnUnit(_game, UnitType.Knight, ClassType.Dark, _game.map.GetHex(2, 2));
 
-        Spawner.SpawnUnit(_game, UnitType.Jester, ClassType.Dark, _game.map.GetHex(2, 2));
-        Spawner.SpawnUnit(_game, UnitType.Wizard, ClassType.Dark, _game.map.GetHex(-2, 4));
+        Spawner.SpawnUnit(_game, UnitType.Jester, ClassType.Dark, _game.map.GetHex(1, 3));
+        Spawner.SpawnUnit(_game, UnitType.Wizard, ClassType.Dark, _game.map.GetHex(-1, 4));
     }
 }
 

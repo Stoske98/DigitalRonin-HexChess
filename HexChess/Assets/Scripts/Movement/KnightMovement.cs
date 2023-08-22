@@ -35,6 +35,16 @@ public class KnightMovement : MovementBehaviour
 
         unit.events.OnStartMovement_Local?.Invoke(_unit_hex, _desired_hex);
     }
+    public override void Enter()
+    {
+        base.Enter();
+        unit.animator?.SetBool("Jump", true);
+    }
+    public override void Exit()
+    {
+        base.Exit();
+        unit.animator?.SetBool("Jump", false);
+    }
 }
 
 
