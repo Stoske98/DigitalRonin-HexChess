@@ -2,17 +2,19 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UIElements;
 
 public class Unit : IActiveObject, ISubscribe, IDamageableObject
 {
     public string id { get; set; }
+    public string game_object_path { get; set; }
     public int level { get; set; }
     public Stats stats { get; set; }
     public ClassType class_type { get; set; }
     public UnitType unit_type { get; set; }
     public Visibility visibility { get; set; }
     public bool is_immune_to_magic { get; set; }
+    public string sprite_path { get; set; }
+    [JsonIgnore] public Sprite sprite { set; get; }
     [JsonIgnore] public int match_id { get; set; }
     [JsonConverter(typeof(CustomConverters.GameObjectConverter))] public GameObject game_object { get; set; }
     [JsonConverter(typeof(CustomConverters.BehaviourListConverter))] public List<Behaviour> behaviours { get; set; }
@@ -32,7 +34,7 @@ public class Unit : IActiveObject, ISubscribe, IDamageableObject
         events = new UnitEvents();
         levels = new List<Level>();
     }
-    public Unit(Game _game, ClassType _class_type, UnitType _unit_type)
+    public Unit(Game _game, ClassType _class_type, UnitType _unit_type, string _game_object_path, string _sprite_path)
     {
         id = _game.random_seeds_generator.GetRandomIdsSeed();
         match_id = _game.match_id;
@@ -40,6 +42,8 @@ public class Unit : IActiveObject, ISubscribe, IDamageableObject
         class_type = _class_type;
         unit_type = _unit_type;
         is_immune_to_magic = false;
+        game_object_path = _game_object_path;
+        sprite_path = _sprite_path;
 
         stats = new Stats();
         events = new UnitEvents();
@@ -47,6 +51,14 @@ public class Unit : IActiveObject, ISubscribe, IDamageableObject
         to_do_behaviours = new Queue<Behaviour>();
         ccs = new List<CC>();
         visibility = Visibility.BOTH;
+
+        game_object = UnityEngine.Object.Instantiate(Resources.Load<GameObject>(game_object_path));
+        game_object.transform.SetParent(MapContainer.Instance.units_container);
+        game_object.name = class_type.ToString() + "_" + unit_type.ToString();
+        if (class_type == ClassType.Dark)
+            game_object.transform.eulerAngles = new Vector3(0, 180, 0);
+
+        sprite = Resources.Load<Sprite>(sprite_path);
 
     }
     public void Update()
@@ -178,6 +190,14 @@ public class Unit : IActiveObject, ISubscribe, IDamageableObject
 
         if(behaviour is ISubscribe subscibers)
             subscibers.RegisterEvents();
+
+        if (behaviours[counter] is Ability ability_old && behaviour is Ability ability_new)
+        {
+            if (ability_new.ability_data.max_cooldown <= ability_old.ability_data.current_cooldown)
+                ability_new.ability_data.current_cooldown = ability_new.ability_data.max_cooldown;
+            else
+                ability_new.ability_data.current_cooldown = ability_old.ability_data.current_cooldown;
+        }
 
         behaviours[counter] = behaviour;
 
@@ -312,6 +332,10 @@ public class Unit : IActiveObject, ISubscribe, IDamageableObject
         hex.RemoveObject(this);
         to_do_behaviours.Clear(); 
         IObject.ObjectVisibility(this, Visibility.NONE);
+
+        ChallengeRoyaleGame ch_game = NetworkManager.Instance.games[match_id] as ChallengeRoyaleGame;
+        if(ch_game != null)
+            ch_game.shard_controller.IncreaseShardsOnUnitDeath(class_type,unit_type);
     }
     public bool IsDead()
     {
@@ -350,64 +374,6 @@ public class Unit : IActiveObject, ISubscribe, IDamageableObject
                 cooldown_ability.UpdateCooldown();
     }
 
-}
-
-public class Level
-{
-    public StatsUpdate update_stats { get; set; }
-    [JsonConverter(typeof(CustomConverters.BehaviourListConverter))] public List<Behaviour> behaviours_to_add { get; set; }
-    [JsonConverter(typeof(CustomConverters.DictionaryConverter))] public Dictionary<KeyCode, Behaviour> behaviour_to_switch { get; set; }
-
-    public Level()
-    {
-        behaviours_to_add = new List<Behaviour>();
-        behaviour_to_switch = new Dictionary<KeyCode, Behaviour>();
-    }
-    public void LevelUp(Unit unit)
-    {
-        unit.level++;
-        //update stats
-        unit.stats.max_health += update_stats.increase_max_health;
-        unit.stats.current_health += update_stats.increase_max_health;
-        unit.stats.damage += update_stats.increase_damage;
-        unit.stats.attack_range += update_stats.increase_attack_range;
-        unit.stats.attack_speed += update_stats.increase_attack_speed;
-
-        //update abilities
-        foreach (var behaviour in unit.behaviours)
-            if (behaviour is IUpgradable upgradable_behaviour)
-                upgradable_behaviour.Upgrade();
-
-        //switch ability behaviour with new one
-        foreach (KeyCode key_code in behaviour_to_switch.Keys)
-            if (key_code == KeyCode.S || key_code == KeyCode.Q || key_code == KeyCode.W || key_code == KeyCode.E || key_code == KeyCode.R)
-                unit.SwitchAbilityBehaviourWithNewOne(behaviour_to_switch[key_code], key_code);
-
-        //add new behaviour
-        foreach (var behaviour in behaviours_to_add)
-        {
-            if (behaviour is MovementBehaviour movement_behaviour)
-            {
-                //remove exist movement behaviour and add new one
-                unit.AddMovementBehaviour(movement_behaviour);
-
-            }
-            else if (behaviour is AttackBehaviour attack_behaviour)
-            {
-                //remove exist attack behaviour and add new one
-                unit.AddAttackBehaviour(attack_behaviour);
-            }
-            else
-            {
-                // add to behaviour
-                unit.behaviours.Add(behaviour);
-
-                if (behaviour is ISubscribe subsciber)
-                    subsciber.RegisterEvents();
-            }
-        }
-
-    }
 }
 
 

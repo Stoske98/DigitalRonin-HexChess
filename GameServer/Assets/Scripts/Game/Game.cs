@@ -1,8 +1,5 @@
 ﻿using Newtonsoft.Json;
 using System.Collections.Generic;
-using System.Runtime.Serialization;
-using UnityEngine.Rendering;
-using static UnityEditor.Experimental.GraphView.GraphView;
 
 public enum ClassType
 {
@@ -67,17 +64,16 @@ public abstract class Game
             object_manager.Update();
 
             if (!object_manager.IsObjectsWorking())
-            {
-                /*game_events.BeforeTheTurnEnd?.Invoke();
-                if (object_manager.IsObjectsWorking())
-                    return;*/
-
                 EndTurn();
-            }
         }
     }
     public abstract void Init();
     public abstract void EndTurn();
+    public void SendMessageToPlayers(NetMessage responess)
+    {
+        foreach (Player player in players)
+            Sender.SendToClient_Reliable((ushort)player.connection_id, responess);
+    }
     //Remove code below
     public List<Hex> GetAllHexesInDirection(Direction direction, Hex center_hex, bool count_unwalkable_fields = true)
     {

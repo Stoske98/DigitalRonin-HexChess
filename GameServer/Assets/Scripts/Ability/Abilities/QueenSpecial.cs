@@ -7,7 +7,7 @@ public class QueenSpecial : TargetableAbility, ITargetableSingleHex, IUpgradable
     [JsonRequired] private bool upgraded {get; set;}
     [JsonIgnore] public Hex targetable_hex { get; set; }
     public QueenSpecial() : base() { }
-    public QueenSpecial(Unit _unit, AbilityData _ability_data) : base(_unit, _ability_data) { upgraded = false; }
+    public QueenSpecial(Unit _unit, AbilityData _ability_data, string _sprite_path) : base(_unit, _ability_data, _sprite_path) { upgraded = false; }
 
     public override void Execute()
     {

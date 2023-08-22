@@ -6,7 +6,7 @@ public class TheTricsOfTrade : PassiveAbility, IUpgradable
 {
     [JsonRequired] private bool upgraded {get; set;}
     public TheTricsOfTrade() : base() { }
-    public TheTricsOfTrade(Unit _unit, AbilityData _ability_data) : base(_unit, _ability_data) { upgraded = false; }
+    public TheTricsOfTrade(Unit _unit, AbilityData _ability_data, string _sprite_path) : base(_unit, _ability_data, _sprite_path) { upgraded = false; }
 
     public override void Execute()
     {
@@ -46,7 +46,7 @@ public class TheTricsOfTrade : PassiveAbility, IUpgradable
 public class TheTricksOfTradeFake : PassiveAbility, IUpgradable
 {
     public TheTricksOfTradeFake() : base() { }
-    public TheTricksOfTradeFake(Unit _unit, AbilityData _ability_data) : base(_unit, _ability_data) { }
+    public TheTricksOfTradeFake(Unit _unit, AbilityData _ability_data, string _sprite_path) : base(_unit, _ability_data, _sprite_path) { }
 
     public override void Execute()
     {

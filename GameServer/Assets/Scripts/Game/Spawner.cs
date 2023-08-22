@@ -6,7 +6,10 @@ public static class Spawner
 {//SWORDSMEN LIGHT & DARK
     private static Unit SpawnLightSwordsman(Game _game, Hex _hex, ClassType _class_type, UnitType _unit_type)
     {
-        Unit unit = new Unit(_game, _class_type, _unit_type);
+        string game_object_path = "Prefabs/Swordsman/Light/prefab";
+        string sprite_path = "UI/Unit/Swordsman/Light/sprite";
+        Unit unit = new Unit(_game, _class_type, _unit_type, game_object_path, sprite_path);
+
         List<Level> levels = new List<Level>()
         {
             //level 1 
@@ -23,7 +26,7 @@ public static class Spawner
                 {
                     new NormalMovement(unit),
                     new MeleeAttack(unit),
-                    new SwordsmanSpecial(unit, new AbilityData(), Direction.UP)
+                    new SwordsmanSpecial(unit, new AbilityData(), "UI/Unit/Swordsman/Special/sprite",Direction.UP)
                 },
 
             },
@@ -40,7 +43,7 @@ public static class Spawner
                     new Dash(unit, new AbilityData() 
                     {
                         range = 2, amount = 1
-                    })
+                    }, "UI/Unit/Swordsman/Light/dash")
                 }
             },
             //level 3 
@@ -57,9 +60,6 @@ public static class Spawner
         unit.AddLevels(levels);
         unit.LevelUp();
 
-        unit.game_object = CreateUnitGameObjectByPath(_class_type, _unit_type);
-        unit.game_object.transform.SetParent(MapContainer.Instance.units_container);
-
         if (_game.map.PlaceObject(unit, _hex.coordinates.x, _hex.coordinates.y))
             _game.object_manager.AddObject(unit);
 
@@ -67,7 +67,10 @@ public static class Spawner
     }
     private static Unit SpawnDarkSwordsman(Game _game, Hex _hex, ClassType _class_type, UnitType _unit_type)
     {
-        Unit unit = new Unit(_game, _class_type, _unit_type);
+        string game_object_path = "Prefabs/Swordsman/Dark/prefab";
+        string sprite_path = "UI/Unit/Swordsman/Dark/sprite";
+        Unit unit = new Unit(_game, _class_type, _unit_type, game_object_path, sprite_path);
+
         List<Level> levels = new List<Level>()
         {
             //level 1 
@@ -84,7 +87,7 @@ public static class Spawner
                 {
                     new NormalMovement(unit),
                     new MeleeAttack(unit),
-                    new SwordsmanSpecial(unit, new AbilityData(), Direction.DOWN)
+                    new SwordsmanSpecial(unit, new AbilityData(),"UI/Unit/Swordsman/Special/sprite", Direction.DOWN)
                 },
 
             },
@@ -101,7 +104,7 @@ public static class Spawner
                     new Blink(unit, new AbilityData()
                     {
                         range = 1, amount = 1
-                    })
+                    }, "UI/Unit/Swordsman/Dark/blink")
                 }
             },
             //level 3 
@@ -118,9 +121,6 @@ public static class Spawner
         unit.AddLevels(levels);
         unit.LevelUp();
 
-        unit.game_object = CreateUnitGameObjectByPath(_class_type, _unit_type);
-        unit.game_object.transform.SetParent(MapContainer.Instance.units_container);
-
         if (_game.map.PlaceObject(unit, _hex.coordinates.x, _hex.coordinates.y))
             _game.object_manager.AddObject(unit);
 
@@ -130,7 +130,10 @@ public static class Spawner
     //ARCHER LIGHT & DARK
     private static Unit SpawnLightArcher(Game _game, Hex _hex, ClassType _class_type, UnitType _unit_type)
     {
-        Unit unit = new Unit(_game, _class_type, _unit_type);
+        string game_object_path = "Prefabs/Archer/Light/prefab";
+        string sprite_path = "UI/Unit/Archer/Light/sprite";
+        Unit unit = new Unit(_game, _class_type, _unit_type, game_object_path, sprite_path);
+
         List<Level> levels = new List<Level>()
         {
             //level 1 
@@ -147,7 +150,7 @@ public static class Spawner
                 {
                     new NormalMovement(unit),
                     new RangedAttack(unit),
-                    new ArcherSpecial(unit, new AbilityData())
+                    new ArcherSpecial(unit, new AbilityData(), "UI/Unit/Archer/Special/sprite")
                 },
 
             },
@@ -162,7 +165,7 @@ public static class Spawner
 
                 behaviours_to_add = new List<Behaviour>()
                 {
-                    new Hunt(unit, new AbilityData() { amount = 25 })
+                    new Hunt(unit, new AbilityData() { amount = 25 }, "UI/Unit/Archer/Light/hunt")
                 },
 
             },
@@ -180,9 +183,6 @@ public static class Spawner
         unit.AddLevels(levels);
         unit.LevelUp();
 
-        unit.game_object = CreateUnitGameObjectByPath(_class_type, _unit_type);
-        unit.game_object.transform.SetParent(MapContainer.Instance.units_container);
-
         if (_game.map.PlaceObject(unit, _hex.coordinates.x, _hex.coordinates.y))
             _game.object_manager.AddObject(unit);
 
@@ -190,7 +190,10 @@ public static class Spawner
     }
     private static Unit SpawnDarkArcher(Game _game, Hex _hex, ClassType _class_type, UnitType _unit_type)
     {
-        Unit unit = new Unit(_game, _class_type, _unit_type);
+        string game_object_path = "Prefabs/Archer/Dark/prefab";
+        string sprite_path = "UI/Unit/Archer/Dark/sprite";
+        Unit unit = new Unit(_game, _class_type, _unit_type, game_object_path, sprite_path);
+
         List<Level> levels = new List<Level>()
         {
             //level 1 
@@ -207,7 +210,7 @@ public static class Spawner
                 {
                     new NormalMovement(unit),
                     new RangedAttack(unit),
-                    new ArcherSpecial(unit, new AbilityData())
+                    new ArcherSpecial(unit, new AbilityData(), "UI/Unit/Archer/Special/sprite")
                 },
 
             },
@@ -224,7 +227,7 @@ public static class Spawner
                     new TrapAbility(unit, new AbilityData()
                     {
                          range = 2, amount = 1, max_cooldown = 3, current_cooldown = 0, cc = 2
-                    }),
+                    }, "UI/Unit/Archer/Dark/trap"),
                 },
             },
             //level 3 
@@ -240,16 +243,13 @@ public static class Spawner
                      {KeyCode.Q,  new TrapAbilityFinal(unit, new AbilityData()
                      {
                          range = 2, amount = 1, max_cooldown = 3, current_cooldown = 0, cc = 2
-                     })}
+                     }, "UI/Unit/Archer/Dark/trap")}
                 },
             }
         };
 
         unit.AddLevels(levels);
         unit.LevelUp();
-
-        unit.game_object = CreateUnitGameObjectByPath(_class_type, _unit_type);
-        unit.game_object.transform.SetParent(MapContainer.Instance.units_container);
 
         if (_game.map.PlaceObject(unit, _hex.coordinates.x, _hex.coordinates.y))
             _game.object_manager.AddObject(unit);
@@ -260,7 +260,10 @@ public static class Spawner
     //TANK LIGHT & DARK
     private static Unit SpawnLightTank(Game _game, Hex _hex, ClassType _class_type, UnitType _unit_type)
     {
-        Unit unit = new Unit(_game, _class_type, _unit_type);
+        string game_object_path = "Prefabs/Tank/Light/prefab";
+        string sprite_path = "UI/Unit/Tank/Light/sprite";
+        Unit unit = new Unit(_game, _class_type, _unit_type, game_object_path, sprite_path);
+
         List<Level> levels = new List<Level>()
         {
             //level 1 
@@ -280,7 +283,7 @@ public static class Spawner
                     new TankAttackStance(unit, new AbilityData()
                     {
                         range = 2, max_cooldown = 2, current_cooldown = 0, cc = 1
-                    })
+                    }, "UI/Unit/Tank/Special/attack_stance")
                 },
 
             },
@@ -298,7 +301,7 @@ public static class Spawner
                     new Earthshaker(unit, new AbilityData()
                     {
                         range = 1, amount = 1, max_cooldown = 2, current_cooldown = 0 , cc = 2
-                    })
+                    }, "UI/Unit/Tank/Light/earthshaker")
                 },
             },
             //level 3 
@@ -315,9 +318,6 @@ public static class Spawner
         unit.AddLevels(levels);
         unit.LevelUp();
 
-        unit.game_object = CreateUnitGameObjectByPath(_class_type, _unit_type);
-        unit.game_object.transform.SetParent(MapContainer.Instance.units_container);
-
         if (_game.map.PlaceObject(unit, _hex.coordinates.x, _hex.coordinates.y))
             _game.object_manager.AddObject(unit);
 
@@ -325,7 +325,10 @@ public static class Spawner
     }
     private static Unit SpawnDarkTank(Game _game, Hex _hex, ClassType _class_type, UnitType _unit_type)
     {
-        Unit unit = new Unit(_game, _class_type, _unit_type);
+        string game_object_path = "Prefabs/Tank/Dark/prefab";
+        string sprite_path = "UI/Unit/Tank/Dark/sprite";
+        Unit unit = new Unit(_game, _class_type, _unit_type, game_object_path, sprite_path);
+
         List<Level> levels = new List<Level>()
         {
             //level 1 
@@ -345,7 +348,7 @@ public static class Spawner
                     new TankAttackStance(unit, new AbilityData()
                     {
                         range = 2, max_cooldown = 2, current_cooldown = 0, cc = 1
-                    })
+                    }, "UI/Unit/Tank/Special/attack_stance")
                 },
 
             },
@@ -363,7 +366,7 @@ public static class Spawner
                     new Fear(unit, new AbilityData()
                     {
                         range = 1, amount = 1, max_cooldown = 2, current_cooldown = 0
-                    })
+                    }, "UI/Unit/Tank/Dark/fear")
                 }
             },
             //level 3 
@@ -380,9 +383,6 @@ public static class Spawner
         unit.AddLevels(levels);
         unit.LevelUp();
 
-        unit.game_object = CreateUnitGameObjectByPath(_class_type, _unit_type);
-        unit.game_object.transform.SetParent(MapContainer.Instance.units_container);
-
         if (_game.map.PlaceObject(unit, _hex.coordinates.x, _hex.coordinates.y))
             _game.object_manager.AddObject(unit);
 
@@ -392,7 +392,10 @@ public static class Spawner
     //KNIGHT LIGHT & DARK
     private static Unit SpawnLightKnight(Game _game, Hex _hex, ClassType _class_type, UnitType _unit_type)
     {
-        Unit unit = new Unit(_game, _class_type, _unit_type);
+        string game_object_path = "Prefabs/Knight/Light/prefab";
+        string sprite_path = "UI/Unit/Knight/Light/sprite";
+        Unit unit = new Unit(_game, _class_type, _unit_type, game_object_path, sprite_path);
+
         List<Level> levels = new List<Level>()
         {
             //level 1 
@@ -412,7 +415,7 @@ public static class Spawner
                     new KnightSpecial(unit, new AbilityData()
                     {
                         amount = 1
-                    })
+                    },"UI/Unit/Knight/Special/sprite")
                 },
 
             },
@@ -430,7 +433,7 @@ public static class Spawner
                     new Joust(unit, new AbilityData()
                     {
                         range = 2, amount = 1, max_cooldown = 3, current_cooldown = 0
-                    })
+                    }, "UI/Unit/Knight/Light/joust")
                 },
             },
             //level 3 
@@ -447,9 +450,6 @@ public static class Spawner
         unit.AddLevels(levels);
         unit.LevelUp();
 
-        unit.game_object = CreateUnitGameObjectByPath(_class_type, _unit_type);
-        unit.game_object.transform.SetParent(MapContainer.Instance.units_container);
-
 
         if (_game.map.PlaceObject(unit, _hex.coordinates.x, _hex.coordinates.y))
             _game.object_manager.AddObject(unit);
@@ -458,7 +458,10 @@ public static class Spawner
     }
     private static Unit SpawnDarkKnight(Game _game, Hex _hex, ClassType _class_type, UnitType _unit_type)
     {
-        Unit unit = new Unit(_game, _class_type, _unit_type);
+        string game_object_path = "Prefabs/Knight/Dark/prefab";
+        string sprite_path = "UI/Unit/Knight/Dark/sprite";
+        Unit unit = new Unit(_game, _class_type, _unit_type, game_object_path, sprite_path);
+
         List<Level> levels = new List<Level>()
         {
             //level 1 
@@ -478,7 +481,7 @@ public static class Spawner
                     new KnightSpecial(unit, new AbilityData()
                     {
                         amount = 1
-                    })
+                    },"UI/Unit/Knight/Special/sprite")
                 },
 
             },
@@ -496,7 +499,7 @@ public static class Spawner
                     new Warstrike(unit, new AbilityData()
                     {
                         range = 2, amount = 1, max_cooldown = 3, current_cooldown = 0, cc = 2
-                    })
+                    }, "UI/Unit/Knight/Dark/warstrike")
                 }
             },
             //level 3 
@@ -513,9 +516,6 @@ public static class Spawner
         unit.AddLevels(levels);
         unit.LevelUp();
 
-        unit.game_object = CreateUnitGameObjectByPath(_class_type, _unit_type);
-        unit.game_object.transform.SetParent(MapContainer.Instance.units_container);
-
         if (_game.map.PlaceObject(unit, _hex.coordinates.x, _hex.coordinates.y))
             _game.object_manager.AddObject(unit);
 
@@ -525,7 +525,10 @@ public static class Spawner
     //WIZARD LIGHT & DARK
     private static Unit SpawnLightWizard(Game _game, Hex _hex, ClassType _class_type, UnitType _unit_type)
     {
-        Unit unit = new Unit(_game, _class_type, _unit_type);
+        string game_object_path = "Prefabs/Wizard/Light/prefab";
+        string sprite_path = "UI/Unit/Wizard/Light/sprite";
+        Unit unit = new Unit(_game, _class_type, _unit_type, game_object_path, sprite_path);
+
         List<Level> levels = new List<Level>()
         {
             //level 1 
@@ -542,11 +545,11 @@ public static class Spawner
                     new WizardSpecial(unit, new AbilityData()
                     {
                         range = 2
-                    }),
+                    }, "UI/Unit/Wizard/sprite"),
                     new Blessing(unit, new AbilityData()
                     {
                         range = 2, amount = 1, max_cooldown = 2, current_cooldown = 0
-                    })
+                    }, "UI/Unit/Wizard/Light/blessing")
                 },
 
             },
@@ -563,7 +566,7 @@ public static class Spawner
                     new Skyfall(unit, new AbilityData()
                     {
                         range = 2, amount = 1, max_cooldown = 4, current_cooldown = 0
-                    })
+                    }, "UI/Unit/Wizard/Light/skyfall")
                 },
             },
             //level 3 
@@ -579,16 +582,13 @@ public static class Spawner
                      new FireBall(unit, new AbilityData()
                     {
                        amount = 1, max_cooldown = 6, current_cooldown = 0
-                    })
+                    }, "UI/Unit/Wizard/Light/fireball")
                 },
             }
         };
 
         unit.AddLevels(levels);
         unit.LevelUp();
-
-        unit.game_object = CreateUnitGameObjectByPath(_class_type, _unit_type);
-        unit.game_object.transform.SetParent(MapContainer.Instance.units_container);
 
         if (_game.map.PlaceObject(unit, _hex.coordinates.x, _hex.coordinates.y))
             _game.object_manager.AddObject(unit);
@@ -597,7 +597,10 @@ public static class Spawner
     }
     private static Unit SpawnDarkWizard(Game _game, Hex _hex, ClassType _class_type, UnitType _unit_type)
     {
-        Unit unit = new Unit(_game, _class_type, _unit_type);
+        string game_object_path = "Prefabs/Wizard/Dark/prefab";
+        string sprite_path = "UI/Unit/Wizard/Dark/sprite";
+        Unit unit = new Unit(_game, _class_type, _unit_type, game_object_path, sprite_path);
+
         List<Level> levels = new List<Level>()
         {
             //level 1 
@@ -617,11 +620,11 @@ public static class Spawner
                     new WizardSpecial(unit, new AbilityData()
                     {
                         range = 2
-                    }),
+                    }, "UI/Unit/Wizard/sprite"),
                     new Necromancy(unit, new AbilityData()
                     {
                          range = 2, amount = 1, max_cooldown = 2, current_cooldown = 0
-                    })
+                    }, "UI/Unit/Wizard/Dark/necromancy")
                 },
 
             },
@@ -638,7 +641,7 @@ public static class Spawner
                     new Curse(unit, new AbilityData()
                     {
                         range = 2, amount = 1, max_cooldown = 4, current_cooldown = 0, cc = 2
-                    })
+                    }, "UI/Unit/Wizard/Dark/curse")
                 }
             },
             //level 3 
@@ -659,9 +662,6 @@ public static class Spawner
         unit.AddLevels(levels);
         unit.LevelUp();
 
-        unit.game_object = CreateUnitGameObjectByPath(_class_type, _unit_type);
-        unit.game_object.transform.SetParent(MapContainer.Instance.units_container);
-
         if (_game.map.PlaceObject(unit, _hex.coordinates.x, _hex.coordinates.y))
             _game.object_manager.AddObject(unit);
 
@@ -671,7 +671,9 @@ public static class Spawner
     //JESTER LIGHT & DARK
     private static Unit SpawnLightJester(Game _game, Hex _hex, ClassType _class_type, UnitType _unit_type)
     {
-        Unit unit = new Unit(_game, _class_type, _unit_type);
+        string game_object_path = "Prefabs/Jester/Light/prefab";
+        string sprite_path = "UI/Unit/Jester/Light/sprite";
+        Unit unit = new Unit(_game, _class_type, _unit_type, game_object_path, sprite_path);
 
         List<Level> levels = new List<Level>()
         {
@@ -689,7 +691,7 @@ public static class Spawner
                 {
                     new NormalMovement(unit,2),
                     new MeleeAttack(unit),
-                    new JesterSpecial(unit, new AbilityData() { range = 2 })
+                    new JesterSpecial(unit, new AbilityData() { range = 2 }, "UI/Unit/Jester/Special/sprite")
                 },
 
             },
@@ -703,7 +705,7 @@ public static class Spawner
                 },
                 behaviours_to_add = new List<Behaviour>()
                 {
-                    new TheTricksOfTradeFake(unit, new AbilityData()),
+                    new TheTricksOfTradeFake(unit, new AbilityData(),"UI/Unit/Jester/Light/the_tricks_of_trade"),
                 },
             },
             //level 3 
@@ -717,7 +719,7 @@ public static class Spawner
                 behaviour_to_switch = new Dictionary<KeyCode, Behaviour>()
                 {
                     {
-                        KeyCode.S, new JesterSpecialFinal(unit, new AbilityData(){range = 2})
+                        KeyCode.S, new JesterSpecialFinal(unit, new AbilityData(){range = 2}, "UI/Unit/Jester/Special/sprite")
                     }
                 }
             }
@@ -726,9 +728,6 @@ public static class Spawner
         unit.AddLevels(levels);
         unit.LevelUp();
 
-        unit.game_object = CreateUnitGameObjectByPath(_class_type, _unit_type);
-        unit.game_object.transform.SetParent(MapContainer.Instance.units_container);
-
         if (_game.map.PlaceObject(unit, _hex.coordinates.x, _hex.coordinates.y))
             _game.object_manager.AddObject(unit);
 
@@ -736,7 +735,9 @@ public static class Spawner
     }
     private static Unit SpawnDarkJester(Game _game, Hex _hex, ClassType _class_type, UnitType _unit_type)
     {
-        Unit unit = new Unit(_game, _class_type, _unit_type);
+        string game_object_path = "Prefabs/Jester/Dark/prefab";
+        string sprite_path = "UI/Unit/Jester/Dark/sprite";
+        Unit unit = new Unit(_game, _class_type, _unit_type, game_object_path, sprite_path);
 
         List<Level> levels = new List<Level>()
         {
@@ -754,7 +755,7 @@ public static class Spawner
                 {
                     new NormalMovement(unit,2),
                     new MeleeAttack(unit),
-                    new JesterSpecial(unit, new AbilityData() { range = 2 })
+                    new JesterSpecial(unit, new AbilityData() { range = 2 }, "UI/Unit/Jester/Special/sprite")
                 },
 
             },
@@ -771,7 +772,7 @@ public static class Spawner
                     new TheFakeFool(unit, new AbilityData()
                     {
                         range = 1, amount = 1
-                    }),
+                    }, "UI/Unit/Jester/Dark/the_fool"),
                 }
             },
             //level 3 
@@ -786,10 +787,10 @@ public static class Spawner
                 behaviour_to_switch = new Dictionary<KeyCode, Behaviour>()
                 {
                     {
-                        KeyCode.S, new JesterSpecialFinal(unit, new AbilityData(){range = 2})
+                        KeyCode.S, new JesterSpecialFinal(unit, new AbilityData(){range = 2},  "UI/Unit/Jester/Special/sprite")
                     },
                     {
-                        KeyCode.Q, new TheFakeFoolFinal(unit, new AbilityData(){ range = 1, amount = 1})
+                        KeyCode.Q, new TheFakeFoolFinal(unit, new AbilityData(){ range = 1, amount = 1}, "UI/Unit/Jester/Dark/the_fool")
                     }
                 }
             }
@@ -797,9 +798,6 @@ public static class Spawner
 
         unit.AddLevels(levels);
         unit.LevelUp();
-
-        unit.game_object = CreateUnitGameObjectByPath(_class_type, _unit_type);
-        unit.game_object.transform.SetParent(MapContainer.Instance.units_container);
 
         if (_game.map.PlaceObject(unit, _hex.coordinates.x, _hex.coordinates.y))
             _game.object_manager.AddObject(unit);
@@ -809,7 +807,10 @@ public static class Spawner
     //QUEEN LIGHT & DARK
     private static Unit SpawnLightQueen(Game _game, Hex _hex, ClassType _class_type, UnitType _unit_type)
     {
-        Unit unit = new Unit(_game, _class_type, _unit_type);
+        string game_object_path = "Prefabs/Queen/Light/prefab";
+        string sprite_path = "UI/Unit/Queen/Light/sprite";
+        Unit unit = new Unit(_game, _class_type, _unit_type, game_object_path, sprite_path);
+
         List<Level> levels = new List<Level>()
         {
             //level 1 
@@ -829,7 +830,7 @@ public static class Spawner
                     new QueenSpecial(unit,new AbilityData()
                     {
                         range = 3
-                    }),
+                    }, "UI/Unit/Queen/Special/sprite"),
                 },
 
             },
@@ -846,7 +847,7 @@ public static class Spawner
                     new QueensCommand(unit,new AbilityData()
                     {
                         range = 3
-                    }),
+                    }, "UI/Unit/Queen/Light/queen_command"),
                 }
             },
             //level 3 
@@ -863,9 +864,6 @@ public static class Spawner
         unit.AddLevels(levels);
         unit.LevelUp();
 
-        unit.game_object = CreateUnitGameObjectByPath(_class_type, _unit_type);
-        unit.game_object.transform.SetParent(MapContainer.Instance.units_container);
-
         if (_game.map.PlaceObject(unit, _hex.coordinates.x, _hex.coordinates.y))
             _game.object_manager.AddObject(unit);
 
@@ -873,7 +871,10 @@ public static class Spawner
     }
     private static Unit SpawnDarkQueen(Game _game, Hex _hex, ClassType _class_type, UnitType _unit_type)
     {
-        Unit unit = new Unit(_game, _class_type, _unit_type);
+        string game_object_path = "Prefabs/Queen/Dark/prefab";
+        string sprite_path = "UI/Unit/Queen/Dark/sprite";
+        Unit unit = new Unit(_game, _class_type, _unit_type, game_object_path, sprite_path);
+
         List<Level> levels = new List<Level>()
         {
             //level 1 
@@ -893,7 +894,7 @@ public static class Spawner
                     new QueenSpecial(unit,new AbilityData()
                     {
                         range = 3
-                    }),
+                    }, "UI/Unit/Queen/Special/sprite"),
                 },
 
             },
@@ -910,7 +911,7 @@ public static class Spawner
                     new Haunt(unit,new AbilityData()
                     {
                         range = 3
-                    }),
+                    }, "UI/Unit/Queen/Dark/haunt"),
                 }
             },
             //level 3 
@@ -927,9 +928,6 @@ public static class Spawner
         unit.AddLevels(levels);
         unit.LevelUp();
 
-        unit.game_object = CreateUnitGameObjectByPath(_class_type, _unit_type);
-        unit.game_object.transform.SetParent(MapContainer.Instance.units_container);
-
         if (_game.map.PlaceObject(unit, _hex.coordinates.x, _hex.coordinates.y))
             _game.object_manager.AddObject(unit);
 
@@ -939,7 +937,10 @@ public static class Spawner
     //KING LIGHT & DARK
     private static Unit SpawnLightKing(Game _game, Hex _hex, ClassType _class_type, UnitType _unit_type)
     {
-        Unit unit = new Unit(_game, _class_type, _unit_type);
+        string game_object_path = "Prefabs/King/Light/prefab";
+        string sprite_path = "UI/Unit/King/Light/sprite";
+        Unit unit = new Unit(_game, _class_type, _unit_type, game_object_path, sprite_path);
+
         List<Level> levels = new List<Level>()
         {
             //level 1 
@@ -956,7 +957,7 @@ public static class Spawner
                     new KingSpecial(unit, new AbilityData()
                     {
                         range = 1,
-                    })
+                    }, "UI/Unit/King/Special/sprite")
                 },
 
             },
@@ -978,9 +979,6 @@ public static class Spawner
 
         unit.AddLevels(levels);
         unit.LevelUp();
-
-        unit.game_object = CreateUnitGameObjectByPath(_class_type, _unit_type);
-        unit.game_object.transform.SetParent(MapContainer.Instance.units_container);
 
         if (_game.map.PlaceObject(unit, _hex.coordinates.x, _hex.coordinates.y))
             _game.object_manager.AddObject(unit);
@@ -989,7 +987,10 @@ public static class Spawner
     }
     private static Unit SpawnDarkKing(Game _game, Hex _hex, ClassType _class_type, UnitType _unit_type)
     {
-        Unit unit = new Unit(_game, _class_type, _unit_type);
+        string game_object_path = "Prefabs/King/Dark/prefab";
+        string sprite_path = "UI/Unit/King/Dark/sprite";
+        Unit unit = new Unit(_game, _class_type, _unit_type, game_object_path, sprite_path);
+
         List<Level> levels = new List<Level>()
         {
             //level 1 
@@ -1006,7 +1007,7 @@ public static class Spawner
                     new KingSpecial(unit, new AbilityData()
                     {
                         range = 1,
-                    })
+                    }, "UI/Unit/King/Special/sprite")
                 },
 
             },
@@ -1028,9 +1029,6 @@ public static class Spawner
 
         unit.AddLevels(levels);
         unit.LevelUp();
-
-        unit.game_object = CreateUnitGameObjectByPath(_class_type, _unit_type);
-        unit.game_object.transform.SetParent(MapContainer.Instance.units_container);
 
         if (_game.map.PlaceObject(unit, _hex.coordinates.x, _hex.coordinates.y))
             _game.object_manager.AddObject(unit);
@@ -1088,7 +1086,9 @@ public static class Spawner
 
     public static Unit CreateLightJesterIllusion(Game _game, Unit _unit_parent)
     {
-        Unit illusion = new Unit(_game, _unit_parent.class_type, _unit_parent.unit_type);
+        string game_object_path = "Prefabs/Jester/Light/prefab";
+        string sprite_path = "UI/Unit/Jester/Light/sprite";
+        Unit illusion = new Unit(_game, _unit_parent.class_type, _unit_parent.unit_type, game_object_path, sprite_path);
 
         List<Level> levels = new List<Level>()
         {
@@ -1106,7 +1106,7 @@ public static class Spawner
                 {
                     new NoMovement(illusion),
                     new NoAttack(illusion),
-                    new JesterFakeSpecial(illusion, new AbilityData() { range = 2})
+                    new JesterFakeSpecial(illusion, new AbilityData() { range = 2}, "UI/Unit/Jester/Special/sprite")
                 },
 
             },
@@ -1120,7 +1120,7 @@ public static class Spawner
                 },
                 behaviours_to_add = new List<Behaviour>()
                 {
-                    new TheTricsOfTrade(illusion, new AbilityData())
+                    new TheTricsOfTrade(illusion, new AbilityData(), "UI/Unit/Jester/Light/the_tricks_of_trade")
                 },
             },
             //level 3 
@@ -1134,7 +1134,7 @@ public static class Spawner
                 behaviour_to_switch = new Dictionary<KeyCode, Behaviour>()
                 {
                     {
-                        KeyCode.S, new JesterFakeSpecialFinal(illusion, new AbilityData(){range = 2})
+                        KeyCode.S, new JesterFakeSpecialFinal(illusion, new AbilityData(){range = 2}, "UI/Unit/Jester/Special/sprite")
                     }
                 }
             }
@@ -1143,8 +1143,6 @@ public static class Spawner
         illusion.AddLevels(levels);
         illusion.LevelUp();
 
-        illusion.game_object = CreateUnitGameObjectByPath(_unit_parent.class_type, _unit_parent.unit_type);
-        illusion.game_object.transform.SetParent(MapContainer.Instance.units_container);
         illusion.game_object.transform.position = new Vector3(-999, -999, -999);
         illusion.game_object.name += "Illusion: " + _unit_parent.class_type.ToString();
 
@@ -1154,7 +1152,9 @@ public static class Spawner
     }
     public static Unit CreateDarkJesterIllusion(Game _game, Unit _unit_parent)
     {
-        Unit illusion = new Unit(_game, _unit_parent.class_type, _unit_parent.unit_type);
+        string game_object_path = "Prefabs/Jester/Dark/prefab";
+        string sprite_path = "UI/Unit/Jester/Dark/sprite";
+        Unit illusion = new Unit(_game, _unit_parent.class_type, _unit_parent.unit_type, game_object_path, sprite_path);
 
         List<Level> levels = new List<Level>()
         {
@@ -1172,7 +1172,7 @@ public static class Spawner
                 {
                     new NoMovement(illusion),
                     new NoAttack(illusion),
-                    new JesterFakeSpecial(illusion, new AbilityData() { range = 2})
+                    new JesterFakeSpecial(illusion, new AbilityData() { range = 2}, "UI/Unit/Jester/Special/sprite")
                 },
 
             },
@@ -1189,7 +1189,7 @@ public static class Spawner
                     new TheFool(illusion, new AbilityData()
                     {
                         range = 1, amount = 1
-                    })
+                    }, "UI/Unit/Jester/Dark/the_fool")
                 },
             },
             //level 3 
@@ -1203,10 +1203,10 @@ public static class Spawner
                 behaviour_to_switch = new Dictionary<KeyCode, Behaviour>()
                 {
                     {
-                        KeyCode.S, new JesterFakeSpecialFinal(illusion, new AbilityData(){range = 2})
+                        KeyCode.S, new JesterFakeSpecialFinal(illusion, new AbilityData(){range = 2}, "UI/Unit/Jester/Special/sprite")
                     },
                     {
-                        KeyCode.Q, new TheFoolFinal(illusion, new AbilityData(){ range = 1, amount = 1})
+                        KeyCode.Q, new TheFoolFinal(illusion, new AbilityData(){ range = 1, amount = 1}, "UI/Unit/Jester/Dark/the_fool")
                     }
                 }
             }
@@ -1215,8 +1215,6 @@ public static class Spawner
         illusion.AddLevels(levels);
         illusion.LevelUp();
 
-        illusion.game_object = CreateUnitGameObjectByPath(_unit_parent.class_type, _unit_parent.unit_type);
-        illusion.game_object.transform.SetParent(MapContainer.Instance.units_container);
         illusion.game_object.transform.position = new Vector3(-999, -999, -999);
         illusion.game_object.name += "Illusion: " + _unit_parent.class_type.ToString();
 
@@ -1226,7 +1224,10 @@ public static class Spawner
     }
     public static Unit CreateStone(Game _game, ClassType class_type)
     {
-        Unit stone = new Unit(_game, class_type, UnitType.Stone);
+        string game_object_path = "Prefabs/Stone/" + class_type.ToString() + "/prefab";
+        string sprite_path = "UI/Unit/Stone/" + class_type.ToString() + "/sprite";
+        Unit stone = new Unit(_game, class_type, UnitType.Stone, game_object_path, sprite_path);
+
         stone.is_immune_to_magic = true;
         List<Level> levels = new List<Level>()
         {
@@ -1249,26 +1250,18 @@ public static class Spawner
         stone.AddLevels(levels);
         stone.LevelUp();
 
-        stone.game_object = CreateUnitGameObjectByPath(stone.class_type, stone.unit_type);
-        stone.game_object.transform.SetParent(MapContainer.Instance.units_container);
         stone.game_object.transform.position = new Vector3(-999, -999, -999);
         stone.game_object.name += "Stone: " + class_type.ToString();
 
         _game.object_manager.AddObject(stone);
 
         return stone;
-
     }
-    public static GameObject CreateUnitGameObjectByPath(ClassType class_type, UnitType unit_type)
+
+    public static Trap CreateTrap(Unit _cast_unit, AbilityBehaviour _ability)
     {
-        GameObject game_object = UnityEngine.Object.Instantiate(Resources.Load<GameObject>("Prefabs/" + unit_type.ToString() + "/" + class_type.ToString() + "/prefab"));
-
-        game_object.name = class_type.ToString() + "_" + unit_type.ToString();
-
-        if (class_type == ClassType.Dark)
-            game_object.transform.eulerAngles = new Vector3(0, 180, 0);
-
-        return game_object;
+        string _game_object_path = "Prefabs/Trap/prefab";
+        return new Trap(_cast_unit, _ability, _game_object_path);
     }
 }
 

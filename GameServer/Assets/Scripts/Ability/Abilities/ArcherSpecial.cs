@@ -6,7 +6,7 @@ public class ArcherSpecial : PassiveAbility
 {
     private int max_range_increment { get; set; }
     public ArcherSpecial() : base() { max_range_increment = 3; }
-    public ArcherSpecial(Unit _unit, AbilityData _ability_data) : base(_unit, _ability_data) { max_range_increment = 3; }
+    public ArcherSpecial(Unit _unit, AbilityData _ability_data, string _sprite_path) : base(_unit, _ability_data, _sprite_path) { max_range_increment = 3; }
 
     public override void Execute()
     {

@@ -6,7 +6,7 @@ public class FireBall : TargetableAbility, ITargetableSingleHex //TODO : CHANGE 
     List<Unit> enemies;
     [JsonIgnore] public Hex targetable_hex { get; set; }
     public FireBall() : base() { enemies = new List<Unit>(); }
-    public FireBall(Unit _unit, AbilityData _ability_data) : base(_unit, _ability_data) { enemies = new List<Unit>(); }
+    public FireBall(Unit _unit, AbilityData _ability_data, string _sprite_path) : base(_unit, _ability_data, _sprite_path) { enemies = new List<Unit>(); }
     public override void Execute()
     {
 

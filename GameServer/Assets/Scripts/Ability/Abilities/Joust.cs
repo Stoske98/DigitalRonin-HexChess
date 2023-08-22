@@ -8,7 +8,7 @@ public class Joust : TargetableAbility, ITargetableSingleHex, IUpgradable
     private Unit enemy { get; set; }
     [JsonIgnore] public Hex targetable_hex { get; set; }
     public Joust() : base() { }
-    public Joust(Unit _unit, AbilityData _ability_data) : base(_unit, _ability_data) { }
+    public Joust(Unit _unit, AbilityData _ability_data, string _sprite_path) : base(_unit, _ability_data, _sprite_path) { }
     public override void Execute()
     {
         Hex _cast_unit_hex = NetworkManager.Instance.games[unit.match_id].map.GetHex(unit);

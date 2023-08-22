@@ -5,6 +5,7 @@ using UnityEngine;
 public class Missile : IActiveObject
 {
     public string id { get; set; }
+    public string game_object_path { get; set; }
     public Visibility visibility { get; set; }
     public ClassType class_type { get; set; }
     [JsonConverter(typeof(CustomConverters.GameObjectConverter))] public GameObject game_object { get; set; }

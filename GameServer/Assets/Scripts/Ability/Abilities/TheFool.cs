@@ -3,7 +3,7 @@
 public class TheFool : PassiveAbility
 {
     public TheFool() : base() { }
-    public TheFool(Unit _unit, AbilityData _ability_data) : base(_unit, _ability_data) { }
+    public TheFool(Unit _unit, AbilityData _ability_data, string _sprite_path) : base(_unit, _ability_data, _sprite_path) { }
 
     public override void Execute()
     {
@@ -36,7 +36,7 @@ public class TheFool : PassiveAbility
 public class TheFakeFool : PassiveAbility
 {
     public TheFakeFool() : base() { }
-    public TheFakeFool(Unit _unit, AbilityData _ability_data) : base(_unit, _ability_data) { }
+    public TheFakeFool(Unit _unit, AbilityData _ability_data, string _sprite_path) : base(_unit, _ability_data, _sprite_path) { }
 
     public override void Execute()
     {
@@ -58,7 +58,7 @@ public class TheFoolFinal : InstantleAbility, ISubscribe
 {
     List<Unit> enemies;
     public TheFoolFinal() : base() { enemies = new List<Unit>(); }
-    public TheFoolFinal(Unit _unit, AbilityData _ability_data) : base(_unit, _ability_data) { enemies = new List<Unit>(); }
+    public TheFoolFinal(Unit _unit, AbilityData _ability_data, string _sprite_path) : base(_unit, _ability_data, _sprite_path) { enemies = new List<Unit>(); }
     public void RegisterEvents()
     {
 
@@ -134,7 +134,7 @@ public class TheFoolFinal : InstantleAbility, ISubscribe
 public class TheFakeFoolFinal : InstantleAbility
 {
     public TheFakeFoolFinal() : base() { }
-    public TheFakeFoolFinal(Unit _unit, AbilityData _ability_data) : base(_unit, _ability_data) { }
+    public TheFakeFoolFinal(Unit _unit, AbilityData _ability_data, string _sprite_path) : base(_unit, _ability_data, _sprite_path) { }
 
     public override void Execute()
     {

@@ -6,31 +6,6 @@ using UnityEngine;
 
 public static class CustomConverters
 {
-    public enum GameObjectEnum
-    {
-        HEX = 0,
-
-        LIGHT_SWORDSMAN = 1,
-        DARK_SWORDSMAN = 2,
-        LIGHT_ARCHER = 3,
-        DARK_ARCHER = 4,
-        LIGHT_KNIGHT = 5,
-        DARK_KNIGHT = 6,
-        LIGHT_TANK = 7,
-        DARK_TANK = 8,
-        LIGHT_JESTER = 9,
-        DARK_JESTER = 10,
-        LIGHT_WIZARD = 11,
-        DARK_WIZARD = 12,
-        LIGHT_QUEEN = 13,
-        DARK_QUEEN = 14,
-        LIGHT_KING = 15,
-        DARK_KING = 16,
-
-        TRAP = 17,
-        LIGHT_STONE = 18,
-        DARK_STONE = 19,
-    }
     public class GameConverter : JsonConverter<Game>
     {
         public override void WriteJson(JsonWriter writer, Game value, JsonSerializer serializer)
@@ -112,6 +87,22 @@ public static class CustomConverters
                 var type = jObject.GetValue("Type").ToString();
                 var value = jObject.GetValue("Value").CreateReader();
                 var obj = serializer.Deserialize(value, Type.GetType(type)) as IObject;
+
+                string name = obj.game_object.name;
+                Vector3 position = obj.game_object.transform.position;
+                Quaternion rotation = obj.game_object.transform.rotation;
+
+                UnityEngine.Object.Destroy(obj.game_object);
+
+                obj.game_object = GameObject.Instantiate(Resources.Load<GameObject>(obj.game_object_path), position, rotation);
+                obj.game_object.name = name;
+
+                if (obj is Unit unit)
+                    unit.sprite = Resources.Load<Sprite>(unit.sprite_path);
+
+
+                obj.game_object.transform.SetParent(MapContainer.Instance.fields_container);
+
                 obj_list.Add(obj);
             }
 
@@ -153,6 +144,7 @@ public static class CustomConverters
                 var value = jObject.GetValue("Value").CreateReader();
                 var obj = serializer.Deserialize(value, Type.GetType(type)) as Behaviour;
 
+                obj.sprite = Resources.Load<Sprite>(obj.sprite_path);
                 obj_list.Add(enum_value, obj);
             }
 
@@ -187,6 +179,8 @@ public static class CustomConverters
                 var type = jObject.GetValue("Type").ToString();
                 var value = jObject.GetValue("Value").CreateReader();
                 var obj = serializer.Deserialize(value, Type.GetType(type)) as Behaviour;
+
+                obj.sprite = Resources.Load<Sprite>(obj.sprite_path);
                 obj_list.Add(obj);
             }
 
@@ -235,8 +229,45 @@ public static class CustomConverters
             writer.WritePropertyName("$type");
             writer.WriteValue("Game Object");
 
-            writer.WritePropertyName("Tag");
-            serializer.Serialize(writer, value.tag);
+            writer.WritePropertyName("Name");
+            serializer.Serialize(writer, value.name);
+
+            writer.WritePropertyName("Position");
+            serializer.Serialize(writer, value.transform.position);
+
+            writer.WritePropertyName("Rotation");
+            serializer.Serialize(writer, value.transform.rotation);
+
+            writer.WriteEndObject();
+        }
+
+        public override GameObject ReadJson(JsonReader reader, Type objectType, GameObject existingValue, bool hasExistingValue, JsonSerializer serializer)
+        {
+            JObject json_object = JObject.Load(reader);
+
+            JToken name_token = json_object["Name"];
+            string name = name_token.ToObject<string>();
+
+            JToken positionToken = json_object.GetValue("Position");
+            Vector3 position = positionToken.ToObject<Vector3>();
+
+            JToken rotationToken = json_object.GetValue("Rotation");
+            Quaternion rotation = rotationToken.ToObject<Quaternion>();
+
+            GameObject gameObject = new GameObject(name);
+            gameObject.transform.position = position;
+            gameObject.transform.rotation = rotation;
+
+            return gameObject;
+        }
+    }
+    public class HexGameObjectConverter : JsonConverter<GameObject>
+    {
+        public override void WriteJson(JsonWriter writer, GameObject value, JsonSerializer serializer)
+        {
+            writer.WriteStartObject();
+            writer.WritePropertyName("$type");
+            writer.WriteValue("Game Object");
 
             writer.WritePropertyName("Name");
             serializer.Serialize(writer, value.name);
@@ -254,12 +285,8 @@ public static class CustomConverters
         {
             JObject json_object = JObject.Load(reader);
 
-            JToken tag_token = json_object["Tag"];
-            string tag = tag_token.ToObject<string>();
-
             JToken name_token = json_object["Name"];
             string name = name_token.ToObject<string>();
-            Debug.Log("Name: " +name+"TAG: " + tag);
 
             JToken positionToken = json_object.GetValue("Position");
             Vector3 position = positionToken.ToObject<Vector3>();
@@ -267,73 +294,7 @@ public static class CustomConverters
             JToken rotationToken = json_object.GetValue("Rotation");
             Quaternion rotation = rotationToken.ToObject<Quaternion>();
 
-            if (Enum.TryParse(tag, out GameObjectEnum value))
-            {
-                switch (value)
-                {
-                    case GameObjectEnum.HEX:
-                        return CreateHex(tag, name, position, rotation);
-                    case GameObjectEnum.LIGHT_SWORDSMAN:
-                        return CreateUnitGameObjectByPath(ClassType.Light, UnitType.Swordsman, position, rotation);
-                    case GameObjectEnum.DARK_SWORDSMAN:
-                        return CreateUnitGameObjectByPath(ClassType.Dark, UnitType.Swordsman, position, rotation);
-                    case GameObjectEnum.LIGHT_ARCHER:
-                        return CreateUnitGameObjectByPath(ClassType.Light, UnitType.Archer, position, rotation);
-                    case GameObjectEnum.DARK_ARCHER:
-                        return CreateUnitGameObjectByPath(ClassType.Dark, UnitType.Archer, position, rotation);
-                    case GameObjectEnum.LIGHT_KNIGHT:
-                        return CreateUnitGameObjectByPath(ClassType.Light, UnitType.Knight, position, rotation);
-                    case GameObjectEnum.DARK_KNIGHT:
-                        return CreateUnitGameObjectByPath(ClassType.Dark, UnitType.Knight, position, rotation);
-                    case GameObjectEnum.LIGHT_TANK:
-                        return CreateUnitGameObjectByPath(ClassType.Light, UnitType.Tank, position, rotation);
-                    case GameObjectEnum.DARK_TANK:
-                        return CreateUnitGameObjectByPath(ClassType.Dark, UnitType.Tank, position, rotation);
-                    case GameObjectEnum.LIGHT_JESTER:
-                        return CreateUnitGameObjectByPath(ClassType.Light, UnitType.Jester, position, rotation);
-                    case GameObjectEnum.DARK_JESTER:
-                        return CreateUnitGameObjectByPath(ClassType.Dark, UnitType.Jester, position, rotation);
-                    case GameObjectEnum.LIGHT_WIZARD:
-                        return CreateUnitGameObjectByPath(ClassType.Light, UnitType.Wizard, position, rotation);
-                    case GameObjectEnum.DARK_WIZARD:
-                        return CreateUnitGameObjectByPath(ClassType.Dark, UnitType.Wizard, position, rotation);
-                    case GameObjectEnum.LIGHT_QUEEN:
-                        return CreateUnitGameObjectByPath(ClassType.Light, UnitType.Queen, position, rotation);
-                    case GameObjectEnum.DARK_QUEEN:
-                        return CreateUnitGameObjectByPath(ClassType.Dark, UnitType.Queen, position, rotation);
-                    case GameObjectEnum.LIGHT_KING:
-                        return CreateUnitGameObjectByPath(ClassType.Light, UnitType.King, position, rotation);
-                    case GameObjectEnum.DARK_KING:
-                        return CreateUnitGameObjectByPath(ClassType.Dark, UnitType.King, position, rotation);
-                    case GameObjectEnum.TRAP:
-                        return CreateTrap(tag, name, position, rotation, ClassType.Dark);
-                    case GameObjectEnum.LIGHT_STONE:
-                        return CreateUnitGameObjectByPath(ClassType.Light, UnitType.Stone, position, rotation);
-                    case GameObjectEnum.DARK_STONE:
-                        return CreateUnitGameObjectByPath(ClassType.Dark, UnitType.Stone, position, rotation);
-                    default:
-                        break;
-                }
-            }
-            return null;
-        }
-        private GameObject CreateTrap(string tag, string name, Vector3 position, Quaternion rotation, ClassType class_type)
-        {
-            GameObject game_object = UnityEngine.Object.Instantiate(Resources.Load<GameObject>("Prefabs/Trap/prefab"));
-
-            game_object.tag = tag;
-            game_object.name = name;
-            game_object.transform.position = position;
-            game_object.transform.rotation = rotation;
-
-            return game_object;
-        }
-        private GameObject CreateHex(string tag, string name, Vector3 position, Quaternion rotation)
-        {
-            GameObject game_object = new GameObject();
-
-            game_object.tag = tag;
-            game_object.name = name;
+            GameObject game_object = new GameObject(name);
             game_object.transform.position = position;
             game_object.transform.rotation = rotation;
 
@@ -356,26 +317,17 @@ public static class CustomConverters
 
             mesh.triangles = new int[]
             {
-            0, 1, 2,
-            0, 2, 3,
-            0, 3, 4,
-            0, 4, 5,
-            0, 5, 6,
-            0, 6, 1
+                0, 1, 2,
+                0, 2, 3,
+                0, 3, 4,
+                0, 4, 5,
+                0, 5, 6,
+                0, 6, 1
             };
 
             mesh.RecalculateNormals();
 
             game_object.transform.SetParent(MapContainer.Instance.fields_container);
-            return game_object;
-        }
-        public GameObject CreateUnitGameObjectByPath(ClassType class_type, UnitType unit_type, Vector3 position, Quaternion rotation)
-        {
-            GameObject game_object = UnityEngine.Object.Instantiate(Resources.Load<GameObject>("Prefabs/" + unit_type.ToString() + "/" + class_type.ToString() + "/prefab"));
-            game_object.name = class_type.ToString() + "_" + unit_type.ToString();
-            game_object.transform.position = position;
-            game_object.transform.rotation = rotation;
-            game_object.transform.SetParent(MapContainer.Instance.units_container);
             return game_object;
         }
     }

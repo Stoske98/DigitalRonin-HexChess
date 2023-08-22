@@ -9,16 +9,17 @@ public class Trap : HexModifier
 
     [JsonConstructor]
     public Trap() : base() { }
-    public Trap(Unit _cast_unit, AbilityBehaviour _ability) : base()
+    public Trap(Unit _cast_unit, AbilityBehaviour _ability, string _game_object_path) : base()
     {
         id = NetworkManager.Instance.games[_cast_unit.match_id].random_seeds_generator.GetRandomIdsSeed();
         cast_unit = _cast_unit; 
         ability = _ability;
+        game_object_path = _game_object_path; 
         class_type = cast_unit.class_type;
 
         visibility = (class_type == ClassType.Light ? Visibility.LIGHT : Visibility.DARK);
 
-        game_object = UnityEngine.Object.Instantiate(Resources.Load<GameObject>("Prefabs/Trap/prefab"));
+        game_object = UnityEngine.Object.Instantiate(Resources.Load<GameObject>(game_object_path));
     }
     public override void Trigger(Unit _unit, Hex _hex)
     {

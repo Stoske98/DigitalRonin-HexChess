@@ -6,7 +6,7 @@ public class TankAttackStance : TargetableAbility, ITargetableSingleHex
     public Hex targetable_hex { get; set; }
     public TankDefenceStance tank_deffence_stance { get; set; }
     public TankAttackStance() : base() {  }
-    public TankAttackStance(Unit _unit, AbilityData _ability_data) : base(_unit, _ability_data)
+    public TankAttackStance(Unit _unit, AbilityData _ability_data, string _sprite_path) : base(_unit, _ability_data, _sprite_path)
     {
         tank_deffence_stance = new TankDefenceStance(unit, new AbilityData()
         {
@@ -14,7 +14,7 @@ public class TankAttackStance : TargetableAbility, ITargetableSingleHex
             amount = 3,
             max_cooldown = 2,
             current_cooldown = 0
-        });
+        }, "UI/Unit/Tank/Special/defence_stance");
 
         unit.behaviours.Add(tank_deffence_stance);
 

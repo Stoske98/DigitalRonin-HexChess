@@ -11,7 +11,7 @@ public class RangedAttack : AttackBehaviour
     {
         if (Time.time >= time + unit.stats.attack_speed)
         {
-            Missile missile = new Missile(target, damage, 55, 7);
+            Missile missile = new Missile(target, damage, 55, 10);
             NetworkManager.Instance.games[unit.match_id].object_manager.AddObject(missile);
             target = null;
 

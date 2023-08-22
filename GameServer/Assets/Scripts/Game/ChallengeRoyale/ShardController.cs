@@ -10,8 +10,8 @@ public class ShardController
     }
     public void InitControllers()
     {
-        light_shards = 100;
-        dark_shards = 100;
+        light_shards = 0;
+        dark_shards = 0;
 
         class_level_controller = new List<ClassLevelController>()
         {

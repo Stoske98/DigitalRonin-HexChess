@@ -3,7 +3,7 @@ public class Earthshaker : InstantleAbility
 {
     List<Unit> enemies;
     public Earthshaker() : base() { enemies = new List<Unit>(); }
-    public Earthshaker(Unit _unit, AbilityData _ability_data) : base(_unit, _ability_data) { enemies = new List<Unit>(); }
+    public Earthshaker(Unit _unit, AbilityData _ability_data, string _sprite_path) : base(_unit, _ability_data, _sprite_path) { enemies = new List<Unit>(); }
     public override void Execute()
     {
         foreach (Unit enemy in enemies)

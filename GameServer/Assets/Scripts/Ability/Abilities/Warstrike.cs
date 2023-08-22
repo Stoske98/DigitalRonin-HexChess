@@ -6,7 +6,7 @@ public class Warstrike : TargetableAbility, ITargetableSingleHex, IUpgradable
     private Unit enemy { get; set; }
     [JsonIgnore] public Hex targetable_hex { get; set; }
     public Warstrike() : base() { }
-    public Warstrike(Unit _unit, AbilityData _ability_data) : base(_unit, _ability_data) { }
+    public Warstrike(Unit _unit, AbilityData _ability_data, string _sprite_path) : base(_unit, _ability_data, _sprite_path) { }
     public override void Execute()
     {
         if(enemy != null)
@@ -20,7 +20,7 @@ public class Warstrike : TargetableAbility, ITargetableSingleHex, IUpgradable
                 WarstrikeAction warstrike_action = new WarstrikeAction(unit, new AbilityData()
                 {
                     cc = 2
-                });
+                }, "");
                 ((ITargetableSingleHex)warstrike_action).SetAbility(_enemy_unit_hex);
 
                 unit.AddBehaviourToWork(warstrike_action);
@@ -134,7 +134,7 @@ public class WarstrikeAction : TargetableAbility, ITargetableSingleHex
 {
     [JsonIgnore] public Hex targetable_hex { get; set; }
     public WarstrikeAction() : base() { }
-    public WarstrikeAction(Unit _unit, AbilityData _ability_data) : base(_unit, _ability_data) { }
+    public WarstrikeAction(Unit _unit, AbilityData _ability_data, string _sprite_path) : base(_unit, _ability_data, _sprite_path) { }
 
     public override List<Hex> GetAbilityMoves(Hex _unit_hex)
     {

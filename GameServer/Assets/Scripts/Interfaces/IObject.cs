@@ -4,6 +4,7 @@ using UnityEngine.UIElements;
 public interface IObject
 {
     public string id { get; set; }
+    public string game_object_path { get; set; }
     public GameObject game_object { get; set; }
     public Visibility visibility { get; set; }
     public ClassType class_type { get; set; }

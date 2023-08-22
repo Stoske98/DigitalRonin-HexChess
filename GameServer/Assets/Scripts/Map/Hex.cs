@@ -7,7 +7,7 @@ public class Hex
     public Vector2Int coordinates { set; get; }
     public int S { set; get; }
     [JsonRequired] private bool is_walkable { set; get; }
-    [JsonConverter(typeof(CustomConverters.GameObjectConverter))] public GameObject game_object { set; get; }
+    [JsonConverter(typeof(CustomConverters.HexGameObjectConverter))] public GameObject game_object { set; get; }
     [JsonRequired] [JsonConverter(typeof(CustomConverters.ObjectListConverter))] public List<IObject> objects { get; set; }
     [JsonIgnore]  public HexPathData path_data{ set; get; }
 

@@ -8,7 +8,7 @@ public class Haunt : TargetableAbility, ITargetableSingleHex, IUpgradable
     [JsonIgnore] public Hex targetable_hex { get; set; }
     [JsonIgnore] public Hex soul_start_hex { get; set; }
     public Haunt() : base() { }
-    public Haunt(Unit _unit, AbilityData _ability_data) : base(_unit, _ability_data) { }
+    public Haunt(Unit _unit, AbilityData _ability_data, string _sprite_path) : base(_unit, _ability_data, _sprite_path) { }
     public override void Execute()
     {
         Game game = NetworkManager.Instance.games[unit.match_id];

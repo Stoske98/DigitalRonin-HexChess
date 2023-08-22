@@ -74,10 +74,7 @@ public class ChallengeRoyaleGame : Game
             {
                 Unit unit = hex.GetUnit();
                 if (unit != null)
-                {
-                    unit.stats.current_health = 0;
-                    //play death and remove figures
-                }
+                    unit.Die(hex);
 
                 hex.game_object.SetActive(false);
                 outer_hexes.Add(hex);
@@ -109,8 +106,8 @@ public class ChallengeRoyaleGame : Game
 
         NetEndTurn responess = new NetEndTurn();
         responess.class_on_turn = class_on_turn;
-        foreach (Player player in players)
-            Sender.SendToClient_Reliable((ushort)player.connection_id, responess);
+      
+        SendMessageToPlayers(responess);
     }
 
     private void UpdateFlagExp()

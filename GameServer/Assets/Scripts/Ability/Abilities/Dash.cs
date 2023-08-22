@@ -11,7 +11,7 @@ public class Dash : TargetableAbility, ITargetableSingleHex, IUpgradable
     [JsonIgnore] private List<Hex> hexes_in_direction { get; set; }
     [JsonIgnore]public Hex targetable_hex { get; set; }
     public Dash() : base() { hexes_in_direction = new List<Hex>(); }
-    public Dash(Unit _unit, AbilityData _ability_data) : base(_unit, _ability_data) { hexes_in_direction = new List<Hex>(); upgraded = false; }
+    public Dash(Unit _unit, AbilityData _ability_data, string _sprite_path) : base(_unit, _ability_data, _sprite_path) { hexes_in_direction = new List<Hex>(); upgraded = false; }
 
     public override void Execute()
     {

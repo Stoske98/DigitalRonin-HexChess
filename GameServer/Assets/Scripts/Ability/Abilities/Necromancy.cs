@@ -5,7 +5,7 @@ public class Necromancy : TargetableAbility, ITargetableSingleHex
 {
     [JsonIgnore] public Hex targetable_hex { get; set; }
     public Necromancy() : base() { }
-    public Necromancy(Unit _unit, AbilityData _ability_data) : base(_unit, _ability_data) { }
+    public Necromancy(Unit _unit, AbilityData _ability_data, string _sprite_path) : base(_unit, _ability_data, _sprite_path) { }
     public override void Execute()
     {
         if(targetable_hex.GetUnit().class_type == unit.class_type)

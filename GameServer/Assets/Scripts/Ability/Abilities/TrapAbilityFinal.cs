@@ -9,7 +9,7 @@ public class TrapAbilityFinal : TargetableAbility, ITargetMultipleHexes
     {
         targetable_hexes = new List<Hex>();
     }
-    public TrapAbilityFinal(Unit _unit, AbilityData _ability_data) : base(_unit, _ability_data)
+    public TrapAbilityFinal(Unit _unit, AbilityData _ability_data, string _sprite_path) : base(_unit, _ability_data, _sprite_path)
     {
         targetable_hexes = new List<Hex>();
         max_hexes = 2;
@@ -20,7 +20,7 @@ public class TrapAbilityFinal : TargetableAbility, ITargetMultipleHexes
         Game game = NetworkManager.Instance.games[unit.match_id];
         foreach (var targetable_hex in targetable_hexes)
         {
-            Trap trap = new Trap(unit, this);
+            Trap trap = Spawner.CreateTrap(unit, this);
             game.map.PlaceObject(trap, targetable_hex.coordinates.x, targetable_hex.coordinates.y);
             game.object_manager.AddObject(trap);
 

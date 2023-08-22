@@ -28,4 +28,5 @@ public enum OpCode
     ON_INSTANT_ABILITY = 8,
     ON_END_TURN = 9,
     ON_TRAP_ABILITY = 10,
+    ON_UPGRADE_CLASS = 11,
 }

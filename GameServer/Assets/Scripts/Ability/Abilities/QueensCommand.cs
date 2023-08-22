@@ -6,7 +6,7 @@ public class QueensCommand : TargetableAbility, ITargetableSingleHex, IUpgradabl
     private Unit enemy { get; set; }
     [JsonIgnore] public Hex targetable_hex { get; set; }
     public QueensCommand() : base() { }
-    public QueensCommand(Unit _unit, AbilityData _ability_data) : base(_unit, _ability_data) { }
+    public QueensCommand(Unit _unit, AbilityData _ability_data, string _sprite_path) : base(_unit, _ability_data, _sprite_path) { }
 
     public override void Execute()
     {

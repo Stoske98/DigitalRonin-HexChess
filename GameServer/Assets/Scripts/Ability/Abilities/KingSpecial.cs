@@ -6,7 +6,7 @@ public class KingSpecial : TargetableAbility, ITargetableSingleHex
     [JsonIgnore] public Hex targetable_hex { get; set; }
     [JsonRequired] private bool king_activate_special = false;
     public KingSpecial() : base() { }
-    public KingSpecial(Unit _unit, AbilityData _ability_data) : base(_unit, _ability_data) {  }
+    public KingSpecial(Unit _unit, AbilityData _ability_data, string _sprite_path) : base(_unit, _ability_data, _sprite_path) {  }
     public override void Execute()
     {
         if (NetworkManager.Instance.games[unit.match_id] is ChallengeRoyaleGame game)

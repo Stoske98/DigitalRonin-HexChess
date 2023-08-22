@@ -4,6 +4,7 @@ using UnityEngine;
 public abstract class HexModifier : IObject
 {
     public string id { get; set; }
+    public string game_object_path { get; set; }
     public bool should_be_removed { get; set; }
     public Visibility visibility { get; set; }
     public ClassType class_type { get; set; }

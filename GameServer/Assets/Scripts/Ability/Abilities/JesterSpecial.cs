@@ -6,7 +6,7 @@ public class JesterSpecial : PassiveAbility
 {
     public List<Unit> illusions;
     public JesterSpecial() : base() { illusions = new List<Unit>(); }
-    public JesterSpecial(Unit _unit, AbilityData _ability_data) : base(_unit, _ability_data)
+    public JesterSpecial(Unit _unit, AbilityData _ability_data, string _sprite_path) : base(_unit, _ability_data, _sprite_path)
     {
         Game game = NetworkManager.Instance.games[unit.match_id];
         if(unit.class_type == ClassType.Light)
@@ -120,7 +120,7 @@ public class JesterSpecial : PassiveAbility
 public class JesterFakeSpecial : PassiveAbility
 {
     public JesterFakeSpecial() : base() { }
-    public JesterFakeSpecial(Unit _unit, AbilityData _ability_data) : base(_unit, _ability_data)
+    public JesterFakeSpecial(Unit _unit, AbilityData _ability_data, string _sprite_path) : base(_unit, _ability_data, _sprite_path)
     {
     }
 
@@ -156,7 +156,7 @@ public class JesterFakeSpecialFinal : TargetableAbility, ITargetMultipleHexes, I
     {
         targetable_hexes = new List<Hex>();
     }
-    public JesterFakeSpecialFinal(Unit _unit, AbilityData _ability_data) : base(_unit, _ability_data)
+    public JesterFakeSpecialFinal(Unit _unit, AbilityData _ability_data, string _sprite_path) : base(_unit, _ability_data, _sprite_path)
     {
         targetable_hexes = new List<Hex>();
 
@@ -201,7 +201,7 @@ public class JesterSpecialFinal : TargetableAbility, ITargetMultipleHexes, ISubs
         targetable_hexes = new List<Hex>();
         illusions = new List<Unit>();
     }
-    public JesterSpecialFinal(Unit _unit, AbilityData _ability_data) : base(_unit, _ability_data)
+    public JesterSpecialFinal(Unit _unit, AbilityData _ability_data, string _sprite_path) : base(_unit, _ability_data, _sprite_path)
     {
         targetable_hexes = new List<Hex>();
         illusions = new List<Unit>();

@@ -56,7 +56,7 @@ public class NetworkManager : MonoBehaviour
     #endregion
 
     public Server Server { get; private set; }
-    public Reciever Reciever { get; private set; }
+    public Receiver Reciever { get; private set; }
 
     [SerializeField] private ushort port;
     [SerializeField] private ushort max_clinet_count;
@@ -84,7 +84,7 @@ public class NetworkManager : MonoBehaviour
          Server.ClientDisconnected += OnClientDisconnected;
          Server.Start(port, max_clinet_count);
 
-         Reciever = new Reciever();
+         Reciever = new Receiver();
          Reciever.Subscibe();
 
          //poll_update_match_stats_corutine = StartCoroutine(UpdateMatchesCoroutine());
@@ -114,11 +114,11 @@ public class NetworkManager : MonoBehaviour
              if (games[2] is ChallengeRoyaleGame ch_royale)
              {
                  List<Unit> units = ch_royale.object_manager.objects.OfType<Unit>().ToList();
-                 ch_royale.shard_controller.UpgradeClass(ClassType.Dark, UnitType.Swordsman, units);
+                 ch_royale.shard_controller.UpgradeClass(ClassType.Dark, UnitType.Archer, units);
 
                  foreach (Unit unit in units)
                  {
-                     if(unit.class_type == ClassType.Dark && unit.unit_type == UnitType.Swordsman)
+                     if(unit.class_type == ClassType.Dark && unit.unit_type == UnitType.Archer)
                      {
                          Debug.Log(unit.unit_type.ToString());
                          foreach (var item in unit.behaviours)
@@ -241,6 +241,9 @@ public class NetworkManager : MonoBehaviour
             case OpCode.ON_END_TURN:
                 msg = new NetEndTurn(e.Message);
                 break;
+            case OpCode.ON_UPGRADE_CLASS:
+                msg = new NetUpgradeClass(e.Message);
+                break;
 
             default:
                 break;
@@ -259,6 +262,7 @@ public class NetworkManager : MonoBehaviour
     public static Action<NetMessage, Connection> S_ON_SINGLE_TARGET_ABILITY_REQUEST;
     public static Action<NetMessage, Connection> S_ON_INSTANT_ABILITY_REQUEST;
     public static Action<NetMessage, Connection> S_ON_MULTIPLE_TARGETS_ABILITY_REQUEST;
+    public static Action<NetMessage, Connection> S_ON_UPGRADE_CLASS_REQUEST;
     #endregion
 
     public static string Serialize<T>(T obj)

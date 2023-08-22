@@ -6,7 +6,11 @@ public class SwordsmanSpecial : PassiveAbility
 {
     [JsonRequired] private Direction face_direction { get; set; }
     public SwordsmanSpecial() : base() {  }
-    public SwordsmanSpecial(Unit _unit, AbilityData _ability_data, Direction _direction) : base(_unit, _ability_data) { face_direction = _direction; }
+    public SwordsmanSpecial(Unit _unit, AbilityData _ability_data, string _sprite_path ,Direction _direction) : base(_unit, _ability_data, _sprite_path) 
+    {
+        face_direction = _direction;
+
+    }
     public override void Execute()
     {
     }
