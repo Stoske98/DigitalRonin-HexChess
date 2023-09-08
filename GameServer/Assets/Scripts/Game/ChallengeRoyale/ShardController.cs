@@ -10,31 +10,31 @@ public class ShardController
     }
     public void InitControllers()
     {
-        light_shards = 0;
-        dark_shards = 0;
+        light_shards = 100;
+        dark_shards = 100;
 
         class_level_controller = new List<ClassLevelController>()
         {
-            new ClassLevelController(UnitType.Swordsman, ClassType.Light, new List<int> {2,3,5}, new List<int> {3,5}),
-            new ClassLevelController(UnitType.Swordsman, ClassType.Dark, new List < int > { 2, 3, 5 }, new List < int > { 3, 5 }),
+            new ClassLevelController(UnitType.Swordsman, ClassType.Light, new List<int> { 1, 2, 3}, new List<int> { 5, 8 }),
+            new ClassLevelController(UnitType.Swordsman, ClassType.Dark, new List < int > { 1, 2, 3 }, new List < int > { 5, 8 }),
 
-            new ClassLevelController(UnitType.Archer,ClassType.Light, new List<int> {4,5,6}, new List < int > { 4, 6 }),
-            new ClassLevelController(UnitType.Archer,ClassType.Dark, new List < int > { 4, 5, 6 }, new List < int > { 4, 6 }),
+            new ClassLevelController(UnitType.Archer,ClassType.Light, new List<int> { 2, 3, 4 }, new List < int > { 6, 9 }),
+            new ClassLevelController(UnitType.Archer,ClassType.Dark, new List < int > { 2, 3, 4 }, new List < int > { 6, 9 }),
 
-            new ClassLevelController(UnitType.Tank,ClassType.Light, new List < int > { 5, 6, 7 }, new List < int > { 5, 7 }),
-            new ClassLevelController(UnitType.Tank,ClassType.Dark, new List < int > { 5, 6, 7 }, new List < int > { 5, 7 }),
+            new ClassLevelController(UnitType.Knight,ClassType.Light, new List < int > { 2, 4, 6 }, new List < int > { 7, 10 }),
+            new ClassLevelController(UnitType.Knight,ClassType.Dark, new List < int > { 2, 4, 6 }, new List < int > { 7, 10 }),
 
-            new ClassLevelController(UnitType.Knight,ClassType.Light, new List < int > { 5, 6, 7 }, new List < int > { 5, 7 }),
-            new ClassLevelController(UnitType.Knight,ClassType.Dark, new List < int > { 5, 6, 7 }, new List < int > { 5, 7 }),
+            new ClassLevelController(UnitType.Tank,ClassType.Light, new List < int > { 3, 5, 7 }, new List < int > { 8, 11 }),
+            new ClassLevelController(UnitType.Tank,ClassType.Dark, new List < int > { 3, 5, 7 }, new List < int > { 8, 11 }),
 
-            new ClassLevelController(UnitType.Jester, ClassType.Light, new List < int > { 7, 8, 9 }, new List < int > { 7, 9 }),
-            new ClassLevelController(UnitType.Jester, ClassType.Dark, new List < int > { 7, 8, 9 }, new List < int > { 7, 9 }),
+            new ClassLevelController(UnitType.Jester, ClassType.Light, new List < int > { 5, 7, 9 }, new List < int > { 9, 13 }),
+            new ClassLevelController(UnitType.Jester, ClassType.Dark, new List < int > { 5, 7, 9 }, new List < int > { 9, 13 }),
 
-            new ClassLevelController(UnitType.Wizard, ClassType.Light, new List < int > { 7, 8, 9 }, new List < int > { 7, 9 }),
-            new ClassLevelController(UnitType.Wizard, ClassType.Dark, new List < int > { 7, 8, 9 }, new List < int > { 7, 9 }),
+            new ClassLevelController(UnitType.Wizard, ClassType.Light, new List < int > { 6, 8, 10 }, new List < int > { 10, 16 }),
+            new ClassLevelController(UnitType.Wizard, ClassType.Dark, new List < int > { 6, 8, 10 }, new List < int > { 10, 16 }),
 
-            new ClassLevelController(UnitType.Queen,ClassType.Light, new List < int > { 9, 10, 11 }, new List < int > { 9, 11 }),
-            new ClassLevelController(UnitType.Queen,ClassType.Dark, new List < int > { 9, 10, 11 }, new List < int > { 9, 11 }),
+            new ClassLevelController(UnitType.Queen,ClassType.Light, new List < int > { 8, 10, 12 }, new List < int > { 12, 20 }),
+            new ClassLevelController(UnitType.Queen,ClassType.Dark, new List < int > { 8, 10, 12 }, new List < int > { 12, 20 }),
 
             new ClassLevelController(UnitType.King,ClassType.Light, null, new List < int > { 9, 11 }),
             new ClassLevelController(UnitType.King,ClassType.Dark, null, new List < int > { 9, 11 }),

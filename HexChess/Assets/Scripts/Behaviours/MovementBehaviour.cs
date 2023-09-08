@@ -8,7 +8,7 @@ public abstract class MovementBehaviour : Behaviour
     protected List<Hex> path { get; set; }
     protected Hex current_hex = null;
     protected Hex next_hex = null;
-    [JsonRequired] protected int range { get; set; }
+    public int range { get; set; }
     public MovementBehaviour() : base() { path = new List<Hex>(); }
     public MovementBehaviour(Unit _unit)
     {
@@ -78,5 +78,10 @@ public abstract class MovementBehaviour : Behaviour
         time = Time.time;
         current_hex = _unit_hex;
         next_hex = null;
+    }
+
+    public void SetMovementSpeed(float _speed)
+    {
+        movement_speed = _speed;
     }
 }

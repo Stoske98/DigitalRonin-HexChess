@@ -1,15 +1,13 @@
 using MySql.Data.MySqlClient;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
 using System.Threading.Tasks;
 
 public class Database  
 {
     private const string _mysqlServer = "localhost";
     private const string _mysqlUsername = "root";
-    private const string _mysqlPassword = "";
+    private const string _mysqlPassword = ""; // Kassker98
     private const string _mysqlDatabase = "hexchess";
     private const UInt16 _mysqlPort = 3306;
 
@@ -21,7 +19,7 @@ public class Database
         connString.Password = _mysqlPassword;
         connString.Port = _mysqlPort;
         connString.Database = _mysqlDatabase;
-        connString.CharacterSet = "utf8";
+        connString.CharacterSet = "utf8mb4"; // utf8mb4
         MySqlConnection _mysqlConnection = new MySqlConnection(connString.ToString());
         try
         {
@@ -46,7 +44,7 @@ public class Database
 
             using (MySqlConnection connection = GetMysqlConnection())
             {
-                string query = String.Format("SELECT acc_id, nickname, rank, selected_class FROM player WHERE device_id = '{0}'", deviceID);
+                string query = String.Format("SELECT acc_id, nickname, `rank`, selected_class FROM player WHERE device_id = '{0}'", deviceID);
 
                 using (MySqlCommand command = new MySqlCommand(query, connection))
                 {

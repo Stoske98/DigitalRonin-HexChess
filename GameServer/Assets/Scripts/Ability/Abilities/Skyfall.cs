@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System.Collections.Generic;
 
-public class Skyfall : TargetableAbility, ITargetableSingleHex
+public class Skyfall : TargetableAbility, ITargetableSingleHex, IUpgradable
 {
     [JsonIgnore] public Hex targetable_hex { get; set; }
     public Skyfall() : base() { }
@@ -9,9 +9,14 @@ public class Skyfall : TargetableAbility, ITargetableSingleHex
     public override void Execute()
     {
         Unit enemy = targetable_hex.GetUnit();
-        enemy.ReceiveDamage(new MagicDamage(unit, ability_data.amount));
-        if(!enemy.IsDead())
-            enemy.ccs.Add(new Stun(ability_data.cc));
+
+        if (unit.level == 3)
+            enemy.ReceiveDamage(new MagicDamage(unit, ability_data.amount + 1));
+        else
+            enemy.ReceiveDamage(new MagicDamage(unit, ability_data.amount));
+
+        if (!enemy.IsDead())
+            enemy.ccs.Add(new Stun(unit, enemy, ability_data.cc));
 
         foreach (Hex hex in targetable_hex.GetNeighbors(NetworkManager.Instance.games[unit.match_id].map))
         {
@@ -35,5 +40,11 @@ public class Skyfall : TargetableAbility, ITargetableSingleHex
         }
 
         return _available_moves;
+    }
+
+    public void Upgrade()
+    {
+        ability_data.cc += 1;
+        ability_data.max_cooldown += 1;
     }
 }

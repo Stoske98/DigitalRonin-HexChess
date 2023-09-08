@@ -76,7 +76,7 @@ public class Receiver
 
         if (unit != null && unit.id == responess.unit_id && desired_hex != null)
         {
-            MovementBehaviour movement_behaviour = unit.GetBehaviour<MovementBehaviour>() as MovementBehaviour;
+            MovementBehaviour movement_behaviour = unit.GetBehaviour<MovementBehaviour>();
 
             if (movement_behaviour != null && movement_behaviour.GetAvailableMoves(unit_hex).Contains(desired_hex))
                 unit.Move(unit_hex, desired_hex);
@@ -98,7 +98,7 @@ public class Receiver
 
         if (attacker != null && attacker.id == responess.attacker_id && target != null && target.id == responess.target_id)
         {
-            AttackBehaviour attack_behaviour = attacker.GetBehaviour<AttackBehaviour>() as AttackBehaviour;
+            AttackBehaviour attack_behaviour = attacker.GetBehaviour<AttackBehaviour>();
 
             if(attack_behaviour != null && attack_behaviour.GetAttackMoves(attacker_hex).Contains(target_hex))
                 attacker.Attack(target);
@@ -119,8 +119,8 @@ public class Receiver
 
         if (unit != null && unit.id == responess.unit_id && desired_hex != null)
         {
-            Ability ability = unit.GetBehaviour<Ability>(responess.key_code) as Ability;
-            if (ability != null && ability is TargetableAbility targetable_ability && targetable_ability.GetAbilityMoves(unit_hex).Contains(desired_hex) && targetable_ability is ITargetableSingleHex)
+            Ability ability = unit.GetBehaviour<Ability>(responess.key_code);
+            if (ability != null && ability is TargetableAbility targetable_ability && targetable_ability.GetAbilityMoves(unit_hex).Count > 0 && targetable_ability.GetAbilityMoves(unit_hex).Contains(desired_hex) && targetable_ability is ITargetableSingleHex)
             {
                 unit.UseSingleTargetableAbility(targetable_ability, desired_hex);
             }    
@@ -143,7 +143,7 @@ public class Receiver
 
         if (unit != null && unit.id == responess.unit_id && _desired_hexes.Count > 0)
         {
-            Ability ability = unit.GetBehaviour<Ability>(responess.key_code) as Ability;
+            Ability ability = unit.GetBehaviour<Ability>(responess.key_code);
             if (ability != null && ability is TargetableAbility targetable_ability && targetable_ability is ITargetMultipleHexes)
             {
                 unit.UseMultipleTargetableAbility(targetable_ability, _desired_hexes);
@@ -162,7 +162,7 @@ public class Receiver
         Unit unit = unit_hex?.GetUnit();
         if (unit != null && unit.id == responess.unit_id)
         {
-            Ability ability = unit.GetBehaviour<Ability>(responess.key_code) as Ability;
+            Ability ability = unit.GetBehaviour<Ability>(responess.key_code);
             if (ability != null && ability is InstantleAbility instant_ability)
                 unit.UseInstantAbility(instant_ability);
 
@@ -187,7 +187,7 @@ public class Receiver
         ChallengeRoyaleGame ch_game = GameManager.Instance.game as ChallengeRoyaleGame;
 
         ClassLevelController  level_controller =  ch_game.shard_controller.UpgradeClass(responess.class_type, responess.unit_type_to_upgrade, ch_game.object_manager.objects.OfType<Unit>().ToList());
-        ch_game.game_events.OnClassUpgraded_Global?.Invoke(level_controller, responess.unit_type_to_upgrade);
+        ch_game.game_events.OnClassUpgraded_Global?.Invoke(level_controller, responess.class_type, responess.unit_type_to_upgrade);
     }
     private void OnReceiveByteArrayFragment(NetSync responess)
     {
@@ -217,11 +217,16 @@ public class Receiver
         {
             GameManager.Instance.game = game;
             game.object_manager.Init();
+            game.RegisterEvents();
 
             foreach (var obj in game.object_manager.objects)
             {
                 if (obj is ISubscribe subscriber)
                     subscriber.RegisterEvents();
+
+                if (obj is Unit unit && unit.ccs.Count > 0)
+                    foreach (var cc in unit.ccs)
+                        cc.Init();
 
                 IObject.ObjectVisibility(obj,obj.visibility);
             }

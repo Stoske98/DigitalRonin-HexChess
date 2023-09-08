@@ -21,7 +21,7 @@ public enum UnitType
     QueenSoul = 8,
     Stone = 9,
 }
-public abstract class Game
+public abstract class Game : ISubscribe
 {
     [JsonConverter(typeof(CustomConverters.MapConverter))] public Map map { get; set; }
     public ClassType class_on_turn { get; set; }
@@ -62,4 +62,7 @@ public abstract class Game
     {
         return map.GetHexesInDirection(direction, center_hex,range, count_unwalkable_fields);
     }
+
+    public abstract void RegisterEvents();
+    public abstract void UnregisterEvents();
 }

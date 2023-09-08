@@ -11,6 +11,26 @@ public class KingSpecial : TargetableAbility, ITargetableSingleHex
     {
         if (NetworkManager.Instance.games[unit.match_id] is ChallengeRoyaleGame game)
         {
+            //upgrade king
+            UnityEngine.Debug.Log(unit.class_type.ToString() + " King: Challenge royale actiaveted");
+            king_activate_special = true;
+            game.Activate();
+
+            Hex _cast_unit_hex = NetworkManager.Instance.games[unit.match_id].map.GetHex(unit);
+            Unit aliance = targetable_hex.GetUnit();
+            if (aliance != null)
+            {
+                targetable_hex.RemoveObject(aliance);
+                IObject.ObjectVisibility(aliance, Visibility.NONE);
+
+                BlinkMovement blink = new BlinkMovement(unit, 2);
+                blink.SetPath(_cast_unit_hex, targetable_hex);
+                unit.AddBehaviourToWork(blink);
+
+            }
+            else
+                unit.Move(_cast_unit_hex, targetable_hex);
+
             int counter = 0;
             foreach (var obj in NetworkManager.Instance.games[unit.match_id].object_manager.objects)
             {
@@ -18,13 +38,28 @@ public class KingSpecial : TargetableAbility, ITargetableSingleHex
                     counter++;
             }
 
-            //upgrade king
-            UnityEngine.Debug.Log(unit.class_type.ToString() + " King: Challenge royale actiaveted");
-            king_activate_special = true;
-            game.Activate();
+            if(counter <= 6)
+            {
+                unit.stats.damage = 2;
+                unit.stats.max_health += 1;
+                unit.stats.current_health += 1;
+            }
+            else if(counter <= 9)
+            {
+                unit.stats.damage = 4;
+                unit.stats.max_health += 2;
+                unit.stats.current_health += 2;
+            }
+            else
+            {
+                unit.stats.damage = 6;
+                unit.stats.max_health += 3;
+                unit.stats.current_health += 3;
+            }
+            unit.stats.attack_range = 1;
+            unit.AddAttackBehaviour(new MeleeAttack(unit));
 
-            Hex _cast_unit_hex = NetworkManager.Instance.games[unit.match_id].map.GetHex(unit);
-            unit.Move(_cast_unit_hex, targetable_hex);
+            
         }
         Exit();
     }
@@ -36,8 +71,9 @@ public class KingSpecial : TargetableAbility, ITargetableSingleHex
         {
             Map map = NetworkManager.Instance.games[unit.match_id].map;
             Hex grall_hex = map.GetHex(0, 0);
+            Unit aliance = grall_hex.GetUnit();
 
-            if (grall_hex.IsWalkable() && map.HexesInRange(_unit_hex, ability_data.range).Contains(grall_hex))
+            if ((grall_hex.IsWalkable() && map.HexesInRange(_unit_hex, ability_data.range).Contains(grall_hex)) || (aliance != null && aliance.class_type == unit.class_type))
                 _available_moves.Add(grall_hex);
         }      
 

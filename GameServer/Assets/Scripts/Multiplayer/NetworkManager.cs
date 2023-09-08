@@ -4,11 +4,8 @@ using Riptide.Utils;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using UnityEngine;
 using UnityEngine.InputSystem;
-
 
 public class Player
 {
@@ -104,40 +101,9 @@ public class NetworkManager : MonoBehaviour
                 games.Add(game_to_add.match_id, game_to_add);
                 game_to_add.Init();
 
-                string json = NetworkManager.Serialize(game_to_add);
-                File.WriteAllText("ChallengeRoyaleGame.json", json);
+                //string json = NetworkManager.Serialize(game_to_add);
+                //File.WriteAllText("ChallengeRoyaleGame.json", json);
             }
-        }
-
-        if(Keyboard.current.spaceKey.wasPressedThisFrame)
-        {
-             if (games[2] is ChallengeRoyaleGame ch_royale)
-             {
-                 List<Unit> units = ch_royale.object_manager.objects.OfType<Unit>().ToList();
-                 ch_royale.shard_controller.UpgradeClass(ClassType.Dark, UnitType.Archer, units);
-
-                 foreach (Unit unit in units)
-                 {
-                     if(unit.class_type == ClassType.Dark && unit.unit_type == UnitType.Archer)
-                     {
-                         Debug.Log(unit.unit_type.ToString());
-                         foreach (var item in unit.behaviours)
-                         {
-                             Debug.Log(item.GetType());
-                         }
-                     }
-                 }
-                 Debug.Log("Count Units: " + units.Count);
-             }
-
-            /*if (games[2] != null)
-            {
-                List<Unit> units = games[2].object_manager.objects.OfType<Unit>().ToList();
-                foreach (Unit unit in units)
-                {
-                    Debug.Log(unit.class_type.ToString() + "_" + unit.unit_type.ToString());
-                }
-            }*/
         }
 
     }
@@ -200,7 +166,7 @@ public class NetworkManager : MonoBehaviour
             foreach (int _match_id in matches_ids)
             {
                 Map map = new ChallengeRoyaleMap(4, 4, 1.05f, 1);
-                Game game = new ChallengeRoyaleGame(_match_id, map, 30, 10);
+                Game game = new ChallengeRoyaleGame(_match_id, map, 10);
                 games_to_add.Enqueue(game);
             }
     }

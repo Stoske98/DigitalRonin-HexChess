@@ -129,5 +129,6 @@ public class Joust : TargetableAbility, ITargetableSingleHex, IUpgradable
     public void Upgrade()
     {
         ability_data.range += 1;
+        ability_data.max_cooldown += 1;
     }
 }

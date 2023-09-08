@@ -251,8 +251,8 @@ SkinnedMeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 2324dc9d1d77fa54eb9404950eea677a, type: 2}
-  - {fileID: 2100000, guid: 2324dc9d1d77fa54eb9404950eea677a, type: 2}
+  - {fileID: 2100000, guid: def0a802f2a64ed459677ca188080f58, type: 2}
+  - {fileID: 2100000, guid: eace6760b1a51494cb9ccee48da9fe05, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -3844,8 +3844,8 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.01, y: 0.01, z: 0.01}
-  m_ConstrainProportionsScale: 0
+  m_LocalScale: {x: 0.012999999, y: 0.012999999, z: 0.012999999}
+  m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 8373829383658503290}
   - {fileID: 3830537392499924072}

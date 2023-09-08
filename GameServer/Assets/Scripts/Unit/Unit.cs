@@ -97,41 +97,21 @@ public class Unit : IActiveObject, ISubscribe, IDamageableObject
     {
         return to_do_behaviours.Count > 0 ? true : false;
     }
-    public Behaviour GetBehaviour<T> (KeyCode _code = KeyCode.None)
+    public T GetBehaviour<T> (KeyCode _code = KeyCode.None) where T : Behaviour
     {
-        if (_code == KeyCode.None)
-        {
-            if (typeof(T) == typeof(MovementBehaviour))
-            {
-                foreach (Behaviour behaviour in behaviours)
-                {
-                    if (behaviour is MovementBehaviour movement_behaviour)
-                    {
-                        //TO DO : chekc movmeent behaviour priority then return movement behaviour
-                        return movement_behaviour;
-
-                    }
-                }
-            }
-            else if (typeof(T) == typeof(AttackBehaviour))
-            {
-                foreach (Behaviour behaviour in behaviours)
-                {
-                    if (behaviour is AttackBehaviour attack_behaviour)
-                    {
-                        //TO DO : chekc attack behaviour priority then return movement behaviour
-                        return attack_behaviour;
-
-                    }
-                }
-            }
-        }
-        else if (typeof(T) == typeof(Ability))
+        if (_code != KeyCode.None && typeof(T) == typeof(Ability))
         {
             if (_code == KeyCode.S || _code == KeyCode.Q || _code == KeyCode.W || _code == KeyCode.E || _code == KeyCode.R)
-                return GetAbilityByPosition(_code);
+                return GetAbilityByPosition(_code) as T;
         }
-        return default;
+        else
+        {
+            foreach (Behaviour behaviour in behaviours)
+                if (behaviour is T t_behaviour)
+                    return t_behaviour;
+        }
+
+        return null; 
     }
     public void AddMovementBehaviour(MovementBehaviour movement_behaviour)
     {
@@ -243,8 +223,8 @@ public class Unit : IActiveObject, ISubscribe, IDamageableObject
     }
     public void Move(Hex _unit_hex, Hex _desired_hex)
     {
-        Behaviour behaviour = GetBehaviour<MovementBehaviour>();
-        if (behaviour != null && behaviour is MovementBehaviour movement_behaviour)
+        MovementBehaviour movement_behaviour = GetBehaviour<MovementBehaviour>();
+        if (movement_behaviour != null)
         {
             movement_behaviour.SetPath(_unit_hex, _desired_hex);
             AddBehaviourToWork(movement_behaviour);
@@ -253,8 +233,8 @@ public class Unit : IActiveObject, ISubscribe, IDamageableObject
     }
     public void Attack(Unit _target)
     {
-        Behaviour behaviour = GetBehaviour<AttackBehaviour>();
-        if(behaviour != null && behaviour is AttackBehaviour attack_behaviour)
+        AttackBehaviour attack_behaviour = GetBehaviour<AttackBehaviour>();
+        if(attack_behaviour != null)
         {
             attack_behaviour.SetAttack(_target);
             AddBehaviourToWork(attack_behaviour);
@@ -364,7 +344,7 @@ public class Unit : IActiveObject, ISubscribe, IDamageableObject
         foreach (CC cc in ccs)
             cc.UpdateCooldown();
 
-        ccs.RemoveAll(obj => obj.current_cooldown == 0);
+        ccs.RemoveAll(obj => obj.HasCooldownExpired());
     }
 
     public void UpdateAbilitiesCooldown()

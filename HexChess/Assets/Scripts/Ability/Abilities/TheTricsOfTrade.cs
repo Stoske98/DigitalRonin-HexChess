@@ -2,9 +2,8 @@
 
 public class TheTricsOfTrade : PassiveAbility, IUpgradable
 {
-    [JsonRequired] private bool upgraded { get; set; }
     public TheTricsOfTrade() : base() { }
-    public TheTricsOfTrade(Unit _unit, AbilityData _ability_data, string _sprite_path) : base(_unit, _ability_data, _sprite_path) { upgraded = false; }
+    public TheTricsOfTrade(Unit _unit, AbilityData _ability_data, string _sprite_path) : base(_unit, _ability_data, _sprite_path) { }
 
     public override void Execute()
     {
@@ -15,19 +14,18 @@ public class TheTricsOfTrade : PassiveAbility, IUpgradable
     {
 
         unit.AddAttackBehaviour(new MeleeAttack(unit));
-        if (upgraded)
+        if (unit.level >= 2)
             unit.events.OnStartAttack_local += OnStartAttack;
     }
 
     public override void UnregisterEvents()
     {
         unit.AddAttackBehaviour(new NoAttack(unit));
-        if (upgraded)
+        if (unit.level >= 2)
             unit.events.OnStartAttack_local -= OnStartAttack;
     }
     public void Upgrade()
     {
-        upgraded = true;
         ability_data.amount = 25;
         unit.events.OnStartAttack_local += OnStartAttack;
     }

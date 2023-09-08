@@ -4,10 +4,9 @@ using System.Collections.Generic;
 public class QueenSpecial : TargetableAbility, ITargetableSingleHex, IUpgradable, ISubscribe
 {
     private Unit enemy { get; set; }
-    [JsonRequired] private bool upgraded { get; set; }
     [JsonIgnore] public Hex targetable_hex { get; set; }
     public QueenSpecial() : base() { }
-    public QueenSpecial(Unit _unit, AbilityData _ability_data, string _sprite_path) : base(_unit, _ability_data, _sprite_path) { upgraded = false; }
+    public QueenSpecial(Unit _unit, AbilityData _ability_data, string _sprite_path) : base(_unit, _ability_data, _sprite_path) { }
 
     public override void Execute()
     {
@@ -90,7 +89,7 @@ public class QueenSpecial : TargetableAbility, ITargetableSingleHex, IUpgradable
             enemy = CheckIsEnemyOnDirection(_target_hex, game.GetAllHexesInDirection(Direction.LOWER_LEFT, _cast_unit_hex));
             if (enemy != null)
                 return enemy;
-            enemy = CheckIsEnemyOnDirection(_target_hex, game.GetAllHexesInDirection(Direction.LOWER_LEFT, _cast_unit_hex));
+            enemy = CheckIsEnemyOnDirection(_target_hex, game.GetAllHexesInDirection(Direction.UPPER_LEFT, _cast_unit_hex));
             if (enemy != null)
                 return enemy;
         }
@@ -119,7 +118,6 @@ public class QueenSpecial : TargetableAbility, ITargetableSingleHex, IUpgradable
     {
         if (unit.level == 3)
         {
-            upgraded = true;
             ability_data.amount = 25;
             unit.events.OnStartAttack_local += OnStartAttack;
         }
@@ -127,13 +125,13 @@ public class QueenSpecial : TargetableAbility, ITargetableSingleHex, IUpgradable
 
     public void RegisterEvents()
     {
-        if (upgraded)
+        if (unit.level == 3)
             unit.events.OnStartAttack_local += OnStartAttack;
     }
 
     public void UnregisterEvents()
     {
-        if (upgraded)
+        if (unit.level == 3)
             unit.events.OnStartAttack_local -= OnStartAttack;
     }
     private Damage OnStartAttack(Damage damage)

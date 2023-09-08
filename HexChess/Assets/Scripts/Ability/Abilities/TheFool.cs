@@ -1,9 +1,18 @@
 ﻿using System.Collections.Generic;
+using UnityEngine;
 
 public class TheFool : PassiveAbility
 {
-    public TheFool() : base() { }
-    public TheFool(Unit _unit, AbilityData _ability_data, string _sprite_path) : base(_unit, _ability_data, _sprite_path) { }
+    string path = "Prefabs/Jester/Dark/Ability/TheFool";
+    GameObject vfx_prefab;
+    public TheFool() : base()
+    {
+        vfx_prefab = Resources.Load<GameObject>(path);
+    }
+    public TheFool(Unit _unit, AbilityData _ability_data, string _sprite_path) : base(_unit, _ability_data, _sprite_path)
+    {
+        vfx_prefab = Resources.Load<GameObject>(path);
+    }
 
     public override void Execute()
     {
@@ -29,13 +38,18 @@ public class TheFool : PassiveAbility
             if (enemy != null && enemy.class_type != unit.class_type)
                 enemy.ReceiveDamage(new MagicDamage(unit, ability_data.amount));
         }
+        Object.Instantiate(vfx_prefab, _hex.game_object.transform.position, Quaternion.identity);
     }
 }
 
 public class TheFakeFool : PassiveAbility
 {
-    public TheFakeFool() : base() { }
-    public TheFakeFool(Unit _unit, AbilityData _ability_data, string _sprite_path) : base(_unit, _ability_data, _sprite_path) { }
+    public TheFakeFool() : base()
+    {
+    }
+    public TheFakeFool(Unit _unit, AbilityData _ability_data, string _sprite_path) : base(_unit, _ability_data, _sprite_path)
+    {
+    }
 
     public override void Execute()
     {
@@ -54,9 +68,19 @@ public class TheFakeFool : PassiveAbility
 
 public class TheFoolFinal : InstantleAbility, ISubscribe
 {
+    string path = "Prefabs/Jester/Dark/Ability/TheFool";
+    GameObject vfx_prefab;
     List<Unit> enemies;
-    public TheFoolFinal() : base() { enemies = new List<Unit>(); }
-    public TheFoolFinal(Unit _unit, AbilityData _ability_data, string _sprite_path) : base(_unit, _ability_data, _sprite_path) { enemies = new List<Unit>(); }
+    public TheFoolFinal() : base()
+    {
+        vfx_prefab = Resources.Load<GameObject>(path); 
+        enemies = new List<Unit>();
+    }
+    public TheFoolFinal(Unit _unit, AbilityData _ability_data, string _sprite_path) : base(_unit, _ability_data, _sprite_path)
+    {
+        vfx_prefab = Resources.Load<GameObject>(path);
+        enemies = new List<Unit>();
+    }
     public void RegisterEvents()
     {
 
@@ -69,7 +93,7 @@ public class TheFoolFinal : InstantleAbility, ISubscribe
     }
     public override void Execute()
     {
-        Explode();
+        Explode(GameManager.Instance.game.map.GetHex(unit));
         Remove();
         Exit();
     }
@@ -111,13 +135,14 @@ public class TheFoolFinal : InstantleAbility, ISubscribe
                 enemies.Add(enemy);
         }
 
-        Explode();
+        Explode(_hex);
     }
-    private void Explode()
+    private void Explode(Hex hex)
     {
         foreach (Unit enemy in enemies)
             enemy.ReceiveDamage(new MagicDamage(unit, ability_data.amount));
 
+        Object.Instantiate(vfx_prefab, hex.game_object.transform.position, Quaternion.identity);
         enemies.Clear();
     }
 

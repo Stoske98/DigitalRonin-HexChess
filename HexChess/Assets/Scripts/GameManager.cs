@@ -44,8 +44,10 @@ public class GameManager : MonoBehaviour
             foreach (var item in game.map.hexes)
             {
                 if (!item.IsWalkable())
-                    item.SetColor(Color.black);
+                    item.SetColor(Color.magenta);
             }
+
+
         }
         else if (Input.GetKeyDown(KeyCode.K))
             Save();

@@ -7,6 +7,7 @@ public class MapController : MonoBehaviour
     public Transform fields_container;
     public Transform units_container;
     public Material field_material;
+    public Material outer_field_material;
 
     Ray ray;
     Vector3 world_mouse_position;
@@ -144,8 +145,8 @@ public class MapController : MonoBehaviour
     {
         if (!Stun.IsStuned(selected_unit) && selected_unit.class_type == game.class_on_turn)
         {
-            MovementBehaviour movement_behaviour = selected_unit.GetBehaviour<MovementBehaviour>() as MovementBehaviour;
-            AttackBehaviour attack_behaviour = selected_unit.GetBehaviour<AttackBehaviour>() as AttackBehaviour;
+            MovementBehaviour movement_behaviour = selected_unit.GetBehaviour<MovementBehaviour>();
+            AttackBehaviour attack_behaviour = selected_unit.GetBehaviour<AttackBehaviour>();
 
             if (movement_behaviour != null)
                 MarkAvailableMoves(movement_behaviour, selected_hex);

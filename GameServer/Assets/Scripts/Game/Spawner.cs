@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Xml.Linq;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 public static class Spawner
-{//SWORDSMEN LIGHT & DARK
+{
+    //SWORDSMEN LIGHT & DARK
     private static Unit SpawnLightSwordsman(Game _game, Hex _hex, ClassType _class_type, UnitType _unit_type)
     {
         string game_object_path = "Prefabs/Swordsman/Light/prefab";
@@ -26,7 +29,7 @@ public static class Spawner
                 {
                     new NormalMovement(unit),
                     new MeleeAttack(unit),
-                    new SwordsmanSpecial(unit, new AbilityData(), "UI/Unit/Swordsman/Special/sprite",Direction.UP)
+                    new SwordsmanStance(unit, new AbilityData(), "UI/Unit/Swordsman/Special/sprite",Direction.UP)
                 },
 
             },
@@ -36,13 +39,12 @@ public static class Spawner
                 update_stats = new StatsUpdate()
                 {
                     increase_max_health = 1,
-                    increase_damage = 1,
                 },
                 behaviours_to_add = new List<Behaviour>()
                 {
                     new Dash(unit, new AbilityData() 
                     {
-                        range = 2, amount = 1
+                        range = 2, amount = 1, max_cooldown = 3, current_cooldown = 0
                     }, "UI/Unit/Swordsman/Light/dash")
                 }
             },
@@ -52,7 +54,6 @@ public static class Spawner
                 update_stats = new StatsUpdate()
                 {
                     increase_max_health = 1,
-                    increase_damage = 1,
                 },
             }
         };
@@ -87,7 +88,7 @@ public static class Spawner
                 {
                     new NormalMovement(unit),
                     new MeleeAttack(unit),
-                    new SwordsmanSpecial(unit, new AbilityData(),"UI/Unit/Swordsman/Special/sprite", Direction.DOWN)
+                    new SwordsmanStance(unit, new AbilityData(),"UI/Unit/Swordsman/Special/sprite", Direction.DOWN)
                 },
 
             },
@@ -97,13 +98,12 @@ public static class Spawner
                 update_stats = new StatsUpdate()
                 {
                     increase_max_health = 1,
-                    increase_damage = 1,
                 },  
                 behaviours_to_add = new List<Behaviour>()
                 {
                     new Blink(unit, new AbilityData()
                     {
-                        range = 1, amount = 1
+                        range = 1, max_cooldown = 2, current_cooldown = 0
                     }, "UI/Unit/Swordsman/Dark/blink")
                 }
             },
@@ -113,7 +113,6 @@ public static class Spawner
                 update_stats = new StatsUpdate()
                 {
                     increase_max_health = 1,
-                    increase_damage = 1,
                 },
             }
         };
@@ -142,14 +141,14 @@ public static class Spawner
                 update_stats = new StatsUpdate()
                 {
                     increase_max_health = 2,
-                    increase_attack_range = 2,
+                    increase_attack_range = 1,
                     increase_damage = 1,
                     increase_attack_speed = 0.25f,
                 },
                 behaviours_to_add = new List<Behaviour>()
                 {
-                    new NormalMovement(unit),
-                    new RangedAttack(unit),
+                    new NormalMovement(unit, 1),
+                    new MeleeAttack(unit),
                     new ArcherSpecial(unit, new AbilityData(), "UI/Unit/Archer/Special/sprite")
                 },
 
@@ -160,7 +159,6 @@ public static class Spawner
                 update_stats = new StatsUpdate()
                 {
                     increase_max_health = 1,
-                    increase_damage = 1,
                 },
 
                 behaviours_to_add = new List<Behaviour>()
@@ -202,14 +200,14 @@ public static class Spawner
                 update_stats = new StatsUpdate()
                 {
                     increase_max_health = 2,
-                    increase_attack_range = 2,
+                    increase_attack_range = 1,
                     increase_damage = 1,
                     increase_attack_speed = 0.25f,
                 },
                 behaviours_to_add = new List<Behaviour>()
                 {
-                    new NormalMovement(unit),
-                    new RangedAttack(unit),
+                    new NormalMovement(unit, 1),
+                    new MeleeAttack(unit),
                     new ArcherSpecial(unit, new AbilityData(), "UI/Unit/Archer/Special/sprite")
                 },
 
@@ -220,7 +218,6 @@ public static class Spawner
                 update_stats = new StatsUpdate()
                 {
                     increase_max_health = 1,
-                    increase_damage = 1,
                 },
                 behaviours_to_add = new List<Behaviour>()
                 {
@@ -278,11 +275,11 @@ public static class Spawner
                 },
                 behaviours_to_add = new List<Behaviour>()
                 {
-                    new DirectionMovement(unit, 2),
+                    new DirectionMovement(unit, 1),
                     new MeleeAttack(unit),
                     new TankAttackStance(unit, new AbilityData()
                     {
-                        range = 2, max_cooldown = 2, current_cooldown = 0, cc = 1
+                        range = 1, max_cooldown = 2, current_cooldown = 0, cc = 1
                     }, "UI/Unit/Tank/Special/attack_stance")
                 },
 
@@ -293,14 +290,13 @@ public static class Spawner
                 update_stats = new StatsUpdate()
                 {
                     increase_max_health = 1,
-                    increase_damage = 1,
                 },
 
                 behaviours_to_add = new List<Behaviour>()
                 {
                     new Earthshaker(unit, new AbilityData()
                     {
-                        range = 1, amount = 1, max_cooldown = 2, current_cooldown = 0 , cc = 2
+                        range = 1, amount = 1, max_cooldown = 3, current_cooldown = 0 , cc = 2
                     }, "UI/Unit/Tank/Light/earthshaker")
                 },
             },
@@ -310,8 +306,18 @@ public static class Spawner
                 update_stats = new StatsUpdate()
                 {
                     increase_max_health = 1,
-                    increase_damage = 1,
                 },
+
+                 behaviours_to_add = new List<Behaviour>()
+                 {
+                     new TankDefenceStance(unit, new AbilityData()
+                        {
+                            range = 1,
+                            amount = 3,
+                            max_cooldown = 4,
+                            current_cooldown = 0
+                        }, "UI/Unit/Tank/Special/defence_stance")
+                 }
             }
         };
 
@@ -343,11 +349,11 @@ public static class Spawner
                 },
                 behaviours_to_add = new List<Behaviour>()
                 {
-                    new DirectionMovement(unit, 2),
+                    new DirectionMovement(unit, 1),
                     new MeleeAttack(unit),
                     new TankAttackStance(unit, new AbilityData()
                     {
-                        range = 2, max_cooldown = 2, current_cooldown = 0, cc = 1
+                        range = 1, max_cooldown = 2, current_cooldown = 0, cc = 1
                     }, "UI/Unit/Tank/Special/attack_stance")
                 },
 
@@ -358,14 +364,13 @@ public static class Spawner
                 update_stats = new StatsUpdate()
                 {
                     increase_max_health = 1,
-                    increase_damage = 1,
                 },
 
                 behaviours_to_add=new List<Behaviour>()
                 {
                     new Fear(unit, new AbilityData()
                     {
-                        range = 1, amount = 1, max_cooldown = 2, current_cooldown = 0
+                        range = 1, amount = 1, max_cooldown = 3, current_cooldown = 0
                     }, "UI/Unit/Tank/Dark/fear")
                 }
             },
@@ -375,8 +380,18 @@ public static class Spawner
                 update_stats = new StatsUpdate()
                 {
                     increase_max_health = 1,
-                    increase_damage = 1,
                 },
+
+                behaviours_to_add = new List<Behaviour>()
+                {
+                     new TankDefenceStance(unit, new AbilityData()
+                        {
+                            range = 1,
+                            amount = 3,
+                            max_cooldown = 4,
+                            current_cooldown = 0
+                        }, "UI/Unit/Tank/Special/defence_stance")
+                }
             }
         };
 
@@ -498,7 +513,7 @@ public static class Spawner
                 {
                     new Warstrike(unit, new AbilityData()
                     {
-                        range = 2, amount = 1, max_cooldown = 3, current_cooldown = 0, cc = 2
+                        range = 3, amount = 1, max_cooldown = 3, current_cooldown = 0, cc = 2
                     }, "UI/Unit/Knight/Dark/warstrike")
                 }
             },
@@ -541,7 +556,7 @@ public static class Spawner
                 behaviours_to_add = new List<Behaviour>()
                 {
                     new NoAttack(unit),
-                    new TeleportMovement(unit, 2),
+                    new NoMovement(unit),
                     new WizardSpecial(unit, new AbilityData()
                     {
                         range = 2
@@ -565,7 +580,7 @@ public static class Spawner
                 {
                     new Skyfall(unit, new AbilityData()
                     {
-                        range = 2, amount = 1, max_cooldown = 4, current_cooldown = 0
+                        range = 2, amount = 1, max_cooldown = 4, current_cooldown = 0, cc = 1
                     }, "UI/Unit/Wizard/Light/skyfall")
                 },
             },
@@ -574,7 +589,7 @@ public static class Spawner
             {
                 update_stats = new StatsUpdate()
                 {
-                    increase_max_health = 1,
+                    increase_max_health = 2,
                 },
 
                 behaviours_to_add = new List<Behaviour>()
@@ -616,7 +631,7 @@ public static class Spawner
                 behaviours_to_add = new List<Behaviour>()
                 {
                     new NoAttack(unit),
-                    new TeleportMovement(unit, 2),
+                    new NoMovement(unit),
                     new WizardSpecial(unit, new AbilityData()
                     {
                         range = 2
@@ -649,13 +664,16 @@ public static class Spawner
             {
                 update_stats = new StatsUpdate()
                 {
-                    increase_max_health = 1,
+                    increase_max_health = 2,
                 },
 
                 behaviours_to_add = new List<Behaviour>()
                 {
-
-                }
+                     new Vampirism(unit, new AbilityData()
+                     {
+                       range = 2, amount = 1, max_cooldown = 0, current_cooldown = 0
+                     }, "UI/Unit/Wizard/Dark/vampirism")
+                },
             }
         };
 
@@ -684,7 +702,7 @@ public static class Spawner
                 {
                     increase_max_health = 3,
                     increase_attack_range = 1,
-                    increase_damage = 1,
+                    increase_damage = 2,
                     increase_attack_speed = 0.25f,
                 },
                 behaviours_to_add = new List<Behaviour>()
@@ -701,7 +719,6 @@ public static class Spawner
                 update_stats = new StatsUpdate()
                 {
                     increase_max_health = 1,
-                    increase_damage = 1,
                 },
                 behaviours_to_add = new List<Behaviour>()
                 {
@@ -713,7 +730,7 @@ public static class Spawner
             {
                 update_stats = new StatsUpdate()
                 {
-                    increase_max_health = 1,
+                    increase_max_health = 2,
                     increase_damage = 1,
                 },
                 behaviour_to_switch = new Dictionary<KeyCode, Behaviour>()
@@ -748,7 +765,7 @@ public static class Spawner
                 {
                     increase_max_health = 3,
                     increase_attack_range = 1,
-                    increase_damage = 1,
+                    increase_damage = 2,
                     increase_attack_speed = 0.25f,
                 },
                 behaviours_to_add = new List<Behaviour>()
@@ -765,7 +782,6 @@ public static class Spawner
                 update_stats = new StatsUpdate()
                 {
                     increase_max_health = 1,
-                    increase_damage = 1,
                 },
                 behaviours_to_add = new List<Behaviour>()
                 {
@@ -780,7 +796,7 @@ public static class Spawner
             {
                 update_stats = new StatsUpdate()
                 {
-                    increase_max_health = 1,
+                    increase_max_health = 2,
                     increase_damage = 1,
                 },
 
@@ -856,7 +872,6 @@ public static class Spawner
                 update_stats = new StatsUpdate()
                 {
                     increase_max_health = 1,
-                    increase_damage = 1,
                 },
             }
         };
@@ -908,10 +923,10 @@ public static class Spawner
                 },
                 behaviours_to_add= new List<Behaviour>()
                 {
-                    new Haunt(unit,new AbilityData()
+                    new QueensCommand(unit,new AbilityData()
                     {
                         range = 3
-                    }, "UI/Unit/Queen/Dark/haunt"),
+                    }, "UI/Unit/Queen/Light/queen_command"),
                 }
             },
             //level 3 
@@ -920,7 +935,6 @@ public static class Spawner
                 update_stats = new StatsUpdate()
                 {
                     increase_max_health = 1,
-                    increase_damage = 1,
                 },
             }
         };
@@ -1262,6 +1276,53 @@ public static class Spawner
     {
         string _game_object_path = "Prefabs/Trap/prefab";
         return new Trap(_cast_unit, _ability, _game_object_path);
+    }
+
+    public static Flag SpawnFlag(Game _game, Hex _hex)
+    {
+        Flag flag = new Flag(_game, _hex, "Prefabs/Flag/Flag");
+
+        if (_game.map.PlaceObject(flag, _hex.coordinates.x, _hex.coordinates.y))
+            _game.object_manager.AddObject(flag);
+
+        return flag;
+    }
+
+    public static GameObject CreateHex(string name, Vector3 position, Quaternion rotation)
+    {
+        GameObject game_object = new GameObject(name);
+        game_object.transform.position = position;
+        game_object.transform.rotation = rotation;
+
+        game_object.AddComponent<MeshFilter>();
+        game_object.AddComponent<MeshRenderer>();
+
+        Mesh mesh = game_object.GetComponent<MeshFilter>().mesh;
+        mesh.Clear();
+
+        float angle = 0;
+        Vector3[] vertices = new Vector3[7];
+        vertices[0] = Vector3.zero;
+        for (int i = 1; i < vertices.Length; i++)
+        {
+            vertices[i] = new Vector3(Mathf.Cos(Mathf.Deg2Rad * angle), Mathf.Sin(Mathf.Deg2Rad * angle), 0) * 1;
+            angle += 60;
+
+        }
+        mesh.vertices = vertices;
+
+        mesh.triangles = new int[]
+        {
+                0, 1, 2,
+                0, 2, 3,
+                0, 3, 4,
+                0, 4, 5,
+                0, 5, 6,
+                0, 6, 1
+        };
+
+        mesh.RecalculateNormals();
+        return game_object;
     }
 }
 

@@ -4,14 +4,13 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-public class Dash : TargetableAbility, ITargetableSingleHex, IUpgradable
+public class Dash : TargetableAbility, ITargetableSingleHex
 {
-    [JsonRequired] private bool upgraded { get; set; }
     [JsonIgnore] private Direction face_direction { get; set; }
     [JsonIgnore] private List<Hex> hexes_in_direction { get; set; }
     [JsonIgnore]public Hex targetable_hex { get; set; }
     public Dash() : base() { hexes_in_direction = new List<Hex>(); }
-    public Dash(Unit _unit, AbilityData _ability_data, string _sprite_path) : base(_unit, _ability_data, _sprite_path) { hexes_in_direction = new List<Hex>(); upgraded = false; }
+    public Dash(Unit _unit, AbilityData _ability_data, string _sprite_path) : base(_unit, _ability_data, _sprite_path) { hexes_in_direction = new List<Hex>();}
 
     public override void Execute()
     {
@@ -20,8 +19,9 @@ public class Dash : TargetableAbility, ITargetableSingleHex, IUpgradable
         KnightMovement movement = new KnightMovement(unit);
         movement.SetPath(_cast_unit_hex, targetable_hex);
         unit.AddBehaviourToWork(movement);
+        movement.SetMovementSpeed(10);
 
-        if(upgraded)
+        if (unit.level == 3)
         {
             Map map = NetworkManager.Instance.games[unit.match_id].map;
 
@@ -93,6 +93,7 @@ public class Dash : TargetableAbility, ITargetableSingleHex, IUpgradable
         _ability_moves.AddRange(AvailableMovesInDirection(game.GetHexesInDirection(Direction.LOWER_RIGHT, _unit_hex, ability_data.range)));
         _ability_moves.AddRange(AvailableMovesInDirection(game.GetHexesInDirection(Direction.UPPER_RIGHT, _unit_hex, ability_data.range)));
 
+        unit.events.OnGetAbilityMoves_Local?.Invoke(_unit_hex, _ability_moves);
         return _ability_moves;
     }
 
@@ -118,9 +119,5 @@ public class Dash : TargetableAbility, ITargetableSingleHex, IUpgradable
         }
 
         targetable_hex = map.GetHex(_target_hex_position.x, _target_hex_position.y);
-    }
-    public void Upgrade()
-    {
-        upgraded = true;
     }
 }

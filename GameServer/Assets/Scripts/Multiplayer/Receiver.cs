@@ -66,7 +66,6 @@ public class Receiver
                 game.players.Add(player);
 
                 string _json_game = NetworkManager.Serialize(game);
-                File.WriteAllText("ChallengeRoyaleGame.json", _json_game);
 
                 if (!string.IsNullOrEmpty(_json_game))
                     SendGameToClientInFragments(connection, _json_game);
@@ -93,7 +92,7 @@ public class Receiver
                 if (_attacker != null && !Stun.IsStuned(_attacker) && !Disarm.IsDissarmed(_attacker) && _attacker.id == request.attacker_id &&
                     _target != null && _target.id == request.target_id)
                 {
-                    AttackBehaviour attack_behaviour = _attacker.GetBehaviour<AttackBehaviour>() as AttackBehaviour;
+                    AttackBehaviour attack_behaviour = _attacker.GetBehaviour<AttackBehaviour>();
                     if(attack_behaviour != null && attack_behaviour.GetAttackMoves(_attacker_hex).Contains(_target_hex))
                     {
                         _attacker.Attack(_target);
@@ -120,7 +119,7 @@ public class Receiver
 
                 if (_unit != null && !Stun.IsStuned(_unit) && _unit.id == request.unit_id && _desired_hex != null && _desired_hex.IsWalkable())
                 {
-                    MovementBehaviour movement_behaviour = _unit.GetBehaviour<MovementBehaviour>() as MovementBehaviour;
+                    MovementBehaviour movement_behaviour = _unit.GetBehaviour<MovementBehaviour>();
                     if (movement_behaviour != null && movement_behaviour.GetAvailableMoves(_hex).Contains(_desired_hex)) 
                     {
                         _unit.Move(_hex, _desired_hex);
@@ -146,8 +145,8 @@ public class Receiver
                 Unit _unit = _hex?.GetUnit();
                 if (_unit != null && _unit.id == request.unit_id && _desired_hex != null)
                 {
-                    Ability ability = _unit.GetBehaviour<Ability>(request.key_code) as Ability;
-                    if (ability != null && ability is TargetableAbility targetable_ability && ability.HasCooldownExpired() && targetable_ability.GetAbilityMoves(_hex).Contains(_desired_hex) && targetable_ability is ITargetableSingleHex)
+                    Ability ability = _unit.GetBehaviour<Ability>(request.key_code);
+                    if (ability != null && ability is TargetableAbility targetable_ability && ability.HasCooldownExpired() && targetable_ability.GetAbilityMoves(_hex).Count > 0 && targetable_ability.GetAbilityMoves(_hex).Contains(_desired_hex) && targetable_ability is ITargetableSingleHex)
                     {
                         _unit.UseSingleTargetableAbility(targetable_ability, _desired_hex);
                         game.SendMessageToPlayers(request);
@@ -175,14 +174,14 @@ public class Receiver
 
                 if (_unit != null && _unit.id == request.unit_id && _desired_hexes.Count > 0)
                 {
-                    Ability ability = _unit.GetBehaviour<Ability>(request.key_code) as Ability;
+                    Ability ability = _unit.GetBehaviour<Ability>(request.key_code);
                     if (ability != null && ability is TargetableAbility targetable_ability && ability.HasCooldownExpired() && targetable_ability is ITargetMultipleHexes)
                     {
                         bool is_valid_ability = true;
 
                         foreach (var desiredHex in _desired_hexes)
                         {
-                            if (!targetable_ability.GetAbilityMoves(_hex).Contains(desiredHex))
+                            if (!targetable_ability.GetAbilityMoves(_hex).Contains(desiredHex) || targetable_ability.GetAbilityMoves(_hex).Count == 0)
                             {
                                 is_valid_ability = false;
                                 break;
@@ -221,7 +220,7 @@ public class Receiver
 
                 if (_unit != null && _unit.id == request.unit_id)
                 {
-                    Ability ability = _unit.GetBehaviour<Ability>(request.key_code) as Ability;
+                    Ability ability = _unit.GetBehaviour<Ability>(request.key_code);
                     if (ability != null && ability is InstantleAbility instant_ability && ability.HasCooldownExpired())
                     {
                         _unit.UseInstantAbility(instant_ability);

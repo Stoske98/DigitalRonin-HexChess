@@ -1,67 +1,88 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 
-public class TankAttackStance : TargetableAbility, ITargetableSingleHex
+public class TankAttackStance : TargetableAbility, ITargetableSingleHex, IUpgradable
 {
     public Hex targetable_hex { get; set; }
-    public TankDefenceStance tank_deffence_stance { get; set; }
+    private Unit enemy { get; set; }
+    private Hex enemy_hex { get; set; }
+    private Hex front_enemy_hex { get; set; }
+    private Hex behind_enemy_hex { get; set; }
     public TankAttackStance() : base() {  }
-    public TankAttackStance(Unit _unit, AbilityData _ability_data, string _sprite_path) : base(_unit, _ability_data, _sprite_path)
-    {
-        tank_deffence_stance = new TankDefenceStance(unit, new AbilityData()
-        {
-            range = 1,
-            amount = 3,
-            max_cooldown = 2,
-            current_cooldown = 0
-        }, "UI/Unit/Tank/Special/defence_stance");
-
-        unit.behaviours.Add(tank_deffence_stance);
-
-        if (tank_deffence_stance is ISubscribe subsciber)
-            subsciber.RegisterEvents();
-    }
+    public TankAttackStance(Unit _unit, AbilityData _ability_data, string _sprite_path) : base(_unit, _ability_data, _sprite_path) { }
 
     public override void Execute()
     {
         Map map = NetworkManager.Instance.games[unit.match_id].map;
         Hex unit_hex = map.GetHex(unit);
 
-        Unit enemy = map.GetHex(targetable_hex.coordinates.x, targetable_hex.coordinates.y)?.GetUnit();
+        Vector2Int direction = map.TransformCoordinatesToUnitCoordinates(targetable_hex.coordinates - unit_hex.coordinates);
 
-        Vector2Int direction = targetable_hex.coordinates - unit_hex.coordinates;
-        Vector2Int unit_direction = map.TransformCoordinatesToUnitCoordinates(direction);
-
-        if (enemy == null) 
+        for (int i = 1; i <= ability_data.range; i++)
         {
-
-            Hex enemy_hex = map.GetHex(unit_hex.coordinates.x + unit_direction.x, unit_hex.coordinates.y + unit_direction.y);
-            enemy = enemy_hex.GetUnit();
-            RemoveAndMoveEnemy(enemy, enemy_hex, targetable_hex);
-
-            unit.Move(unit_hex, enemy_hex);
-        }
-        else
-        {
-            Hex hex_in_direction = map.GetHex(targetable_hex.coordinates.x + unit_direction.x, targetable_hex.coordinates.y + unit_direction.y);
-            if (hex_in_direction != null && hex_in_direction.IsWalkable())
+            Hex hex = map.GetHex(unit_hex.coordinates.x + direction.x * i, unit_hex.coordinates.y + direction.y * i);
+            if (hex != null)
             {
-                RemoveAndMoveEnemy(enemy, targetable_hex, hex_in_direction);
-                unit.Move(unit_hex, targetable_hex);
+                enemy = hex.GetUnit();
+                if (enemy != null)
+                {
+                    enemy_hex = hex;
+                    behind_enemy_hex = map.GetHex(enemy_hex.coordinates.x + direction.x, enemy_hex.coordinates.y + direction.y);
+                    front_enemy_hex = map.GetHex(enemy_hex.coordinates.x - direction.x, enemy_hex.coordinates.y - direction.y);
+
+                    if (behind_enemy_hex != null && behind_enemy_hex.IsWalkable())
+                    {
+                        enemy_hex.RemoveObject(enemy);
+                        unit.GetBehaviour<MovementBehaviour>().OnEndBehaviour += OnEndOfTankCharge;
+                        unit.Move(unit_hex, enemy_hex);
+                    }
+                    else if (front_enemy_hex != unit_hex)
+                    {
+                        unit.Move(unit_hex, front_enemy_hex);
+                        unit.GetBehaviour<MovementBehaviour>().OnEndBehaviour += OnEndOfTankCharge;
+                    }
+                    else
+                    {
+                        enemy.ccs.Add(new Stun(unit, enemy, ability_data.cc));
+
+                        enemy = null;
+                        enemy_hex = null;
+                        front_enemy_hex = null;
+                        behind_enemy_hex = null;
+                    }
+                    break;
+                }
             }
-            else
-                enemy.ccs.Add(new Stun(ability_data.cc));
-
         }
-
         Exit();
     }
-    private void RemoveAndMoveEnemy(Unit enemy, Hex start_hex, Hex desired_hex)
+
+    private void OnEndOfTankCharge(Behaviour behaviour)
     {
-        NormalMovement normal_movement = new NormalMovement(enemy);
-        normal_movement.SetPath(start_hex, desired_hex);
-        enemy.AddBehaviourToWork(normal_movement);
-        start_hex.RemoveObject(enemy);
+        behaviour.OnEndBehaviour -= OnEndOfTankCharge;
+        if (!unit.IsDead())
+        {
+            Map map = NetworkManager.Instance.games[unit.match_id].map;
+            Hex unit_hex = map.GetHex(unit);
+            if (unit_hex != null && !Stun.IsStuned(unit))
+            {
+                if (unit_hex == front_enemy_hex)
+                {
+                    enemy.ccs.Add(new Stun(unit, enemy, ability_data.cc));
+                }
+                else if (unit_hex == enemy_hex)
+                {
+                    NormalMovement normal_movement = new NormalMovement(enemy);
+                    normal_movement.SetPath(enemy_hex, behind_enemy_hex);
+                    enemy.AddBehaviourToWork(normal_movement);
+                }
+            }
+        }
+
+        enemy = null;
+        enemy_hex = null;
+        front_enemy_hex = null;
+        behind_enemy_hex = null;
     }
     public override List<Hex> GetAbilityMoves(Hex _unit_hex)
     {
@@ -81,16 +102,34 @@ public class TankAttackStance : TargetableAbility, ITargetableSingleHex
 
     private List<Hex> AvailableMovesInDirection(List<Hex> hexes)
     {
-        if(hexes.Count > 0)
+        int count = 0;
+
+        for (int i = 0; i < hexes.Count; i++)
         {
-            Unit enemy = hexes[0].GetUnit();
-            if (enemy != null && enemy.class_type != unit.class_type)
+            Unit enemy = hexes[i].GetUnit();
+            if (enemy != null)
             {
-                if(hexes.Count == 2 && !hexes[^1].IsWalkable())
-                    hexes.RemoveAt(hexes.Count - 1);
-            }else 
-                hexes.Clear();
+                if (enemy.class_type == unit.class_type)
+                    return new List<Hex>();
+                else
+                {
+                    count = i + 1;
+                    break;
+                }
+            }
         }
+
+        if (count != 0)
+            hexes = hexes.GetRange(0, count);
+        else
+            hexes.Clear();
+
         return hexes;
+    }
+
+    public void Upgrade()
+    {
+        ability_data.range += 1;
+        unit.GetBehaviour<MovementBehaviour>().range += 1;
     }
 }

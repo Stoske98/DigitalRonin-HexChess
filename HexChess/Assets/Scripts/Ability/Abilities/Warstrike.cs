@@ -19,8 +19,8 @@ public class Warstrike : TargetableAbility, ITargetableSingleHex, IUpgradable
 
                 WarstrikeAction warstrike_action = new WarstrikeAction(unit, new AbilityData()
                 {
-                    cc = 2
-                }, "");
+                    cc = 2, amount = unit.stats.damage
+                });
                 ((ITargetableSingleHex)warstrike_action).SetAbility(_enemy_unit_hex);
 
                 unit.AddBehaviourToWork(warstrike_action);
@@ -129,6 +129,7 @@ public class Warstrike : TargetableAbility, ITargetableSingleHex, IUpgradable
     public void Upgrade()
     {
         ability_data.range += 1;
+        ability_data.max_cooldown += 1;
     }
 }
 
@@ -136,7 +137,7 @@ public class WarstrikeAction : TargetableAbility, ITargetableSingleHex
 {
     [JsonIgnore] public Hex targetable_hex { get; set; }
     public WarstrikeAction() : base() { }
-    public WarstrikeAction(Unit _unit, AbilityData _ability_data, string _sprite_path) : base(_unit, _ability_data, _sprite_path) { }
+    public WarstrikeAction(Unit _unit, AbilityData _ability_data) : base(_unit, _ability_data) { }
 
     public override List<Hex> GetAbilityMoves(Hex _unit_hex)
     {
@@ -150,7 +151,7 @@ public class WarstrikeAction : TargetableAbility, ITargetableSingleHex
         {
             enemy.ReceiveDamage(new MagicDamage(unit, ability_data.amount));
             if (!enemy.IsDead())
-                enemy.ccs.Add(new Stun(ability_data.cc));
+                enemy.ccs.Add(new Stun(unit, enemy, ability_data.cc));
         }
         Exit();
     }

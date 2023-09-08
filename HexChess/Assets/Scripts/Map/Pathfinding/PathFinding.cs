@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using UnityEngine;
 
 public class PathFinding
 {
@@ -257,6 +259,78 @@ public class PathFinding
             }
             return tilesInRange;
         }
+
+         public static List<Hex> BFS_LongestEnemyUnitPath(Hex start, Unit cast_unit, Map map, int _max)
+         {
+             List<Hex> longestPath = new List<Hex>();
+
+             foreach (Hex tile in map.hexes)
+             {
+                 tile.path_data.cost = int.MaxValue;
+             }
+
+             start.path_data.cost = 0;
+
+             HashSet<Hex> visited = new HashSet<Hex>();
+             visited.Add(start);
+
+             Queue<Hex> frontier = new Queue<Hex>();
+             frontier.Enqueue(start);
+
+             start.path_data.prev_hex = null;
+
+             while (frontier.Count > 0)
+             {
+                 Hex current = frontier.Dequeue();
+
+                 foreach (var neighbor in current.GetNeighbors(map))
+                 {
+                     Unit unit = neighbor.GetUnit();
+                     if (unit != null && unit.class_type != cast_unit.class_type)
+                     {
+                         int newNeighborCost = current.path_data.cost + neighbor.path_data.weight;
+                         if (newNeighborCost < neighbor.path_data.cost)
+                         {
+                             neighbor.path_data.cost = newNeighborCost;
+                             neighbor.path_data.prev_hex = current;
+                         }
+
+                         if (!visited.Contains(neighbor))
+                         {
+                             visited.Add(neighbor);
+                             frontier.Enqueue(neighbor);
+                         }
+
+                     }
+
+                 }
+             }
+             Dictionary<Hex, int> pathdicitonary = new Dictionary<Hex, int>();
+
+             foreach (Hex h in visited)
+             {
+                 List<Hex> p = BacktrackToPath(h);
+                 pathdicitonary.Add(h, p.Count);
+             }
+
+             int max = pathdicitonary.Values.Max();
+
+             pathdicitonary = pathdicitonary.Where(kvp => max >= _max ? kvp.Value >= _max : kvp.Value == max)
+                               .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+
+             List<Hex> longest_path_hexes = new List<Hex>();
+             foreach (var p in pathdicitonary)
+                 longest_path_hexes.Add(p.Key);
+
+             if (longest_path_hexes.Count > 0)
+             {
+                 int rand = (int)MathF.Floor(GameManager.Instance.game.random_seeds_generator.GetRandomPercentSeed() * longest_path_hexes.Count);
+                 Hex choosen_one = longest_path_hexes[rand];
+                 longestPath = BacktrackToPath(choosen_one);
+             }
+
+             return longestPath;
+         }
 
         private static float GetEuclideanHeuristicCost(Hex current, Hex end)
         {

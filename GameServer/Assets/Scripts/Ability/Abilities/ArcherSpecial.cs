@@ -1,8 +1,8 @@
 ﻿using Newtonsoft.Json;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-public class ArcherSpecial : PassiveAbility
+
+public class ArcherSpecial : PassiveAbility, IUpgradable
 {
     private int max_range_increment { get; set; }
     public ArcherSpecial() : base() { max_range_increment = 3; }
@@ -14,19 +14,24 @@ public class ArcherSpecial : PassiveAbility
 
     public override void RegisterEvents()
     {
-        unit.events.OnStartMovement_Local += OnStartMovement;
-        unit.events.OnGetAttackMoves_Local += OnGetAttackMoves;
-        unit.events.OnStartAttack_local += OnStartAttack;
+        if(unit.GetBehaviour<ArcherMovement>() == null)
+            unit.AddMovementBehaviour(new ArcherMovement(unit, 1));
+
+        if (unit.GetBehaviour<ArcherRangedAttack>() == null)
+        {
+            unit.stats.attack_range = 2;
+            unit.AddAttackBehaviour(new ArcherRangedAttack(unit));
+        }
     }
 
     public override void UnregisterEvents()
     {
-        unit.events.OnStartMovement_Local -= OnStartMovement;
-        unit.events.OnGetAttackMoves_Local -= OnGetAttackMoves;
-        unit.events.OnStartAttack_local -= OnStartAttack;
+        unit.AddMovementBehaviour(new NormalMovement(unit));
+        unit.stats.attack_range = 1;
+        unit.AddAttackBehaviour(new MeleeAttack(unit));
     }
 
-    private Damage OnStartAttack(Damage damage)
+   /* private Damage OnStartAttack(Damage damage)
     {
         ability_data.range = 0;
         return damage;
@@ -53,6 +58,13 @@ public class ArcherSpecial : PassiveAbility
         if (max_range_increment > ability_data.range)
             ability_data.range += 1;
 
+    }*/
+
+    public void Upgrade()
+    {
+        /*unit.events.OnStartMovement_Local += OnStartMovement;
+        unit.events.OnGetAttackMoves_Local += OnGetAttackMoves;
+        unit.events.OnStartAttack_local += OnStartAttack;*/
     }
 }
 

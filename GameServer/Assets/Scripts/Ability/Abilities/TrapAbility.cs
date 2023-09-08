@@ -15,6 +15,7 @@ public class TrapAbility : TargetableAbility, ITargetableSingleHex
         game.map.PlaceObject(trap, targetable_hex.coordinates.x, targetable_hex.coordinates.y);
         game.object_manager.AddObject(trap);
 
+        IObject.ObjectVisibility(trap, trap.visibility);
         Exit();
 
     }

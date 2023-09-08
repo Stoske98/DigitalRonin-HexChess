@@ -51,8 +51,7 @@ public class JesterSpecial : PassiveAbility
     }
     private void OnStartMovement(Hex from_hex, Hex _target_hex)
     {
-        Behaviour behaviour = unit.GetBehaviour<MovementBehaviour>();
-        if (behaviour != null && behaviour is NormalMovement)
+        if (unit.GetBehaviour<MovementBehaviour>() != null)
         {
             if (from_hex != null)
             {

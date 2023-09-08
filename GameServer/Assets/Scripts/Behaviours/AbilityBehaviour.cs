@@ -5,6 +5,11 @@ public abstract class AbilityBehaviour : Behaviour
 {
     public AbilityData ability_data { get; set; }
     public AbilityBehaviour() : base() { }
+    public AbilityBehaviour(Unit _unit, AbilityData _ability_data)
+    {
+        unit = _unit;
+        ability_data = _ability_data;
+    }
     public AbilityBehaviour(Unit _unit, AbilityData _ability_data, string _sprite_path)
     { 
         unit = _unit; 

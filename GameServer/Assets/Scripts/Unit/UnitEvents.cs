@@ -11,6 +11,8 @@ public class UnitEvents
 
     public Action<Hex, List<Hex>> OnGetAttackMoves_Local;
 
+    public Action<Hex, List<Hex>> OnGetAbilityMoves_Local;
+
     public Action<Damage> OnBeforeReceivingDamage_Local;
 
     public Func<Damage,Damage> OnStartAttack_local;   

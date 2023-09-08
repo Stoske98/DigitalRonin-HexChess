@@ -37,6 +37,8 @@ public class ChallengeRoyaleMap : Map
         Spawner.SpawnUnit(_game, UnitType.Swordsman, ClassType.Light, _game.map.GetHex(0, -2));
         Spawner.SpawnUnit(_game, UnitType.Swordsman, ClassType.Light, _game.map.GetHex(-2, -1));
         Spawner.SpawnUnit(_game, UnitType.Swordsman, ClassType.Light, _game.map.GetHex(2, -3));
+        Spawner.SpawnUnit(_game, UnitType.Swordsman, ClassType.Light, _game.map.GetHex(4, -4));
+        Spawner.SpawnUnit(_game, UnitType.Swordsman, ClassType.Light, _game.map.GetHex(-4, 0));
 
         Spawner.SpawnUnit(_game, UnitType.Tank, ClassType.Light, _game.map.GetHex(-1, -2));
         Spawner.SpawnUnit(_game, UnitType.Tank, ClassType.Light, _game.map.GetHex(1, -3));
@@ -57,6 +59,8 @@ public class ChallengeRoyaleMap : Map
         Spawner.SpawnUnit(_game, UnitType.Swordsman, ClassType.Dark, _game.map.GetHex(0, 2));
         Spawner.SpawnUnit(_game, UnitType.Swordsman, ClassType.Dark, _game.map.GetHex(2, 1));
         Spawner.SpawnUnit(_game, UnitType.Swordsman, ClassType.Dark, _game.map.GetHex(-2, 3));
+        Spawner.SpawnUnit(_game, UnitType.Swordsman, ClassType.Dark, _game.map.GetHex(-4, 4));
+        Spawner.SpawnUnit(_game, UnitType.Swordsman, ClassType.Dark, _game.map.GetHex(4, 0));
 
         Spawner.SpawnUnit(_game, UnitType.Tank, ClassType.Dark, _game.map.GetHex(1, 2));
         Spawner.SpawnUnit(_game, UnitType.Tank, ClassType.Dark, _game.map.GetHex(-1, 3));

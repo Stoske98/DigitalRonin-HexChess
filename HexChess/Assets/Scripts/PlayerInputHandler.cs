@@ -20,11 +20,11 @@ public class PlayerInputHandler : MonoBehaviour
 
     public void SwitchActionMap(string new_action_map)
     {
-         Debug.Log("Current map DISABLE: " + player_input_controller.currentActionMap.name);
+        // Debug.Log("Current map DISABLE: " + player_input_controller.currentActionMap.name);
         player_input_controller.currentActionMap?.Disable();
         player_input_controller.currentActionMap = player_input_controller.actions.FindActionMap(new_action_map);
         player_input_controller.currentActionMap?.Enable();
-         Debug.Log("Current map ENABLE: " + player_input_controller.currentActionMap.name);
+       //  Debug.Log("Current map ENABLE: " + player_input_controller.currentActionMap.name);
     }
     public void OnMouseScreenPosition(InputAction.CallbackContext value)
     {
@@ -71,7 +71,7 @@ public class PlayerInputHandler : MonoBehaviour
             //MOVE           
             if (_hex != null && _hex.IsWalkable() && !selected_unit.IsWork() && !Stun.IsStuned(selected_unit) && selected_unit.class_type == game_manager.game.class_on_turn && !EventSystem.current.IsPointerOverGameObject())
             {
-                MovementBehaviour movement_behaviour = selected_unit.GetBehaviour<MovementBehaviour>() as MovementBehaviour;
+                MovementBehaviour movement_behaviour = selected_unit.GetBehaviour<MovementBehaviour>();
                 if (movement_behaviour != null && movement_behaviour.GetAvailableMoves(selected_hex).Contains(_hex))
                 {
                     game_manager.map_controller.ResetFields();
@@ -101,7 +101,7 @@ public class PlayerInputHandler : MonoBehaviour
             {
                 if (!selected_unit.IsWork() && !Stun.IsStuned(selected_unit) && !Disarm.IsDissarmed(selected_unit) && _unit.class_type != selected_unit.class_type)
                 {
-                    AttackBehaviour attack_behaviour = selected_unit.GetBehaviour<AttackBehaviour>() as AttackBehaviour;
+                    AttackBehaviour attack_behaviour = selected_unit.GetBehaviour<AttackBehaviour>();
                     if (attack_behaviour != null && attack_behaviour.GetAttackMoves(selected_hex).Contains(_hex))
                     {
                         game_manager.map_controller.ResetFields();
@@ -281,36 +281,55 @@ public class PlayerInputHandler : MonoBehaviour
 
     private void OnAbilityPress(KeyCode _key_code)
     {
-        Ability ability = selected_unit.GetBehaviour<Ability>(_key_code) as Ability;
+        Ability ability = selected_unit.GetBehaviour<Ability>(_key_code);
         if (!selected_unit.IsWork() && !Stun.IsStuned(selected_unit) && ability != null && ability.HasCooldownExpired() && selected_unit.class_type == game_manager.game.class_on_turn)
         {
-            game_manager.map_controller.ResetFields();
-            if (ability is InstantleAbility)
+          
+            if (ability is InstantleAbility instant_ability)
             {
-                NetInstantAbility request = new NetInstantAbility()
+                if (instant_ability.GetAbilityMoves(selected_hex).Count > 0)
                 {
-                    unit_id = selected_unit.id,
-                    col = selected_hex.coordinates.x,
-                    row = selected_hex.coordinates.y,
-                    key_code = _key_code
-                };
+                    game_manager.map_controller.ResetFields();
+                    NetInstantAbility request = new NetInstantAbility()
+                    {
+                        unit_id = selected_unit.id,
+                        col = selected_hex.coordinates.x,
+                        row = selected_hex.coordinates.y,
+                        key_code = _key_code
+                    };
 
-                Sender.SendToServer_Reliable(request);
+                    Sender.SendToServer_Reliable(request);
 
+                }
+                else { Debug.Log("There is no moves for ability !!!"); }
             }
             else if (ability is TargetableAbility targetable)
             {
-                targetable_ability = targetable;
-                key_code = _key_code;
+                if (targetable.GetAbilityMoves(selected_hex).Count > 0)
+                {
+                    game_manager.map_controller.ResetFields();
+                    targetable_ability = targetable;
+                    key_code = _key_code;
 
-                game_manager.map_controller.MarkAbilityMoves(ability, selected_hex);
+                    game_manager.map_controller.MarkAbilityMoves(ability, selected_hex);
 
-                if (ability is ITargetableSingleHex)
-                    SwitchActionMap("SingleTargetAbilityHandler");
-                else
-                    SwitchActionMap("MultipleTargetsAbilityHandler");
+                    if (ability is ITargetableSingleHex)
+                        SwitchActionMap("SingleTargetAbilityHandler");
+                    else
+                        SwitchActionMap("MultipleTargetsAbilityHandler");
+
+                }
+                else { Debug.Log("There is no moves for ability !!!"); }
             }
         }
+    }
+    public void SetSelectedUnit(Unit unit)
+    {
+        selected_unit = unit;
+    }
+    public void SetSelectedHex(Hex hex)
+    {
+        selected_hex = hex;
     }
 
     public Unit GetSelectedUnit()

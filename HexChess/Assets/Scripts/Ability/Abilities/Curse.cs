@@ -1,25 +1,28 @@
 ﻿using Newtonsoft.Json;
 using System.Collections.Generic;
-
-public class Curse : TargetableAbility, ITargetableSingleHex
+public class Curse : TargetableAbility, ITargetableSingleHex, IUpgradable
 {
     [JsonIgnore] public Hex targetable_hex { get; set; }
     public Curse() : base() {  }
     public Curse(Unit _unit, AbilityData _ability_data, string _sprite_path) : base(_unit, _ability_data, _sprite_path) { }
     public override void Execute()
     {
-        targetable_hex.GetUnit().ReceiveDamage(new MagicDamage(unit, ability_data.amount));
-        if (!targetable_hex.IsWalkable())
-            targetable_hex.GetUnit().ccs.Add(new Disarm(ability_data.cc));
+        Unit enemy = targetable_hex.GetUnit();
+        enemy.ReceiveDamage(new MagicDamage(unit, ability_data.amount));
+
+        if (!enemy.IsDead())
+            targetable_hex.GetUnit().ccs.Add(new Disarm(unit, enemy, ability_data.cc));
 
         foreach (Hex hex in GameManager.Instance.game.map.HexesInRange(targetable_hex, ability_data.range))
-            if (!hex.IsWalkable() && hex.GetUnit().class_type != unit.class_type)
+        {
+            Unit _unit = hex.GetUnit();
+            if (_unit != null && _unit.class_type != unit.class_type)
             {
-                Unit enemy = hex.GetUnit();
-                enemy.ReceiveDamage(new MagicDamage(unit, ability_data.amount));
-                if (!enemy.IsDead())
+                _unit.ReceiveDamage(new MagicDamage(unit, ability_data.amount));
+                if (!_unit.IsDead())
                     FearEnemy(hex);
             }
+        }
         Exit();
     }
 
@@ -28,8 +31,11 @@ public class Curse : TargetableAbility, ITargetableSingleHex
         List<Hex> _available_moves = new List<Hex>();
 
         foreach (Hex hex in GameManager.Instance.game.map.HexesInRange(_unit_hex, ability_data.range))
-            if (!hex.IsWalkable() && hex.GetUnit().class_type != unit.class_type)
+        {
+            Unit enemy = hex.GetUnit();
+            if(enemy != null && unit.class_type != enemy.class_type)
                 _available_moves.Add(hex);
+        }
 
         return _available_moves;
     }
@@ -45,5 +51,11 @@ public class Curse : TargetableAbility, ITargetableSingleHex
             Unit enemy = _enemy_hex.GetUnit();
             enemy.Move(_enemy_hex, hex);
         }
+    }
+
+    public void Upgrade()
+    {
+        ability_data.amount += 1;
+        ability_data.max_cooldown += 1;
     }
 }

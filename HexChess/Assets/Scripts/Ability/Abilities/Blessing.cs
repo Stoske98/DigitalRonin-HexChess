@@ -1,11 +1,20 @@
 ﻿using Newtonsoft.Json;
 using System.Collections.Generic;
+using UnityEngine;
 
-public class Blessing : TargetableAbility, ITargetableSingleHex //, IUpgradable
+public class Blessing : TargetableAbility, ITargetableSingleHex, IUpgradable
 {
+    string path = "Prefabs/Wizard/Light/Ability/Blessing";
+    GameObject vfx_prefab;
     [JsonIgnore] public Hex targetable_hex { get; set; }
-    public Blessing() : base() { }
-    public Blessing(Unit _unit, AbilityData _ability_data, string _sprite_path) : base(_unit, _ability_data, _sprite_path) {  }
+    public Blessing() : base()
+    {
+        vfx_prefab = Resources.Load<GameObject>(path);
+    }
+    public Blessing(Unit _unit, AbilityData _ability_data, string _sprite_path) : base(_unit, _ability_data, _sprite_path)
+    {
+        vfx_prefab = Resources.Load<GameObject>(path);
+    }
     public override void Execute()
     {
         Heal(targetable_hex.GetUnit());
@@ -32,6 +41,15 @@ public class Blessing : TargetableAbility, ITargetableSingleHex //, IUpgradable
             _unit.stats.current_health = _unit.stats.max_health;
         else
             _unit.stats.current_health += ability_data.amount;
+
+        GameManager.Instance.game.game_events.OnChangeUnitData_Global?.Invoke(_unit);
+        Object.Instantiate(vfx_prefab, _unit.game_object.transform.position, Quaternion.identity);
+    }
+
+    public void Upgrade()
+    {
+        ability_data.max_cooldown += 1;
+        ability_data.amount += 1;
     }
 }
 

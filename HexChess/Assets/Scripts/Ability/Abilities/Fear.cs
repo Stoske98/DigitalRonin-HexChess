@@ -1,10 +1,22 @@
 ﻿using System.Collections.Generic;
+using UnityEngine;
 
 public class Fear : InstantleAbility
 {
+    string path = "Prefabs/Tank/Dark/Ability/Fear";
+    GameObject vfx_prefab;
     List<Unit> enemies;
-    public Fear() : base() { enemies = new List<Unit>(); }
-    public Fear(Unit _unit, AbilityData _ability_data, string _sprite_path) : base(_unit, _ability_data, _sprite_path) { enemies = new List<Unit>(); }
+    public Fear() : base() 
+    { 
+        enemies = new List<Unit>();
+        vfx_prefab = Resources.Load<GameObject>(path);
+    
+    }
+    public Fear(Unit _unit, AbilityData _ability_data, string _sprite_path) : base(_unit, _ability_data, _sprite_path) 
+    { 
+        enemies = new List<Unit>();
+        vfx_prefab = Resources.Load<GameObject>(path);
+    }
 
     public override void Execute()
     {
@@ -21,6 +33,7 @@ public class Fear : InstantleAbility
             }
         }
 
+        Object.Instantiate(vfx_prefab, unit.game_object.transform.position, Quaternion.identity);
         enemies.Clear();
         Exit();
     }

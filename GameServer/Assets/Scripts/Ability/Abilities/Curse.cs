@@ -1,7 +1,6 @@
 ﻿using Newtonsoft.Json;
 using System.Collections.Generic;
-
-public class Curse : TargetableAbility, ITargetableSingleHex
+public class Curse : TargetableAbility, ITargetableSingleHex, IUpgradable
 {
     List<Unit> enemies;
     [JsonIgnore] public Hex targetable_hex { get; set; }
@@ -13,7 +12,7 @@ public class Curse : TargetableAbility, ITargetableSingleHex
         enemy.ReceiveDamage(new MagicDamage(unit, ability_data.amount));
 
         if (!enemy.IsDead())
-            targetable_hex.GetUnit().ccs.Add(new Disarm(ability_data.cc));
+            targetable_hex.GetUnit().ccs.Add(new Disarm(unit, enemy, ability_data.cc));
 
         foreach (Hex hex in NetworkManager.Instance.games[unit.match_id].map.HexesInRange(targetable_hex, ability_data.range))
         {
@@ -53,5 +52,10 @@ public class Curse : TargetableAbility, ITargetableSingleHex
             Unit enemy = _enemy_hex.GetUnit();
             enemy.Move(_enemy_hex, hex);
         }
+    }
+    public void Upgrade()
+    {
+        ability_data.amount += 1;
+        ability_data.max_cooldown += 1;
     }
 }

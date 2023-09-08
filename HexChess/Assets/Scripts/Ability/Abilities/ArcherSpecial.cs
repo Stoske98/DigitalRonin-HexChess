@@ -1,7 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using Newtonsoft.Json;
+using System.Collections.Generic;
 using System.Linq;
-
-public class ArcherSpecial : PassiveAbility 
+public class ArcherSpecial : PassiveAbility, IUpgradable
 {
     private int max_range_increment { get; set; }
     public ArcherSpecial() : base() { max_range_increment = 3; }
@@ -13,16 +13,36 @@ public class ArcherSpecial : PassiveAbility
 
     public override void RegisterEvents()
     {
-        unit.events.OnStartMovement_Local += OnStartMovement;
-        unit.events.OnGetAttackMoves_Local += OnGetAttackMoves;
-        unit.events.OnStartAttack_local += OnStartAttack;
+        if (unit.GetBehaviour<ArcherMovement>() == null)
+            unit.AddMovementBehaviour(new ArcherMovement(unit, 1));
+
+        if (unit.GetBehaviour<ArcherRangedAttack>() == null)
+        {
+            unit.stats.attack_range = 2;
+            if(unit.class_type == ClassType.Light)
+                unit.AddAttackBehaviour(new ArcherRangedAttack(unit, "Prefabs/Archer/Light/Projectil/prefab"));
+            else
+                unit.AddAttackBehaviour(new ArcherRangedAttack(unit, "Prefabs/Archer/Dark/Projectil/prefab"));
+        }
+        /*if (upgraded)
+        {
+            unit.events.OnStartMovement_Local += OnStartMovement;
+            unit.events.OnGetAttackMoves_Local += OnGetAttackMoves;
+            unit.events.OnStartAttack_local += OnStartAttack;
+        }*/
     }
 
     public override void UnregisterEvents()
     {
-        unit.events.OnStartMovement_Local -= OnStartMovement;
-        unit.events.OnGetAttackMoves_Local -= OnGetAttackMoves;
-        unit.events.OnStartAttack_local -= OnStartAttack;
+        unit.AddMovementBehaviour(new NormalMovement(unit));
+        unit.stats.attack_range = 1;
+        unit.AddAttackBehaviour(new MeleeAttack(unit));
+        /*if (upgraded)
+        {
+            unit.events.OnStartMovement_Local -= OnStartMovement;
+            unit.events.OnGetAttackMoves_Local -= OnGetAttackMoves;
+            unit.events.OnStartAttack_local -= OnStartAttack;
+        }*/
     }
 
     private Damage OnStartAttack(Damage damage)
@@ -50,7 +70,16 @@ public class ArcherSpecial : PassiveAbility
     private void OnStartMovement(Hex _from_hex, Hex _target_hex)
     {
         if (max_range_increment > ability_data.range)
-            ability_data.range += 1;     
+            ability_data.range += 1;
+
+    }
+
+    public void Upgrade()
+    {
+      /*  upgraded = true;
+        unit.events.OnStartMovement_Local += OnStartMovement;
+        unit.events.OnGetAttackMoves_Local += OnGetAttackMoves;
+        unit.events.OnStartAttack_local += OnStartAttack;*/
     }
 }
 

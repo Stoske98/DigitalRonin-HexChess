@@ -13,11 +13,8 @@ public class TrapAbility : TargetableAbility, ITargetableSingleHex
         GameManager.Instance.game.map.PlaceObject(trap, targetable_hex.coordinates.x, targetable_hex.coordinates.y);
         GameManager.Instance.game.object_manager.AddObject(trap);
 
-        if (unit.class_type == ClassType.Light && unit.class_type == NetworkManager.Instance.player.player_data.class_type )
-            IObject.ObjectVisibility(trap, Visibility.LIGHT);
-        else
-            IObject.ObjectVisibility(trap, Visibility.DARK);
 
+        IObject.ObjectVisibility(trap, trap.visibility);
         Exit();
 
     }

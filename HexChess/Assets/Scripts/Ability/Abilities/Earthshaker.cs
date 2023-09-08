@@ -1,18 +1,30 @@
 ﻿using System.Collections.Generic;
+using UnityEngine;
 
 public class Earthshaker : InstantleAbility
 {
+    string path = "Prefabs/Tank/Light/Ability/Earthshaker";
+    GameObject vfx_prefab;
     List<Unit> enemies;
-    public Earthshaker() : base() { enemies = new List<Unit>(); }
-    public Earthshaker(Unit _unit, AbilityData _ability_data, string _sprite_path) : base(_unit, _ability_data, _sprite_path) { enemies = new List<Unit>(); }
+    public Earthshaker() : base() 
+    { 
+        enemies = new List<Unit>();
+        vfx_prefab = Resources.Load<GameObject>(path);
+    }
+    public Earthshaker(Unit _unit, AbilityData _ability_data, string _sprite_path) : base(_unit, _ability_data, _sprite_path) 
+    { 
+        enemies = new List<Unit>();
+        vfx_prefab = Resources.Load<GameObject>(path);
+    }
     public override void Execute()
     {
         foreach (Unit enemy in enemies)
         {
             enemy.ReceiveDamage(new MagicDamage(unit, ability_data.amount));
             if(!enemy.IsDead())
-                enemy.ccs.Add(new Stun(ability_data.cc));
+                enemy.ccs.Add(new Stun(unit, enemy, ability_data.cc));
         }
+        Object.Instantiate(vfx_prefab,unit.game_object.transform.position,Quaternion.identity);
         enemies.Clear();
         Exit();
     }

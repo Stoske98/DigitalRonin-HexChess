@@ -3,14 +3,23 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-public class Dash : TargetableAbility, ITargetableSingleHex, IUpgradable
+public class Dash : TargetableAbility, ITargetableSingleHex
 {
-    [JsonRequired] private bool upgraded { get; set; }
+    string path = "Prefabs/Swordsman/Light/Ability/Dash";
+    GameObject vfx_prefab;
     [JsonIgnore] private Direction face_direction { get; set; }
     [JsonIgnore] private List<Hex> hexes_in_direction { get; set; }
     [JsonIgnore] public Hex targetable_hex { get; set; }
-    public Dash() : base() { hexes_in_direction = new List<Hex>(); }
-    public Dash(Unit _unit, AbilityData _ability_data, string _sprite_path) : base(_unit, _ability_data, _sprite_path) { hexes_in_direction = new List<Hex>(); upgraded = false; }
+    public Dash() : base() 
+    {
+        hexes_in_direction = new List<Hex>();
+        vfx_prefab = Resources.Load<GameObject>(path);
+    }
+    public Dash(Unit _unit, AbilityData _ability_data, string _sprite_path) : base(_unit, _ability_data, _sprite_path) 
+    { 
+        hexes_in_direction = new List<Hex>();
+        vfx_prefab = Resources.Load<GameObject>(path);
+    }
 
     public override void Execute()
     {
@@ -19,14 +28,16 @@ public class Dash : TargetableAbility, ITargetableSingleHex, IUpgradable
         KnightMovement movement = new KnightMovement(unit);
         movement.SetPath(_cast_unit_hex, targetable_hex);
         unit.AddBehaviourToWork(movement);
+        movement.SetMovementSpeed(10);
 
-        if (upgraded)
+        if (unit.level == 3)
         {
             Map map = GameManager.Instance.game.map;
 
             face_direction = map.CoordinatesToDirection(map.
                 TransformCoordinatesToUnitCoordinates(new Vector2Int(targetable_hex.coordinates.x - _cast_unit_hex.coordinates.x, targetable_hex.coordinates.y - _cast_unit_hex.coordinates.y)));
             unit.events.OnEndMovement_Local += OnEndMovementSlash;
+            unit.animator.Play("Dash_Run_Dark_Swordsman");
         }
 
         foreach (var hex in hexes_in_direction)
@@ -45,6 +56,8 @@ public class Dash : TargetableAbility, ITargetableSingleHex, IUpgradable
         unit.events.OnEndMovement_Local -= OnEndMovementSlash;
         if (!unit.IsDead())
         {
+            unit.animator.Play("Dash_Slash_Light_Swordsman");
+            Object.Instantiate(vfx_prefab, unit.game_object.transform.position + Vector3.up + Vector3.forward, unit.game_object.transform.rotation);
             Map map = GameManager.Instance.game.map;
 
             Vector2Int face_direction_coordinates = map.DirectionToCoordinates(face_direction);
@@ -92,6 +105,7 @@ public class Dash : TargetableAbility, ITargetableSingleHex, IUpgradable
         _ability_moves.AddRange(AvailableMovesInDirection(game.GetHexesInDirection(Direction.LOWER_RIGHT, _unit_hex, ability_data.range)));
         _ability_moves.AddRange(AvailableMovesInDirection(game.GetHexesInDirection(Direction.UPPER_RIGHT, _unit_hex, ability_data.range)));
 
+        unit.events.OnGetAbilityMoves_Local?.Invoke(_unit_hex, _ability_moves);
         return _ability_moves;
     }
 
@@ -117,9 +131,5 @@ public class Dash : TargetableAbility, ITargetableSingleHex, IUpgradable
         }
 
         targetable_hex = map.GetHex(_target_hex_position.x, _target_hex_position.y);
-    }
-    public void Upgrade()
-    {
-        upgraded = true;
     }
 }

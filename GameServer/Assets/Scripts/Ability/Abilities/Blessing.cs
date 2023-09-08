@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System.Collections.Generic;
 
-public class Blessing : TargetableAbility, ITargetableSingleHex
+public class Blessing : TargetableAbility, ITargetableSingleHex, IUpgradable
 {
     [JsonIgnore] public Hex targetable_hex { get; set; }
     public Blessing() : base() { }
@@ -33,5 +33,11 @@ public class Blessing : TargetableAbility, ITargetableSingleHex
             _unit.stats.current_health = _unit.stats.max_health;
         else
             _unit.stats.current_health += ability_data.amount;
+    }
+
+    public void Upgrade()
+    {
+        ability_data.max_cooldown += 1;
+        ability_data.amount += 1;
     }
 }

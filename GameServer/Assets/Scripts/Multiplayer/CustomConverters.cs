@@ -99,6 +99,9 @@ public static class CustomConverters
 
                 if (obj is Unit unit)
                     unit.sprite = Resources.Load<Sprite>(unit.sprite_path);
+                else if (obj is Flag flag)
+                    if(flag.is_ocuppied)
+                        flag.OccupiedField();
 
 
                 obj.game_object.transform.SetParent(MapContainer.Instance.fields_container);
@@ -294,41 +297,67 @@ public static class CustomConverters
             JToken rotationToken = json_object.GetValue("Rotation");
             Quaternion rotation = rotationToken.ToObject<Quaternion>();
 
-            GameObject game_object = new GameObject(name);
-            game_object.transform.position = position;
-            game_object.transform.rotation = rotation;
-
-            game_object.AddComponent<MeshFilter>();
-            game_object.AddComponent<MeshRenderer>();
-
-            Mesh mesh = game_object.GetComponent<MeshFilter>().mesh;
-            mesh.Clear();
-
-            float angle = 0;
-            Vector3[] vertices = new Vector3[7];
-            vertices[0] = Vector3.zero;
-            for (int i = 1; i < vertices.Length; i++)
-            {
-                vertices[i] = new Vector3(Mathf.Cos(Mathf.Deg2Rad * angle), Mathf.Sin(Mathf.Deg2Rad * angle), 0) * 1;
-                angle += 60;
-
-            }
-            mesh.vertices = vertices;
-
-            mesh.triangles = new int[]
-            {
-                0, 1, 2,
-                0, 2, 3,
-                0, 3, 4,
-                0, 4, 5,
-                0, 5, 6,
-                0, 6, 1
-            };
-
-            mesh.RecalculateNormals();
+            GameObject game_object = Spawner.CreateHex(name, position, rotation);
 
             game_object.transform.SetParent(MapContainer.Instance.fields_container);
             return game_object;
+        }
+    }
+
+    public class OuterGameObjectConverter : JsonConverter<List<GameObject>>
+    {
+        public override void WriteJson(JsonWriter writer, List<GameObject> value, JsonSerializer serializer)
+        {
+            writer.WriteStartArray();
+
+            foreach (GameObject gameObj in value)
+            {
+                writer.WriteStartObject();
+
+                writer.WritePropertyName("$type");
+                writer.WriteValue("Game Object");
+
+                writer.WritePropertyName("Name");
+                serializer.Serialize(writer, gameObj.name);
+
+                writer.WritePropertyName("Position");
+                serializer.Serialize(writer, gameObj.transform.position);
+
+                writer.WritePropertyName("Rotation");
+                serializer.Serialize(writer, gameObj.transform.rotation);
+
+                writer.WriteEndObject();
+            }
+
+            writer.WriteEndArray();
+        }
+
+        public override List<GameObject> ReadJson(JsonReader reader, Type objectType, List<GameObject> existingValue, bool hasExistingValue, JsonSerializer serializer)
+        {
+            List<GameObject> gameObjects = new List<GameObject>();
+
+            JArray jsonArray = JArray.Load(reader);
+
+            Material material = MapContainer.Instance.outer_field_material;
+            foreach (JObject jsonObject in jsonArray.Children<JObject>())
+            {
+                JToken nameToken = jsonObject.GetValue("Name");
+                string name = nameToken.ToObject<string>();
+
+                JToken positionToken = jsonObject.GetValue("Position");
+                Vector3 position = positionToken.ToObject<Vector3>();
+
+                JToken rotationToken = jsonObject.GetValue("Rotation");
+                Quaternion rotation = rotationToken.ToObject<Quaternion>();
+
+                GameObject game_object = Spawner.CreateHex(name, position, rotation);
+                game_object.GetComponent<Renderer>().material = material;
+                game_object.transform.SetParent(MapContainer.Instance.fields_container);
+
+                gameObjects.Add(game_object);
+            }
+
+            return gameObjects;
         }
     }
     public class Vector2IntConverter : JsonConverter<Vector2Int>

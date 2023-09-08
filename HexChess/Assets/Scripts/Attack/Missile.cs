@@ -17,13 +17,11 @@ public class Missile : IActiveObject
     private Vector3 direction { get; set; }
     private bool work { get; set; }
     public Missile() { }
-    public Missile(Unit _enemy, Damage _damage, float _angle, float _speed)
+    public Missile(Unit _enemy, Damage _damage, GameObject prefab, float _angle, float _speed)
     {
         id = GameManager.Instance.game.random_seeds_generator.GetRandomIdSeed();
         class_type = _damage.unit.class_type;
-        game_object = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-        game_object.GetComponent<Renderer>().material.color = Color.red;
-        game_object.transform.localScale = new Vector3(0.3f, 0.3f, 0.3f);
+        game_object = GameObject.Instantiate(prefab);
         game_object.transform.position = _damage.unit.game_object.transform.position + new Vector3(0,1.5f,0);
         next_desired_position = game_object.transform.position;
         trajectory_positions = CalculateTrajectoryPositions(game_object.transform.position, _enemy.game_object.transform.position + new Vector3(0, 1.5f, 0), _angle);
@@ -78,67 +76,3 @@ public class Missile : IActiveObject
         return trajectory_positions;
     }
 }
-
-/*
- 
-public class MissileTrajectory : MonoBehaviour
-
-{
-
-public Transform startPosition;
-
-public Transform targetPosition;
-
-public float missileSpeed = 10f;
-
-public float trajectoryAngle = 45f;
-
-public LineRenderer trajectoryLine;
-
-// public int lineSegmentCount = 50;
-
-public float factor = 0.1f;
-
-void Update()
-
-{
-
-// Calculate distance and height
-
-float distance = Vector3.Distance(startPosition.position, targetPosition.position);
-
-float height = (distance distance) / (2 missileSpeed missileSpeed) Mathf.Tan(trajectoryAngle * Mathf.Deg2Rad);
-
-// Calculate line segment count based on distance
-
-int lineSegmentCount = Mathf.CeilToInt(distance * factor); // Adjust the factor as needed
-
-// Set line renderer
-
-trajectoryLine.positionCount = lineSegmentCount;
-
-for (int i = 0; i < lineSegmentCount; i++)
-
-{
-
-// Calculate progress and trajectory position
-
-float progress = i / (float)lineSegmentCount;
-
-Vector3 position = Vector3.Lerp(startPosition.position, targetPosition.position, progress);
-
-// Set height from sine wave
-
-position.y += Mathf.Sin(progress Mathf.PI) height;
-
-// Update line renderer
-
-trajectoryLine.SetPosition(i, position);
-
-}
-
-}
-
-}
- 
- */

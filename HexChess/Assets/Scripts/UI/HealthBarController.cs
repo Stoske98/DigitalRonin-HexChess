@@ -23,7 +23,10 @@ public class HealthBarController
         health_bar_canvas.SetActive(is_active);
         _unit.events.OnRecieveDamage_Local += OnReceiveDamage;
     }
-
+    public void SetMaxHealth(int max_hp)
+    {
+        health_bar.MaxValue = max_hp;
+    }
     private void OnReceiveDamage(Hex hex)
     {
         health_bar.Value = unit.stats.current_health;

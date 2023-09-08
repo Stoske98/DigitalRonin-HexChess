@@ -22,7 +22,7 @@ public class QueensCommand : TargetableAbility, ITargetableSingleHex, IUpgradabl
     }
     private void OnEnemyEndMovement(Hex hex)
     {
-        AttackBehaviour attack_behaviour = unit.GetBehaviour<AttackBehaviour>() as AttackBehaviour;
+        AttackBehaviour attack_behaviour = unit.GetBehaviour<AttackBehaviour>();
         Hex _cast_unit_hex = NetworkManager.Instance.games[unit.match_id].map.GetHex(unit);
         Hex _enemy_unit_hex = NetworkManager.Instance.games[unit.match_id].map.GetHex(enemy);
         if (enemy != null && attack_behaviour != null && _cast_unit_hex != null && _enemy_unit_hex != null && attack_behaviour.GetAttackMoves(_cast_unit_hex).Contains(_enemy_unit_hex))
@@ -62,10 +62,17 @@ public class QueensCommand : TargetableAbility, ITargetableSingleHex, IUpgradabl
         for (int i = 0; i < hexes.Count; i++)
         {
             Unit enemy = hexes[i].GetUnit();
-            if (enemy != null && enemy.class_type != unit.class_type)
+            if (enemy != null)
             {
-                count = i;
-                break;
+                if(enemy.class_type != unit.class_type)
+                {
+                    count = i;
+                    break;
+                }else
+                {
+                    hexes.Clear();
+                    return hexes;
+                }
             }
 
             if (i == hexes.Count - 1)

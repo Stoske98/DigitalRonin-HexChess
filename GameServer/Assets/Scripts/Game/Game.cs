@@ -22,7 +22,7 @@ public enum UnitType
     Stone = 9,
 
 }
-public abstract class Game
+public abstract class Game : ISubscribe
 {
     [JsonIgnore] public int match_id {get; set;}
     [JsonConverter(typeof(CustomConverters.MapConverter))] public Map map { get; set; }
@@ -51,7 +51,7 @@ public abstract class Game
         players = new List<Player>();
         game_events = new GameEvents();
         object_manager = new ObjectManager();
-        random_seeds_generator = new RandomSeedsGenerator(100, 100);
+        random_seeds_generator = new RandomSeedsGenerator(1000, 1000);
 
         move = 1;
         class_on_turn = ClassType.Light;
@@ -84,6 +84,8 @@ public abstract class Game
         return map.GetHexesInDirection(direction, center_hex,range, count_unwalkable_fields);
     }
 
+    public abstract void RegisterEvents();
+    public abstract void UnregisterEvents();
 }
 
 

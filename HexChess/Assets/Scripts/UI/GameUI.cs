@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using static UnityEngine.GraphicsBuffer;
+
 public class GameUI : MonoBehaviour
 {
     #region GameUI Singleton
@@ -31,6 +33,7 @@ public class GameUI : MonoBehaviour
     [Header("Unit")]
     public TMP_Text damage;
     public TMP_Text health;
+    public GameObject prefab_receive_damage_pop_up_txt;
     public List<AbilityController> abilities_controller = new List<AbilityController>();
     public Image unit_image;
     public GameObject image_object;
@@ -53,6 +56,7 @@ public class GameUI : MonoBehaviour
         game.game_events.OnReceiveDamage_Global += OnUnitReceiveDamage;
         game.game_events.OnUseAbility_Global += OnUnitUseAbility;
         game.game_events.OnUpdateCooldown_Global += OnUpdateCooldown;
+        game.game_events.OnChangeUnitData_Global += UpdateUnit;
 
         player_input_handler.OnSelectUnit += OnSelectUnit;
         player_input_handler.OnDeselectUnit += OnDeselectUnit;
@@ -65,7 +69,13 @@ public class GameUI : MonoBehaviour
             upgrades.SetUp(ch_game.shard_controller);
 
     }
-
+    public void UpdateUnit(Unit unit)
+    {
+        if (player_input_handler.GetSelectedUnit() != null && unit == player_input_handler.GetSelectedUnit())
+        {
+            OnSelectUnit(unit);
+        }
+    }
     private void OnUpdateCooldown(Unit unit)
     {
         if (player_input_handler.GetSelectedUnit() != null && unit == player_input_handler.GetSelectedUnit())
@@ -76,7 +86,7 @@ public class GameUI : MonoBehaviour
 
     private void OnUnitUseAbility(Unit unit)
     {
-        if(player_input_handler.GetSelectedUnit() != null && unit == player_input_handler.GetSelectedUnit())
+        if (player_input_handler.GetSelectedUnit() != null && unit == player_input_handler.GetSelectedUnit())
         {
             OnSelectUnit(unit);
         }
@@ -84,6 +94,16 @@ public class GameUI : MonoBehaviour
 
     private void OnUnitReceiveDamage(Unit unit, Damage damage, Hex hex)
     {
+        GameObject damage_pop_up = Instantiate(prefab_receive_damage_pop_up_txt, unit.game_object.transform.position + Vector3.up * 2, Quaternion.identity);
+        Vector3 directionToTarget = GameManager.Instance.map_controller.cm.gameObject.transform.position - damage_pop_up.transform.position;
+        directionToTarget.y = 0;
+        Quaternion targetRotation = Quaternion.LookRotation(directionToTarget);
+        damage_pop_up.transform.rotation = targetRotation;
+
+        damage_pop_up.GetComponentInChildren<TextMeshProUGUI>().text = damage.amount.ToString();
+        damage_pop_up.transform.LeanMoveLocalY(3, 2);
+        damage_pop_up.transform.LeanScale(Vector3.one * 2, 1.5f).setEase(LeanTweenType.easeInOutCubic);
+
         if (player_input_handler.GetSelectedUnit() != null && unit == player_input_handler.GetSelectedUnit())
         {
             OnSelectUnit(unit);
@@ -112,6 +132,7 @@ public class GameUI : MonoBehaviour
     {
         image_object.SetActive(true);
         unit_image.sprite = unit.sprite;
+        unit.health_bar_controller.ShowHealthBar();
         damage.text = unit.stats.damage.ToString();
         health.text = unit.stats.current_health.ToString();
         SetUpAbilities(unit);
@@ -149,13 +170,16 @@ public class GameUI : MonoBehaviour
             player_turn_image.sprite = dark_turn;
 
         Unit selected_unit = player_input_handler.GetSelectedUnit();
-        Hex selected_hex = player_input_handler.GetSelectedHex();
         GameManager game_manager = GameManager.Instance;
-        if (selected_unit != null && !selected_unit.IsDead() && selected_hex != null)
+        Hex unit_hex = game_manager.game.map.GetHex(selected_unit);
+        if (selected_unit != null && !selected_unit.IsDead() && unit_hex != null)
         {
-            if(!selected_unit.IsWork() && selected_unit.class_type == game_manager.game.class_on_turn)
-                game_manager.map_controller.MarkMovementAndAttackFields(game_manager.game, selected_unit, selected_hex);
+            player_input_handler.SetSelectedHex(unit_hex);
+            if (!selected_unit.IsWork() && selected_unit.class_type == game_manager.game.class_on_turn)
+                game_manager.map_controller.MarkMovementAndAttackFields(game_manager.game, selected_unit, unit_hex);
         }
+        else
+            player_input_handler.DeselectUnit();
     }
 
     public void SetShards(ChallengeRoyaleGame ch_game)
@@ -166,13 +190,14 @@ public class GameUI : MonoBehaviour
             shards.text = ch_game.shard_controller.dark_shards.ToString();
     }
 
-    private void OnClassUpgrade(ClassLevelController level_controller, UnitType unit_type_to_upgrade)
+    private void OnClassUpgrade(ClassLevelController level_controller, ClassType class_type, UnitType unit_type_to_upgrade)
     {
         foreach (var upgrade in upgrades_unit_ui)
         {
             if (upgrade.unit_type == unit_type_to_upgrade)
             {
-                upgrade.Upgrade(level_controller.level);
+                if(NetworkManager.Instance.player.player_data.class_type == class_type)
+                    upgrade.Upgrade(level_controller.level);
 
                 Unit selected_unit = player_input_handler.GetSelectedUnit();
                 if (selected_unit != null && unit_type_to_upgrade == selected_unit.unit_type)

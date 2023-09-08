@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-public class KnightSpecial : PassiveAbility, IUpgradable
+public class KnightSpecial : PassiveAbility
 {
     public KnightSpecial() : base() { }
     public KnightSpecial(Unit _unit, AbilityData _ability_data, string _sprite_path) : base(_unit, _ability_data, _sprite_path) { }
@@ -21,8 +21,7 @@ public class KnightSpecial : PassiveAbility, IUpgradable
 
     private void OnStartMovement(Hex _from_hex, Hex _target_hex)
     {
-        Behaviour behaviour = unit.GetBehaviour<MovementBehaviour>();
-        if (behaviour != null && behaviour is KnightMovement)
+        if (unit.GetBehaviour<KnightMovement>() != null)
         {
             List<Unit> enemy_units = new List<Unit>();
 
@@ -57,9 +56,5 @@ public class KnightSpecial : PassiveAbility, IUpgradable
                 foreach (var enemy in enemy_units)
                     enemy.ReceiveDamage(new PhysicalDamage(unit, unit.stats.damage));
         }
-    }
-
-    public void Upgrade()
-    {
     }
 }

@@ -12,11 +12,12 @@ public class WizardSpecial : PassiveAbility
 
     public override void RegisterEvents()
     {
-       // unit.behaviours.Add(new TeleportMovement(unit, ability_data.range));
+        if (unit.GetBehaviour<TeleportMovement>() == null)
+            unit.AddMovementBehaviour(new TeleportMovement(unit, ability_data.range));
     }
 
     public override void UnregisterEvents()
     {
-       // unit.movement_behaviour = movement;
+        unit.AddMovementBehaviour(new NoMovement(unit));
     }
 }

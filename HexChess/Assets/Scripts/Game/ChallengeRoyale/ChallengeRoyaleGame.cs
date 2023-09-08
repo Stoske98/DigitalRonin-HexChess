@@ -1,34 +1,62 @@
 ﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
+using System.Threading.Tasks;
 using UnityEngine;
 
 public class ChallengeRoyaleGame : Game
 {
-    public int start_countdowm = 30;
     public bool is_activated { set; get; }
     public ShardController shard_controller { get; set; }
+    [JsonConverter(typeof(CustomConverters.OuterGameObjectConverter))] public List<GameObject> outer_hexes_obj { get; set; }
 
     [JsonRequired] private int counter = 0;
     [JsonRequired] private int remove_on_turn = 10;
     [JsonRequired] private int n;
-    public List<Vector2Int> exp_flag_coordinates { set; get; }
 
-    [JsonConstructor] public ChallengeRoyaleGame() : base() { }
-    public ChallengeRoyaleGame(Map _map, int _start_countdowm, int _remove_on_turn) : base(_map)
+    [JsonIgnore]
+    public readonly List<Vector2Int> exp_flag_coordinates = new List<Vector2Int> { new Vector2Int(-2, 1), new Vector2Int(2, -1),
+                                                                                   /*new Vector2Int(0, 2), new Vector2Int(0, -2)*/ };
+
+    [JsonConstructor] public ChallengeRoyaleGame() : base() { outer_hexes_obj = new List<GameObject>(); }
+    public ChallengeRoyaleGame(Map _map, int _remove_on_turn) : base(_map)
     {
-        start_countdowm = _start_countdowm;
         remove_on_turn = _remove_on_turn;
         n = map.GetN();
 
         shard_controller = new ShardController();
         shard_controller.InitControllers();
 
-        exp_flag_coordinates = new List<Vector2Int>() { new Vector2Int(0, 2), new Vector2Int(0, -2), new Vector2Int(-2, 0), new Vector2Int(2, -2), new Vector2Int(2, 0), new Vector2Int(-2, 2), };
+        foreach (var flag_coordinate in exp_flag_coordinates)
+            Spawner.SpawnFlag(this, map.GetHex(flag_coordinate.x, flag_coordinate.y));
+
+        outer_hexes_obj = new List<GameObject>();
     }
     public override void Init()
     {
         map.SpawnUnits(this);
         object_manager.ProcessPendingActions();
+
+       /* foreach (Vector2Int coordiante in exp_flag_coordinates)
+        {
+            Hex hex = map.GetHex(coordiante.x, coordiante.y);
+            if (hex != null)
+            {
+                Flag flag = null;
+                foreach (IObject obj in hex.objects)
+                    if (obj is Flag _flag)
+                        flag = _flag;
+
+                Unit unit = hex?.GetUnit();
+
+                if (unit != null && flag != null)
+                {
+                    flag.class_type = unit.class_type;
+                    flag.OccupiedField();
+                }
+            }
+        }*/
     }
     public void Activate()
     {
@@ -62,12 +90,13 @@ public class ChallengeRoyaleGame : Game
         return false;
     }
 
-    private void RemoveOuterFields()
+    public void RemoveOuterFields()
     {
         Hex center_hex = map.GetHex(0, 0);
         List<Hex> inner_hexes = map.HexesInRange(center_hex, n - 1);
         n--;
 
+        Material material = GameManager.Instance.map_controller.outer_field_material;
         List<Hex> outer_hexes = new List<Hex>();
         foreach (var hex in map.hexes)
         {
@@ -77,17 +106,27 @@ public class ChallengeRoyaleGame : Game
                 if (unit != null)
                     unit.Die(hex);
 
-                hex.game_object.SetActive(false);
+                foreach (var obj in hex.objects)
+                    object_manager.RemoveObject(obj);
+
+                hex.SetMaterial(material);
+                hex.objects.Clear();
                 outer_hexes.Add(hex);
             }
         }
 
         foreach (Hex hex in outer_hexes)
+        {
+            hex.game_object.name = "OUTTER HEX";
+            hex.game_object.GetComponent<MeshRenderer>().material = material;
+            outer_hexes_obj.Add(hex.game_object);
             map.hexes.Remove(hex);
+        }
     }
 
     public override void EndTurn()
     {
+        /*await CheckObjectManagerAsync(object_manager);*/
         move++;
 
         UpdateFlagExp();
@@ -104,23 +143,99 @@ public class ChallengeRoyaleGame : Game
         game_events.OnEndPlayerTurn_Global?.Invoke(class_on_turn);
     }
 
-    public void UpdateFlagExp()
+   /* static async Task CheckObjectManagerAsync(ObjectManager object_manager)
+    {
+        int count = 0; 
+        while (object_manager.IsObjectsWorking())
+        {
+            count++;
+            Debug.Log("USO " + count);
+            await Task.Delay(TimeSpan.FromMilliseconds(10)); // Check every second
+        }
+    }*/
+
+    private void UpdateFlagExp()
     {
         foreach (Vector2Int coordiante in exp_flag_coordinates)
         {
-            Unit unit = map.GetHex(coordiante.x, coordiante.y)?.GetUnit();
-            if (unit != null && class_on_turn == unit.class_type)
+            Hex hex = map.GetHex(coordiante.x, coordiante.y);
+            if (hex != null)
             {
-                if (class_on_turn == ClassType.Light)
-                    shard_controller.light_shards++;
-                else if (class_on_turn == ClassType.Dark)
-                    shard_controller.dark_shards++;
+                Flag flag = null;
+                foreach (IObject obj in hex.objects)
+                    if (obj is Flag _flag)
+                        flag = _flag;
+
+                Unit unit = hex?.GetUnit();
+
+                if(unit != null && flag.class_type != unit.class_type && class_on_turn == unit.class_type)
+                {
+                    flag.class_type = unit.class_type;
+                    continue;
+                }
+                else if (unit != null && flag.class_type == unit.class_type && class_on_turn != unit.class_type)
+                {
+                    flag.OccupiedField();
+                    continue;
+                }
+
+                if (flag.is_ocuppied && flag.class_type == class_on_turn)
+                {
+                    if (class_on_turn == ClassType.Light)
+                        shard_controller.light_shards++;
+                    else if (class_on_turn == ClassType.Dark)
+                        shard_controller.dark_shards++;
+
+                    game_events.OnShardChanges_Global?.Invoke(this);
+                }
             }
         }
+    }
 
-        game_events.OnShardChanges_Global.Invoke(this);
+    public override void RegisterEvents()
+    {
+        if (is_activated)
+            game_events.OnEndPlayerTurn_Global += Countdown;
+    }
 
+    public override void UnregisterEvents()
+    {
+        if (is_activated)
+            game_events.OnEndPlayerTurn_Global -= Countdown;
     }
 }
 
 
+
+public class Flag : IObject
+{
+    public string id { get; set; }
+    public string game_object_path { get; set; }
+    [JsonConverter(typeof(CustomConverters.GameObjectConverter))] public GameObject game_object { get; set; }
+    public Visibility visibility { get; set; }
+    public ClassType class_type { get; set; }
+    public bool is_ocuppied { get; set; }
+
+    public Flag() { }
+    public Flag(Game _game, Hex _hex, string _game_object_path)
+    {
+        id = GameManager.Instance.game.random_seeds_generator.GetRandomIdSeed();
+        class_type = ClassType.None;
+        visibility = Visibility.BOTH;
+        game_object_path = _game_object_path;
+
+        game_object = UnityEngine.Object.Instantiate(Resources.Load<GameObject>(game_object_path));
+        game_object.transform.SetParent(_hex.game_object.transform);
+        game_object.name = "Flag: [" + _hex.coordinates.x + "][" + _hex.coordinates.y + "]";
+    }
+
+    public void OccupiedField()
+    {
+        if (class_type == ClassType.Light)
+            game_object.GetComponentInChildren<Renderer>().material.color = Color.blue;
+        else if (class_type == ClassType.Dark)
+            game_object.GetComponentInChildren<Renderer>().material.color = Color.red;
+
+        is_ocuppied = true;
+    }
+}

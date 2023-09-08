@@ -11,7 +11,7 @@ public abstract class AttackBehaviour : Behaviour
         base.Enter();
         damage = unit.events.OnStartAttack_local?.Invoke(damage) ?? damage;
         time = UnityEngine.Time.time;
-
+        unit.game_object.transform.LookAt(target.game_object.transform);
         unit.animator?.SetBool("Attack", true);
 
     }
@@ -32,8 +32,11 @@ public abstract class AttackBehaviour : Behaviour
         List<Hex> _hexes = GameManager.Instance.game.map.HexesInRange(_unit_hex, unit.stats.attack_range);
 
         foreach (var _hex_in_range in _hexes)
-            if (!_hex_in_range.IsWalkable() && _hex_in_range.GetUnit().class_type != _unit_hex.GetUnit().class_type)
+        {
+            Unit enemy = _hex_in_range.GetUnit();
+            if (enemy != null && unit.class_type != enemy.class_type)
                 _attack_moves.Add(_hex_in_range);
+        }
 
         unit.events.OnGetAttackMoves_Local?.Invoke(_unit_hex, _attack_moves);
 
