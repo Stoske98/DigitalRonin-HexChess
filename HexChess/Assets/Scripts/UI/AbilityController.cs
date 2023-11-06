@@ -7,10 +7,12 @@ public class AbilityController : MonoBehaviour
     public Image ability_image;
     public Image ability_cooldown;
     public TMP_Text cooldown_txt;
+    public AbilityBehaviour ability;
 
     public void SetAbility(AbilityBehaviour ability_behaviour)
     {
-        if(ability_behaviour is PassiveAbility passive_ability)
+        ability = ability_behaviour;
+        if (ability_behaviour is PassiveAbility passive_ability)
         {
             ability_image.sprite = ability_behaviour.sprite;
             ability_cooldown.fillAmount = 0;

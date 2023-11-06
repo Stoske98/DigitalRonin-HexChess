@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using System.Collections.Generic;
+using UnityEngine;
 
 public class TrapAbility : TargetableAbility, ITargetableSingleHex
 {
@@ -12,7 +13,6 @@ public class TrapAbility : TargetableAbility, ITargetableSingleHex
 
         GameManager.Instance.game.map.PlaceObject(trap, targetable_hex.coordinates.x, targetable_hex.coordinates.y);
         GameManager.Instance.game.object_manager.AddObject(trap);
-
 
         IObject.ObjectVisibility(trap, trap.visibility);
         Exit();
@@ -52,16 +52,25 @@ public class TrapAbilityFinal : TargetableAbility, ITargetMultipleHexes
     public int max_hexes { get; set; }
     public bool has_condition { get; set; }
     public List<Hex> targetable_hexes { get; set; }
+    public Dictionary<Hex, GameObject> placement { get; set; }
+    public GameObject vfx_prefab { get; set; }
+
+    string placement_path = "Prefabs/Trap/trap_placement";
     public TrapAbilityFinal() : base() 
     {
         targetable_hexes = new List<Hex>();
         max_hexes = 2;
-        has_condition = false;
+        has_condition = false; 
+        placement = new Dictionary<Hex, GameObject>();
+        vfx_prefab = Resources.Load<GameObject>(placement_path);
     }
     public TrapAbilityFinal(Unit _unit, AbilityData _ability_data, string _sprite_path) : base(_unit, _ability_data, _sprite_path) { 
         targetable_hexes = new List<Hex>(); 
         max_hexes = 2; 
-        has_condition = false; }
+        has_condition = false;
+        placement = new Dictionary<Hex, GameObject>();
+        vfx_prefab = Resources.Load<GameObject>(placement_path);
+    }
     public override void Execute()
     {
         foreach (var targetable_hex in targetable_hexes)
@@ -71,10 +80,7 @@ public class TrapAbilityFinal : TargetableAbility, ITargetMultipleHexes
             GameManager.Instance.game.map.PlaceObject(trap, targetable_hex.coordinates.x, targetable_hex.coordinates.y);
             GameManager.Instance.game.object_manager.AddObject(trap);
 
-            if (unit.class_type == ClassType.Light && unit.class_type == NetworkManager.Instance.player.player_data.class_type)
-                IObject.ObjectVisibility(trap, Visibility.LIGHT);
-            else
-                IObject.ObjectVisibility(trap, Visibility.DARK);
+            IObject.ObjectVisibility(trap, trap.visibility);
         }
         Exit();
     }

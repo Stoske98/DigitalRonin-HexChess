@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 
 public class Warstrike : TargetableAbility, ITargetableSingleHex, IUpgradable
 {
@@ -99,7 +100,7 @@ public class Warstrike : TargetableAbility, ITargetableSingleHex, IUpgradable
             enemy = CheckIsEnemyOnDirection(_target_hex, game.GetAllHexesInDirection(Direction.LOWER_LEFT, _cast_unit_hex));
             if (enemy != null)
                 return enemy;
-            enemy = CheckIsEnemyOnDirection(_target_hex, game.GetAllHexesInDirection(Direction.LOWER_LEFT, _cast_unit_hex));
+            enemy = CheckIsEnemyOnDirection(_target_hex, game.GetAllHexesInDirection(Direction.UPPER_LEFT, _cast_unit_hex));
             if (enemy != null)
                 return enemy;
         }
@@ -149,9 +150,10 @@ public class WarstrikeAction : TargetableAbility, ITargetableSingleHex
         Unit enemy = targetable_hex.GetUnit();
         if (enemy != null)
         {
-            enemy.ReceiveDamage(new MagicDamage(unit, ability_data.amount));
-            if (!enemy.IsDead())
+            unit.Attack(enemy);
+            if (unit.stats.damage < enemy.stats.current_health)
                 enemy.ccs.Add(new Stun(unit, enemy, ability_data.cc));
+            
         }
         Exit();
     }

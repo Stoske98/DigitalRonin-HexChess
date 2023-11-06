@@ -1,0 +1,22 @@
+fileFormatVersion: 2
+guid: 848bf987b3cb75a4db6a687a1fbaa2c3
+TrueTypeFontImporter:
+  externalObjects: {}
+  serializedVersion: 4
+  fontSize: 16
+  forceTextureCase: -2
+  characterSpacing: 0
+  characterPadding: 1
+  includeFontData: 1
+  fontNames:
+  - Aviano
+  fallbackFontReferences:
+  - {fileID: 12800000, guid: 6e510ea0b01495d418a4f1956a2b5771, type: 3}
+  customCharacters: 
+  fontRenderingMode: 0
+  ascentCalculationMode: 1
+  useLegacyBoundsCalculation: 0
+  shouldRoundAdvanceValue: 1
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

@@ -59,6 +59,41 @@ public static class CustomConverters
             return obj;
         }
     }
+    public class SubscibersListConverter : JsonConverter<List<ISubscribe>>
+    {
+        public override void WriteJson(JsonWriter writer, List<ISubscribe> value, JsonSerializer serializer)
+        {
+            writer.WriteStartArray();
+
+            foreach (ISubscribe obj in value)
+            {
+                JObject jo = new JObject();
+                jo.Add("Type", obj.GetType().Name);
+                jo.Add("Value", JToken.FromObject(obj, serializer));
+
+                jo.WriteTo(writer);
+            }
+
+            writer.WriteEndArray();
+        }
+        public override List<ISubscribe> ReadJson(JsonReader reader, Type objectType, List<ISubscribe> existingValue, bool hasExistingValue, JsonSerializer serializer)
+        {
+            var obj_list = new List<ISubscribe>();
+
+            JArray jsonArray = JArray.Load(reader);
+
+            foreach (JObject jObject in jsonArray.Children<JObject>())
+            {
+                var type = jObject.GetValue("Type").ToString();
+                var value = jObject.GetValue("Value").CreateReader();
+                var obj = serializer.Deserialize(value, Type.GetType(type)) as ISubscribe;
+                obj_list.Add(obj);
+            }
+
+            return obj_list;
+        }
+    }
+
     public class ObjectListConverter : JsonConverter<List<IObject>>
     {
         public override void WriteJson(JsonWriter writer, List<IObject> value, JsonSerializer serializer)

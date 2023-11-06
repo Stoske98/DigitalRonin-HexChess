@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using static UnityEngine.GraphicsBuffer;
 
 public class GameUI : MonoBehaviour
 {
@@ -25,6 +24,7 @@ public class GameUI : MonoBehaviour
     }
     #endregion
     public PlayerInputHandler player_input_handler;
+    public Animator animator;
     [Header("Player Turn")]
     public Sprite light_turn;
     public Sprite dark_turn;
@@ -41,6 +41,26 @@ public class GameUI : MonoBehaviour
     [Header("Shards")]
     public TMP_Text shards;
     public List<UpgradeUnitUI> upgrades_unit_ui = new List<UpgradeUnitUI>();
+
+    [Header("Interactive Bar")]
+    public InteractiveBar interactive_bar;
+
+    [Header("Log Bar")]
+    public LogBar log_bar;
+
+
+    [Header("Challenge Royale")]
+    public TMP_Text ch_counger;
+    public GameObject on_turn_object;
+
+    [Header("Disconnect Panel")]
+    public GameObject player_disconnect_from_game;
+
+
+    [Header("Winner")]
+    public Image winner;
+    public Sprite light_winner;
+    public Sprite dark_winner;
 
 
     private void Awake()
@@ -119,6 +139,13 @@ public class GameUI : MonoBehaviour
             player_input_handler.DeselectUnit();   
             OnDeselectUnit();
         }
+        if(unit.real)
+        {
+            if (unit.class_type == ClassType.Light)
+                log_bar.gralls_controller.SetCounter(unit.class_type, GameManager.Instance.game.death_light);
+            else
+                log_bar.gralls_controller.SetCounter(unit.class_type, GameManager.Instance.game.death_dark);
+        }
     }
 
     public IEnumerator FinishDeathAnimation(Unit unit, float time)
@@ -126,20 +153,37 @@ public class GameUI : MonoBehaviour
         yield return new WaitForSeconds(time);
         unit.animator.enabled = false;
         IObject.ObjectVisibility(unit, Visibility.NONE);
+
+        unit.game_object.transform.position = new Vector3(100, 100, 100);
     }
 
     private void OnSelectUnit(Unit unit)
     {
-        image_object.SetActive(true);
         unit_image.sprite = unit.sprite;
         unit.health_bar_controller.ShowHealthBar();
         damage.text = unit.stats.damage.ToString();
         health.text = unit.stats.current_health.ToString();
+
         SetUpAbilities(unit);
     }
     private void OnDeselectUnit()
     {
-        image_object.SetActive(false);
+        ClassType player_class_type = NetworkManager.Instance.player.data.class_type;
+        List<IObject> objects = GameManager.Instance.game.object_manager.objects;
+        foreach (IObject obj in objects)
+        {
+            if(obj is Unit unit)
+            {
+                if (unit != null && unit.class_type == player_class_type && unit.unit_type == UnitType.King)
+                {
+                    unit_image.sprite = unit.sprite;
+                    damage.text = unit.stats.damage.ToString();
+                    health.text = unit.stats.current_health.ToString();
+                    SetUpAbilities(unit);
+                    break;
+                }
+            }
+        }
     }
 
     private void SetUpAbilities(Unit unit)
@@ -184,7 +228,7 @@ public class GameUI : MonoBehaviour
 
     public void SetShards(ChallengeRoyaleGame ch_game)
     {
-        if(NetworkManager.Instance.player.player_data.class_type == ClassType.Light)
+        if(NetworkManager.Instance.player.data.class_type == ClassType.Light)
             shards.text = ch_game.shard_controller.light_shards.ToString();
         else
             shards.text = ch_game.shard_controller.dark_shards.ToString();
@@ -196,7 +240,7 @@ public class GameUI : MonoBehaviour
         {
             if (upgrade.unit_type == unit_type_to_upgrade)
             {
-                if(NetworkManager.Instance.player.player_data.class_type == class_type)
+                if(NetworkManager.Instance.player.data.class_type == class_type)
                     upgrade.Upgrade(level_controller.level);
 
                 Unit selected_unit = player_input_handler.GetSelectedUnit();
@@ -208,19 +252,39 @@ public class GameUI : MonoBehaviour
             }
         }
     }
+    public void SetAWinner(ClassType class_type)
+    {
+        if(class_type == ClassType.Light)
+            winner.sprite = light_winner;
+        else
+            winner.sprite = dark_winner;
 
+        animator.Play("Win");
+    }
+    public void ActiveChallengeRoyale(bool just_end = false)
+    {
+        if (!just_end)
+            animator.Play("ChallengeRoyale");
+        else
+            animator.Play("ChallengeRoyale", 0 ,1.0f);
+    }
+
+    public void SetChallengeRoyaleMove(int move)
+    {
+        ch_counger.text = move.ToString();
+    }
     public void OnHoverUpgradeClassUI(RectTransform rect)
     {
-        LeanTween.value(gameObject, rect.sizeDelta.x, 350, 0.6f)
+      /*  LeanTween.value(gameObject, rect.sizeDelta.x, 375, 0.6f)
             .setOnUpdate((float width) => UpdateWidth(rect, width))
-            .setEase(LeanTweenType.easeInOutCubic);
+            .setEase(LeanTweenType.easeInOutCubic);*/
     }
 
     public void OnUnhoverUpgradeClassUI(RectTransform rect)
     {
-        LeanTween.value(gameObject, rect.sizeDelta.x, 98, 0.6f)
+      /*  LeanTween.value(gameObject, rect.sizeDelta.x, 98, 0.6f)
             .setOnUpdate((float width) => UpdateWidth(rect, width))
-            .setEase(LeanTweenType.easeInOutCubic);
+            .setEase(LeanTweenType.easeInOutCubic);*/
     }
 
     private void UpdateWidth(RectTransform rectTransform, float width)

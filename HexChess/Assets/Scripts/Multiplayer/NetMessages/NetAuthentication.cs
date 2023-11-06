@@ -31,3 +31,30 @@ public class NetAuthentication : NetMessage
         NetworkManager.C_ON_AUTH_RESPONESS?.Invoke(this);
     }
 }
+
+public class NetChangeNickname : NetMessage
+{
+    public string nickname { get; set; }
+    public NetChangeNickname()
+    {
+        op_code = OpCode.ON_CHANGE_NICKNAME;
+    }
+    public NetChangeNickname(Message _message)
+    {
+        op_code = OpCode.ON_CHANGE_NICKNAME;
+        Deserialize(_message);
+    }
+
+    public override void Serialize(Message _message)
+    {
+        _message.AddString(nickname);
+    }
+    public override void Deserialize(Message _message)
+    {
+        nickname = _message.GetString();
+    }
+    public override void ReceivedOnClient()
+    {
+        NetworkManager.C_ON_CHANGE_NICKNAME_RESPONESS?.Invoke(this);
+    }
+}

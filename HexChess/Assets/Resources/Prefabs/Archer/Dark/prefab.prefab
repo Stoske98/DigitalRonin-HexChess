@@ -1097,6 +1097,7 @@ GameObject:
   m_Component:
   - component: {fileID: 6720828799190310300}
   - component: {fileID: 3714857056079568569}
+  - component: {fileID: 2288889701583222092}
   m_Layer: 0
   m_Name: prefab
   m_TagString: LIGHT_ARCHER
@@ -1141,6 +1142,19 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &2288889701583222092
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1936403477402849748}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 401eecc502762e74b98f8378a8dad667, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  prefab_destroyed_model: {fileID: 3732322997046132350, guid: e14ea0f07bd038f4fbd738e45c7c9bba, type: 3}
 --- !u!1 &2008220967227514203
 GameObject:
   m_ObjectHideFlags: 0

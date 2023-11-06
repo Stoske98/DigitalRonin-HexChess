@@ -25,6 +25,6 @@ public class NetUpgradeClass : NetMessage
     }
     public override void ReceivedOnClient()
     {
-        NetworkManager.S_ON_UPGRADE_CLASS_RESPONESS?.Invoke(this);
+        NetworkManager.C_ON_UPGRADE_CLASS_RESPONESS?.Invoke(this);
     }
 }

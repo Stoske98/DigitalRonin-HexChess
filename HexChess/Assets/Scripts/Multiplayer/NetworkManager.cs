@@ -9,7 +9,7 @@ public class Player
 {
     public string device_id { get; set; }
     public int match_id { get; set; }
-    public PlayerData player_data { get; set; }
+    public PlayerData data { get; set; }
 }
 public class PlayerData
 {
@@ -41,13 +41,11 @@ public class NetworkManager : MonoBehaviour
 
     [SerializeField] private string ip;
     [SerializeField] private ushort port;
-    private Coroutine poll_sync_corutine;
 
     public Player player;
     [Header("PLAYER SETTINGS")]
     public bool Test;
     public string test_device_id;
-    public int test_game_id;
     private void Awake()
     {
         Instance = this;
@@ -55,7 +53,7 @@ public class NetworkManager : MonoBehaviour
 
     private void Start()
     {
-        RiptideLogger.Initialize(Debug.Log, Debug.Log, Debug.LogWarning, Debug.LogError, false);
+        RiptideLogger.Initialize(Debug.Log, Debug.Log, null, Debug.LogError, false);
         Client = new Client();
         Client.MessageReceived += OnRecievedMessage;
 
@@ -63,16 +61,18 @@ public class NetworkManager : MonoBehaviour
         Client.ConnectionFailed += OnClientFailedConnection;
         Client.Disconnected += OnClientDisconnected;*/
         Reciever = new Receiver();
-        Reciever.Subscibe();
+        Reciever.SubscribeMainMenu();
         Client.Connect($"{ip}:{port}");
         
         player = new Player();
         if (Test)
+        {
             player.device_id = test_device_id;
+            player.match_id = 2;
+
+        }
         else
             player.device_id = SystemInfo.deviceUniqueIdentifier;
-
-        player.match_id = test_game_id;
        
     }
     private void FixedUpdate()
@@ -99,6 +99,12 @@ public class NetworkManager : MonoBehaviour
             case OpCode.ON_AUTH:
                 msg = new NetAuthentication(e.Message);
                 break;
+            case OpCode.ON_GAME_EXIST:
+                msg = new NetGameExist(e.Message);
+                break;
+            case OpCode.ON_LOGIN:
+                msg = new NetLogin(e.Message);
+                break;
             case OpCode.ON_SYNC:
                 msg = new NetSync(e.Message);
                 break;
@@ -123,37 +129,54 @@ public class NetworkManager : MonoBehaviour
             case OpCode.ON_UPGRADE_CLASS:
                 msg = new NetUpgradeClass(e.Message);
                 break;
+            case OpCode.ON_CHANGE_NICKNAME:
+                msg = new NetChangeNickname(e.Message);
+                break;
+            case OpCode.ON_CREATE_TICKET:
+                msg = new NetCreateTicket(e.Message);
+                break;
+            case OpCode.ON_FIND_MATCH:
+                msg = new NetFindMatch(e.Message);
+                break;
+            case OpCode.ON_STOP_MATCH_FINDING:
+                msg = new NetStopMatchFinding(e.Message);
+                break;
+            case OpCode.ON_ACCEPT_MATCH:
+                msg = new NetAcceptMatch(e.Message);
+                break;
+            case OpCode.ON_DECLINE_MATCH:
+                msg = new NetDeclineMatch(e.Message);
+                break;
+            case OpCode.ON_MATCH_CREATED:
+                msg = new NetMatchCreated(e.Message);
+                break;
+            case OpCode.ON_CREATE_LOBY:
+                msg = new NetCreateLoby(e.Message);
+                break;
+            case OpCode.ON_JOIN_LOBY:
+                msg = new NetJoinLoby(e.Message);
+                break;
+            case OpCode.ON_RECONNECT:
+                msg = new NetReconnect(e.Message);
+                break;
+            case OpCode.ON_DISCONNECT:
+                msg = new NetDisconnect(e.Message);
+                break;
+            case OpCode.ON_END_GAME:
+                msg = new NetEndGame(e.Message);
+                break;
             default:
                 break;
         }
         msg.ReceivedOnClient();
     }
-    public void StartSyncGameData()
-    {
-        poll_sync_corutine = StartCoroutine(TryToSync());
-    }
-
-    public void StopSyncGameData()
-    {
-        StopCoroutine(poll_sync_corutine);
-    }
-    private IEnumerator TryToSync()
-    {
-        while (true)
-        {
-            NetSync request = new NetSync()
-            {
-                match_id = player.match_id,
-            };
-            Sender.SendToServer_Reliable(request);
-
-            yield return new WaitForSeconds(5);
-        }
-    }
+   
     #region NetMessages Events
     public static Action<NetMessage> C_ON_KEEP_ALIVE_RESPONESS;
     public static Action<NetMessage> C_ON_WELCOME_RESPONESS;
     public static Action<NetMessage> C_ON_AUTH_RESPONESS;
+    public static Action<NetMessage> C_ON_GAME_EXIST_RESPONESS;
+    public static Action<NetMessage> C_ON_LOGIN_RESPONESS;
     public static Action<NetMessage> C_ON_SYNC_RESPONESS;
     public static Action<NetMessage> C_ON_MOVE_RESPONESS;
     public static Action<NetMessage> C_ON_ATTACK_RESPONESS;
@@ -161,7 +184,19 @@ public class NetworkManager : MonoBehaviour
     public static Action<NetMessage> C_ON_MULTIPLE_TARGETS_ABILITY_RESPONESS;
     public static Action<NetMessage> C_ON_INSTANT_ABILITY_RESPONESS;
     public static Action<NetMessage> C_ON_END_TURN_RESPONESS;
-    public static Action<NetMessage> S_ON_UPGRADE_CLASS_RESPONESS;
+    public static Action<NetMessage> C_ON_UPGRADE_CLASS_RESPONESS;
+    public static Action<NetMessage> C_ON_CHANGE_NICKNAME_RESPONESS;
+    public static Action<NetMessage> C_ON_CREATE_TICKET_RESPONESS;
+    public static Action<NetMessage> C_ON_FIND_MATCH_RESPONESS;
+    public static Action<NetMessage> C_ON_STOP_MATCH_FINDING_RESPONESS;
+    public static Action<NetMessage> C_ON_ACCEPT_MATCH_RESPONESS;
+    public static Action<NetMessage> C_ON_DECLINE_MATCH_RESPONESS;
+    public static Action<NetMessage> C_ON_MATCH_CREATED_RESPONESS;
+    public static Action<NetMessage> C_ON_CREATE_LOBY_RESPONESS;
+    public static Action<NetMessage> C_ON_JOIN_LOBY_RESPONESS;
+    public static Action<NetMessage> C_ON_DISCONNECT_RESPONESS;
+    public static Action<NetMessage> C_ON_RECONNECT_RESPONESS;
+    public static Action<NetMessage> C_ON_END_GAME_RESPONESS;
     #endregion
 
     public static string Serialize<T>(T obj)

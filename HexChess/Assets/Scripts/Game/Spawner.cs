@@ -156,11 +156,12 @@ public static class Spawner
                 update_stats = new StatsUpdate()
                 {
                     increase_max_health = 1,
+                    increase_attack_range = 1,
                 },
 
                 behaviours_to_add = new List<Behaviour>()
                 {
-                    new Hunt(unit, new AbilityData() { amount = 25 }, "UI/Unit/Archer/Light/hunt")
+                    new Powershoot(unit, new AbilityData() { amount = 2, max_cooldown = 3, current_cooldown = 0, }, "UI/Unit/Archer/Light/hunt")
                 },
 
             },
@@ -171,6 +172,7 @@ public static class Spawner
                 {
                     increase_max_health = 1,
                     increase_damage = 1,
+                    increase_attack_range = 1,
                 },
             }
         };
@@ -215,6 +217,7 @@ public static class Spawner
                 update_stats = new StatsUpdate()
                 {
                     increase_max_health = 1,
+                    increase_attack_range = 1,
                 },
                 behaviours_to_add = new List<Behaviour>()
                 {
@@ -231,6 +234,7 @@ public static class Spawner
                 {
                     increase_max_health = 1,
                     increase_damage = 1,
+                    increase_attack_range = 1,
                 },
                  behaviour_to_switch = new Dictionary<KeyCode, Behaviour>
                 {
@@ -272,12 +276,12 @@ public static class Spawner
                 },
                 behaviours_to_add = new List<Behaviour>()
                 {
-                    new DirectionMovement(unit, 1),
+                    new DirectionMovement(unit, 2),
                     new MeleeAttack(unit),
                     new TankAttackStance(unit, new AbilityData()
                     {
                         range = 1, max_cooldown = 2, current_cooldown = 0, cc = 1
-                    }, "UI/Unit/Tank/Special/attack_stance")
+                    }, "UI/Unit/Tank/Special/sprite")
                 },
 
             },
@@ -305,7 +309,7 @@ public static class Spawner
                     increase_max_health = 1,
                 },
 
-                 behaviours_to_add = new List<Behaviour>()
+                /* behaviours_to_add = new List<Behaviour>()
                  {
                      new TankDefenceStance(unit, new AbilityData()
                         {
@@ -314,7 +318,7 @@ public static class Spawner
                             max_cooldown = 4,
                             current_cooldown = 0
                         }, "UI/Unit/Tank/Special/defence_stance")
-                 }
+                 }*/
             }
         };
 
@@ -346,12 +350,12 @@ public static class Spawner
                 },
                 behaviours_to_add = new List<Behaviour>()
                 {
-                    new DirectionMovement(unit, 1),
+                    new DirectionMovement(unit, 2),
                     new MeleeAttack(unit),
                     new TankAttackStance(unit, new AbilityData()
                     {
                         range = 1, max_cooldown = 2, current_cooldown = 0, cc = 1
-                    }, "UI/Unit/Tank/Special/attack_stance")
+                    }, "UI/Unit/Tank/Special/sprite")
                 },
 
             },
@@ -379,7 +383,7 @@ public static class Spawner
                     increase_max_health = 1,
                 },
 
-                behaviours_to_add = new List<Behaviour>()
+               /* behaviours_to_add = new List<Behaviour>()
                 {
                      new TankDefenceStance(unit, new AbilityData()
                         {
@@ -388,7 +392,7 @@ public static class Spawner
                             max_cooldown = 4,
                             current_cooldown = 0
                         }, "UI/Unit/Tank/Special/defence_stance")
-                }
+                }*/
             }
         };
 
@@ -859,7 +863,7 @@ public static class Spawner
                 {
                     new QueensCommand(unit,new AbilityData()
                     {
-                        range = 3
+                        range = 3, max_cooldown = 3, current_cooldown = 0
                     }, "UI/Unit/Queen/Light/queen_command"),
                 }
             },
@@ -920,9 +924,9 @@ public static class Spawner
                 },
                 behaviours_to_add= new List<Behaviour>()
                 {
-                    new QueensCommand(unit,new AbilityData()
+                    new QueenExecute(unit,new AbilityData()
                     {
-                        range = 3
+                        range = 3, max_cooldown = 3, current_cooldown = 0
                     }, "UI/Unit/Queen/Light/queen_command"),
                 }
             },
@@ -1100,6 +1104,7 @@ public static class Spawner
         string game_object_path = "Prefabs/Jester/Light/prefab";
         string sprite_path = "UI/Unit/Jester/Light/sprite";
         Unit illusion = new Unit(_unit_parent.class_type, _unit_parent.unit_type, game_object_path, sprite_path);
+        illusion.real = false;
 
         List<Level> levels = new List<Level>()
         {
@@ -1166,6 +1171,7 @@ public static class Spawner
         string game_object_path = "Prefabs/Jester/Dark/prefab";
         string sprite_path = "UI/Unit/Jester/Dark/sprite";
         Unit illusion = new Unit( _unit_parent.class_type, _unit_parent.unit_type, game_object_path, sprite_path);
+        illusion.real = false;
 
         List<Level> levels = new List<Level>()
         {

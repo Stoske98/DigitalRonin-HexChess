@@ -13,6 +13,7 @@ public class ChallengeRoyaleGame : Game
     [JsonRequired] private int counter = 0;
     [JsonRequired] private int remove_on_turn = 10;
     [JsonRequired] private int n;
+    [JsonRequired] private bool is_on_start = false;
 
     [JsonIgnore]
     public readonly List<Vector2Int> exp_flag_coordinates = new List<Vector2Int> { new Vector2Int(-2, 1), new Vector2Int(2, -1),
@@ -31,32 +32,12 @@ public class ChallengeRoyaleGame : Game
             Spawner.SpawnFlag(this, map.GetHex(flag_coordinate.x, flag_coordinate.y));
 
         outer_hexes_obj = new List<GameObject>();
-
+        is_on_start = false;
     }
     public override void Init()
     {
         map.SpawnUnits(this);
         object_manager.ProcessPendingActions();
-        
-        /*foreach (Vector2Int coordiante in exp_flag_coordinates)
-        {
-            Hex hex = map.GetHex(coordiante.x, coordiante.y);
-            if (hex != null)
-            {
-                Flag flag = null;
-                foreach (IObject obj in hex.objects)
-                    if (obj is Flag _flag)
-                        flag = _flag;
-
-                Unit unit = hex?.GetUnit();
-
-                if (unit != null && flag != null)
-                {
-                    flag.class_type = unit.class_type;
-                    flag.OccupiedField();
-                }
-            }
-        }*/
 
     }
     public void Activate()
@@ -69,7 +50,11 @@ public class ChallengeRoyaleGame : Game
     }
     public void Countdown()
     {
-        counter++;
+        if (!is_on_start)
+        {
+            is_on_start = true;
+        }
+        else { counter++; }
 
         if (ShouldRemoveOuterFields() && n > 1)
             RemoveOuterFields();

@@ -24,17 +24,15 @@ public class GameManager : MonoBehaviour
     [JsonConverter(typeof(CustomConverters.GameConverter))] public Game game;
     public MapController map_controller;
     public PlayerInputHandler player_input_handler;
+    public Canvas main_canvas;
+    public Canvas game_canvas;
+
+    public GameObject light_death_sphere;
+    public GameObject dark_death_sphere;
 
     private void Awake()
     {
         Instance = this;
-    }
-
-    public void Save()
-    {
-        Debug.Log("GAME SAVED");
-        string json = NetworkManager.Serialize(game);
-        File.WriteAllText("ChallengeRoyaleGame.json", json);
     }
     void Update()
     {
@@ -46,10 +44,6 @@ public class GameManager : MonoBehaviour
                 if (!item.IsWalkable())
                     item.SetColor(Color.magenta);
             }
-
-
         }
-        else if (Input.GetKeyDown(KeyCode.K))
-            Save();
     }
 }

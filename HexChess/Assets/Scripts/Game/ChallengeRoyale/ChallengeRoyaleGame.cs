@@ -14,6 +14,7 @@ public class ChallengeRoyaleGame : Game
     [JsonRequired] private int counter = 0;
     [JsonRequired] private int remove_on_turn = 10;
     [JsonRequired] private int n;
+    [JsonRequired] private bool is_on_start = false;
 
     [JsonIgnore]
     public readonly List<Vector2Int> exp_flag_coordinates = new List<Vector2Int> { new Vector2Int(-2, 1), new Vector2Int(2, -1),
@@ -32,6 +33,7 @@ public class ChallengeRoyaleGame : Game
             Spawner.SpawnFlag(this, map.GetHex(flag_coordinate.x, flag_coordinate.y));
 
         outer_hexes_obj = new List<GameObject>();
+        is_on_start = false;
     }
     public override void Init()
     {
@@ -62,6 +64,7 @@ public class ChallengeRoyaleGame : Game
     {
         if (!is_activated)
         {
+            GameUI.Instance.ActiveChallengeRoyale();
             is_activated = true;
             game_events.OnEndPlayerTurn_Global += Countdown;
         }
@@ -69,11 +72,16 @@ public class ChallengeRoyaleGame : Game
 
     public void Countdown(ClassType class_type)
     {
-        counter++;
+        if (!is_on_start)
+        {
+            is_on_start = true;
+        }
+        else { counter++; }        
 
         if (ShouldRemoveOuterFields() && n > 1)
             RemoveOuterFields();
 
+        GameUI.Instance.SetChallengeRoyaleMove(remove_on_turn - counter);
         if (n == 1)
             game_events.OnEndPlayerTurn_Global -= Countdown;
 
@@ -86,10 +94,12 @@ public class ChallengeRoyaleGame : Game
             counter = 0;
             return true;
         }
-
         return false;
     }
-
+    public int GetChalllengeRoyaleTurn()
+    {
+        return remove_on_turn - counter;
+    }
     public void RemoveOuterFields()
     {
         Hex center_hex = map.GetHex(0, 0);
@@ -232,9 +242,9 @@ public class Flag : IObject
     public void OccupiedField()
     {
         if (class_type == ClassType.Light)
-            game_object.GetComponentInChildren<Renderer>().material.color = Color.blue;
-        else if (class_type == ClassType.Dark)
             game_object.GetComponentInChildren<Renderer>().material.color = Color.red;
+        else if (class_type == ClassType.Dark)
+            game_object.GetComponentInChildren<Renderer>().material.color = Color.blue;
 
         is_ocuppied = true;
     }

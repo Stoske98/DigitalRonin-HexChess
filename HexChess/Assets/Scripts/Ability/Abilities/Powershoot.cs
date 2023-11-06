@@ -1,14 +1,30 @@
 ﻿using Newtonsoft.Json;
 using System.Collections.Generic;
+using UnityEngine;
 
 public class Powershoot : TargetableAbility, ITargetableSingleHex
 {
+    string path = "Prefabs/Archer/Light/Ability/powershoot";
+    GameObject vfx_prefab;
+    float speed = 20;
     Unit enemy = null;
     [JsonIgnore] public Hex targetable_hex { get; set; }
-    public Powershoot() : base() { }
-    public Powershoot(Unit _unit, AbilityData _ability_data, string _sprite_path) : base(_unit, _ability_data, _sprite_path) { }
+    public Powershoot() : base()
+    {
+        vfx_prefab = Resources.Load<GameObject>(path);
+    }
+    public Powershoot(Unit _unit, AbilityData _ability_data, string _sprite_path) : base(_unit, _ability_data, _sprite_path)
+    {
+        vfx_prefab = Resources.Load<GameObject>(path);
+    }
     public override void Execute()
     {
+        GameObject game_object = Object.Instantiate(vfx_prefab, unit.game_object.transform.position + Vector3.up * 1.5f, Quaternion.identity);
+        game_object.transform.LookAt(enemy.game_object.transform.position);
+        float distance = Vector3.Distance(game_object.transform.position, enemy.game_object.transform.position);
+        game_object.LeanMove(enemy.game_object.transform.position + Vector3.up * 1.5f, distance / speed);
+        Object.Destroy(game_object, distance / speed);
+
         if (enemy != null)
             enemy.ReceiveDamage(new MagicDamage(unit, ability_data.amount));
 
@@ -80,7 +96,7 @@ public class Powershoot : TargetableAbility, ITargetableSingleHex
             enemy = CheckIsEnemyOnDirection(target_hex, game.GetAllHexesInDirection(Direction.LOWER_LEFT, _cast_unit_hex));
             if (enemy != null)
                 return enemy;
-            enemy = CheckIsEnemyOnDirection(target_hex, game.GetAllHexesInDirection(Direction.LOWER_LEFT, _cast_unit_hex));
+            enemy = CheckIsEnemyOnDirection(target_hex, game.GetAllHexesInDirection(Direction.UPPER_LEFT, _cast_unit_hex));
             if (enemy != null)
                 return enemy;
         }       

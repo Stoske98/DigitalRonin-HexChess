@@ -74,7 +74,22 @@ public class Database
         });
         return await task;
     }
+    public async static void GameIsOver(int match_id, int winner)
+    {
+        await Task.Run(() => {
 
+            using (MySqlConnection connection = GetMysqlConnection())
+            {
+                string query = String.Format("UPDATE game SET match_state = {0}, win_acc = {1} " +
+                            "WHERE match_id = {2};", (int)MatchState.FINISHED, winner, match_id);
+                using (MySqlCommand command = new MySqlCommand(query, connection))
+                {
+                    command.ExecuteNonQuery();
+                }
+                connection.Close();
+            }
+        });
+    }
     public async static Task<List<int>> UpdateMatchesState()
     {
         Task<List<int>> task = Task.Run(() => {
@@ -102,7 +117,7 @@ public class Database
                     }
                 }
             
-             /*   if(matches_ids != null)
+                if(matches_ids != null)
                 {
                     foreach (int match_id in matches_ids)
                     {
@@ -113,7 +128,7 @@ public class Database
                             command.ExecuteNonQuery();
                         }
                     }
-                }*/
+                }
                 connection.Close();
             }
             return matches_ids;

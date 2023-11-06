@@ -1,6 +1,5 @@
 ﻿using Newtonsoft.Json;
 using System.Collections.Generic;
-using UnityEngine.InputSystem;
 
 public class TrapAbility : TargetableAbility, ITargetableSingleHex
 {

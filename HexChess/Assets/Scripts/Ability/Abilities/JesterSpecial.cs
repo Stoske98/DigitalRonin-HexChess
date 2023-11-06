@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using UnityEngine;
 
 public class JesterSpecial : PassiveAbility
 {
@@ -105,6 +106,7 @@ public class JesterSpecial : PassiveAbility
 
         _parent_hex.PlaceObject(_illusion);
         _illusion.game_object.transform.position = _parent_hex.game_object.transform.position;
+        _illusion.animator.enabled = true;
 
         _illusion.stats.current_health = unit.stats.current_health;
         IObject.ObjectVisibility(_illusion, Visibility.BOTH);
@@ -151,13 +153,19 @@ public class JesterFakeSpecialFinal : TargetableAbility, ITargetMultipleHexes, I
     public int max_hexes { get; set; }
     public bool has_condition { get; set; }
     public List<Hex> targetable_hexes { get; set; }
+    public Dictionary<Hex, GameObject> placement { get; set; }
+    public GameObject vfx_prefab { get; set; } 
+
+    string placement_path = "Prefabs/Jester/jester_placement";
     public JesterFakeSpecialFinal() : base()
     {
         targetable_hexes = new List<Hex>();
+        placement = new Dictionary<Hex, GameObject>();
     }
     public JesterFakeSpecialFinal(Unit _unit, AbilityData _ability_data, string _sprite_path) : base(_unit, _ability_data, _sprite_path)
     {
         targetable_hexes = new List<Hex>();
+        placement = new Dictionary<Hex, GameObject>();
 
         max_hexes = 0;
         has_condition = true;
@@ -195,15 +203,23 @@ public class JesterSpecialFinal : TargetableAbility, ITargetMultipleHexes, ISubs
     public bool has_condition { get; set; }
     public List<Hex> targetable_hexes { get; set; }
     public List<Unit> illusions { get; set; }
+    public Dictionary<Hex, GameObject> placement { get; set; }
+    public GameObject vfx_prefab { get; set; }
+
+    string placement_path = "Prefabs/Jester/jester_placement";
     public JesterSpecialFinal() : base()
     {
         targetable_hexes = new List<Hex>();
         illusions = new List<Unit>();
+        placement = new Dictionary<Hex, GameObject>();
+        vfx_prefab = Resources.Load<GameObject>(placement_path);
     }
     public JesterSpecialFinal(Unit _unit, AbilityData _ability_data, string _sprite_path) : base(_unit, _ability_data, _sprite_path)
     {
         targetable_hexes = new List<Hex>();
         illusions = new List<Unit>();
+        placement = new Dictionary<Hex, GameObject>();
+        vfx_prefab = Resources.Load<GameObject>(placement_path);
 
 
         Game game = GameManager.Instance.game;
@@ -287,6 +303,7 @@ public class JesterSpecialFinal : TargetableAbility, ITargetMultipleHexes, ISubs
         _game.map.GetHex(_illusion)?.RemoveObject(_illusion);
 
         _parent_hex.PlaceObject(_illusion);
+        _illusion.animator.enabled = true;
         _illusion.game_object.transform.position = _parent_hex.game_object.transform.position;
 
         _illusion.stats.current_health = unit.stats.current_health;

@@ -5508,6 +5508,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5651504303871099491}
   - component: {fileID: 6325190500118010586}
+  - component: {fileID: 4835138343438909114}
   m_Layer: 0
   m_Name: prefab
   m_TagString: LIGHT_QUEEN
@@ -5552,6 +5553,19 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &4835138343438909114
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6225280531555069576}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 401eecc502762e74b98f8378a8dad667, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  prefab_destroyed_model: {fileID: 2936542093319972747, guid: 400979209cd2ba94f8e7033ada140676, type: 3}
 --- !u!1 &6244419342362029803
 GameObject:
   m_ObjectHideFlags: 0

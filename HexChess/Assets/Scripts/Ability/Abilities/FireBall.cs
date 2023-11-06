@@ -23,7 +23,10 @@ public class FireBall : TargetableAbility, ITargetableSingleHex
     public override void Execute()
     {
         GameObject game_object = Object.Instantiate(vfx_prefab, unit.game_object.transform.position + Vector3.up * 1.5f, Quaternion.identity);
-        game_object.LeanMove(direction + Vector3.up * 1.5f, Vector3.Distance(game_object.transform.position, direction) / speed);
+        float distance = Vector3.Distance(game_object.transform.position, direction);
+        game_object.LeanMove(direction + Vector3.up * 1.5f, distance / speed);
+        //Object.Destroy(game_object, distance / speed);
+
         foreach (Unit enemy_unit in enemies)
             enemy_unit.ReceiveDamage(new MagicDamage(unit, ability_data.amount));
 

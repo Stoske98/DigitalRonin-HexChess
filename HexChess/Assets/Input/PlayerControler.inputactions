@@ -238,6 +238,94 @@
             ]
         },
         {
+            "name": "DoubleSelectHandler",
+            "id": "daa1192b-05f7-4710-a6f7-e9e700b19750",
+            "actions": [
+                {
+                    "name": "New action",
+                    "type": "Button",
+                    "id": "61d814dc-f4fe-4930-a2db-f219312ea3f1",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "ScreenPosition",
+                    "type": "Value",
+                    "id": "c2cb5df0-fa31-4d3b-a7c6-e5cf06479782",
+                    "expectedControlType": "Vector2",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": true
+                },
+                {
+                    "name": "OnDoubleSelectUnit",
+                    "type": "Button",
+                    "id": "51d07c74-8f6f-4a06-993d-c539bef4df0e",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "OnDoubleDeselectUnit",
+                    "type": "Button",
+                    "id": "18dce168-8aab-4a98-8481-3ce4ccf62641",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "5c13ef9b-793d-4203-b8ee-6dcae2269410",
+                    "path": "",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "New action",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "c0908016-b248-4119-8744-17bd20af5077",
+                    "path": "<Mouse>/position",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Mouse",
+                    "action": "ScreenPosition",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "b298f619-87e1-4511-8e8c-d6ec6f656b3e",
+                    "path": "<Mouse>/rightButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Mouse",
+                    "action": "OnDoubleDeselectUnit",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "650d32f2-7412-4b3d-83db-246fea5f3af5",
+                    "path": "<Mouse>/leftButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Mouse",
+                    "action": "OnDoubleSelectUnit",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
+        },
+        {
             "name": "SingleTargetAbilityHandler",
             "id": "5cbea68b-cec6-41ec-a4b7-51702350872e",
             "actions": [

@@ -20,8 +20,9 @@ public class KingSpecial : TargetableAbility, ITargetableSingleHex
             Unit aliance = targetable_hex.GetUnit();
             if (aliance != null)
             {
+                aliance.ReceiveDamage(new MagicDamage(unit, aliance.stats.max_health));
                 targetable_hex.RemoveObject(aliance);
-                IObject.ObjectVisibility(aliance, Visibility.NONE);
+                //IObject.ObjectVisibility(aliance, Visibility.NONE);
 
                 BlinkMovement blink = new BlinkMovement(unit, 2);
                 blink.SetPath(_cast_unit_hex, targetable_hex);
@@ -31,14 +32,14 @@ public class KingSpecial : TargetableAbility, ITargetableSingleHex
             else
                 unit.Move(_cast_unit_hex, targetable_hex);
 
-            int counter = 0;
-            foreach (var obj in NetworkManager.Instance.games[unit.match_id].object_manager.objects)
-            {
-                if (obj is Unit death_unit && death_unit.stats.current_health == 0 && death_unit.class_type == unit.class_type) // check jester illu 
-                    counter++;
-            }
 
-            if(counter <= 6)
+            int counter = 0;
+            if (unit.class_type == ClassType.Light)
+                counter = game.death_light;
+            else
+                counter = game.death_dark;
+
+            if (counter <= 6)
             {
                 unit.stats.damage = 2;
                 unit.stats.max_health += 1;
@@ -73,7 +74,7 @@ public class KingSpecial : TargetableAbility, ITargetableSingleHex
             Hex grall_hex = map.GetHex(0, 0);
             Unit aliance = grall_hex.GetUnit();
 
-            if ((grall_hex.IsWalkable() && map.HexesInRange(_unit_hex, ability_data.range).Contains(grall_hex)) || (aliance != null && aliance.class_type == unit.class_type))
+            if ((grall_hex.IsWalkable() && map.HexesInRange(_unit_hex, ability_data.range).Contains(grall_hex)) || (aliance != null && aliance.class_type == unit.class_type && aliance.unit_type == UnitType.Tank))
                 _available_moves.Add(grall_hex);
         }      
 

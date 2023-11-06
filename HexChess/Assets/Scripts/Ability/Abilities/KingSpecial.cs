@@ -1,14 +1,26 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using UnityEngine;
 
 public class KingSpecial : TargetableAbility, ITargetableSingleHex
 {
     [JsonIgnore] public Hex targetable_hex { get; set; }
 
     [JsonRequired] private bool king_activate_special = false;
-    public KingSpecial() : base() { }
-    public KingSpecial(Unit _unit, AbilityData _ability_data, string _sprite_path) : base(_unit, _ability_data, _sprite_path) { }
+    string path_light = "Prefabs/King/Light/Ability/SpecialAbility/prefab";
+    string path_dark = "Prefabs/King/Dark/Ability/SpecialAbility/prefab";
+    GameObject vfx_prefab;
+    public KingSpecial() : base()
+    {
+    }
+    public KingSpecial(Unit _unit, AbilityData _ability_data, string _sprite_path) : base(_unit, _ability_data, _sprite_path)
+    {
+        if(unit.class_type == ClassType.Light)
+            vfx_prefab = Resources.Load<GameObject>(path_light);
+        else
+            vfx_prefab = Resources.Load<GameObject>(path_dark);
+    }
     public override void Execute()
     {
         if (GameManager.Instance.game is ChallengeRoyaleGame game)
@@ -20,11 +32,21 @@ public class KingSpecial : TargetableAbility, ITargetableSingleHex
 
             Hex _cast_unit_hex = GameManager.Instance.game.map.GetHex(unit);
             Unit aliance = targetable_hex.GetUnit();
+
+            if(vfx_prefab == null)
+            {
+                if (unit.class_type == ClassType.Light)
+                    vfx_prefab = Resources.Load<GameObject>(path_light);
+                else
+                    vfx_prefab = Resources.Load<GameObject>(path_dark);
+            }
+
+            UnityEngine.Object.Instantiate(vfx_prefab, targetable_hex.game_object.transform.position, Quaternion.identity);
             if (aliance != null)
             {
-                aliance.stats.current_health = 0;
+                aliance.ReceiveDamage(new MagicDamage(unit, aliance.stats.max_health));
                 targetable_hex.RemoveObject(aliance);
-                IObject.ObjectVisibility(aliance, Visibility.NONE);
+                //IObject.ObjectVisibility(aliance, Visibility.NONE);
 
                 BlinkMovement blink = new BlinkMovement(unit, 2);
                 blink.SetPath(_cast_unit_hex, targetable_hex);
@@ -40,11 +62,11 @@ public class KingSpecial : TargetableAbility, ITargetableSingleHex
             }
 
             int counter = 0;
-            foreach (var obj in GameManager.Instance.game.object_manager.objects)
-            {
-                if (obj is Unit death_unit && death_unit.IsDead() && death_unit.class_type == unit.class_type) // check jester illu 
-                    counter++;
-            }
+            if (unit.class_type == ClassType.Light)
+                counter = game.death_light;
+            else
+                counter = game.death_dark;
+
             if (counter <= 6)
             {
                 unit.stats.damage = 2;
@@ -83,7 +105,7 @@ public class KingSpecial : TargetableAbility, ITargetableSingleHex
             Hex grall_hex = map.GetHex(0, 0);
             Unit aliance = grall_hex.GetUnit();
 
-            if ((grall_hex.IsWalkable() && map.HexesInRange(_unit_hex, ability_data.range).Contains(grall_hex)) || (aliance != null && aliance.class_type == unit.class_type))
+            if ((grall_hex.IsWalkable() && map.HexesInRange(_unit_hex, ability_data.range).Contains(grall_hex)) || (aliance != null && aliance.class_type == unit.class_type && aliance.unit_type == UnitType.Tank))
                 _available_moves.Add(grall_hex);
         }
 

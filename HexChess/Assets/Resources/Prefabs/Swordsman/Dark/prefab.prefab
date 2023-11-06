@@ -4410,6 +4410,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1780712586405670031}
   - component: {fileID: 2582650026507192229}
+  - component: {fileID: 7178050822925378835}
   m_Layer: 0
   m_Name: prefab
   m_TagString: LIGHT_SWORDSMAN
@@ -4454,6 +4455,19 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &7178050822925378835
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8926628294083022207}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 401eecc502762e74b98f8378a8dad667, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  prefab_destroyed_model: {fileID: 5457536810101484277, guid: d31fcc22d8977da428ba46183cc71cc9, type: 3}
 --- !u!1 &8950039813967906524
 GameObject:
   m_ObjectHideFlags: 0

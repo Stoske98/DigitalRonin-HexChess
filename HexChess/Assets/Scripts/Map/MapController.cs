@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 public class MapController : MonoBehaviour
 {
@@ -33,6 +34,11 @@ public class MapController : MonoBehaviour
 
     public void SetMap(Map _map)
     {
+        if(NetworkManager.Instance.player.data.class_type == ClassType.Dark)
+        {
+            cm.transform.position = new Vector3(cm.transform.position.x, cm.transform.position.y, cm.transform.position.z * -1);
+            cm.transform.eulerAngles = new Vector3(cm.transform.localEulerAngles.x, 180, cm.transform.localEulerAngles.z);
+        }
         map = _map;
     }
 
@@ -153,5 +159,10 @@ public class MapController : MonoBehaviour
             if (!Disarm.IsDissarmed(selected_unit) && attack_behaviour != null)
                 MarkAttackMoves(attack_behaviour, selected_hex);
         }
+    }
+
+    public void MarkSelectedHex(Hex selected_hex)
+    {
+        selected_hex.SetColor(Color.green);
     }
 }

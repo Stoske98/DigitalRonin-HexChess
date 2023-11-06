@@ -22,26 +22,26 @@ public interface IObject
             return;
         }
 
-        if (object_visibility == Visibility.LIGHT && obj.class_type == ClassType.Light)
+        if (object_visibility == Visibility.LIGHT && NetworkManager.Instance.player.data.class_type == ClassType.Light)
         {
             obj.game_object.SetActive(true);
             obj.visibility = object_visibility;
             return;
         }
-        else if(object_visibility == Visibility.LIGHT && obj.class_type != ClassType.Light)
+        else if(object_visibility == Visibility.LIGHT && NetworkManager.Instance.player.data.class_type != ClassType.Light)
         {
             obj.game_object.SetActive(false);
             obj.visibility = object_visibility;
             return;
         }
 
-        if (object_visibility == Visibility.DARK && obj.class_type == ClassType.Dark)
+        if (object_visibility == Visibility.DARK && NetworkManager.Instance.player.data.class_type == ClassType.Dark)
         {
             obj.game_object.SetActive(true);
             obj.visibility = object_visibility;
             return;
         }
-        else if (object_visibility == Visibility.DARK && obj.class_type != ClassType.Dark)
+        else if (object_visibility == Visibility.DARK && NetworkManager.Instance.player.data.class_type != ClassType.Dark)
         {
             obj.game_object.SetActive(false);
             obj.visibility = object_visibility;

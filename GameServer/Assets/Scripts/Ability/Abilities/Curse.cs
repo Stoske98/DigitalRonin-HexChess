@@ -1,5 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System.Collections.Generic;
+using UnityEngine;
+
 public class Curse : TargetableAbility, ITargetableSingleHex, IUpgradable
 {
     List<Unit> enemies;
@@ -8,23 +10,26 @@ public class Curse : TargetableAbility, ITargetableSingleHex, IUpgradable
     public Curse(Unit _unit, AbilityData _ability_data, string _sprite_path) : base(_unit, _ability_data, _sprite_path) { }
     public override void Execute()
     {
-        Unit enemy = targetable_hex.GetUnit();
-        enemy.ReceiveDamage(new MagicDamage(unit, ability_data.amount));
-
-        if (!enemy.IsDead())
-            targetable_hex.GetUnit().ccs.Add(new Disarm(unit, enemy, ability_data.cc));
-
-        foreach (Hex hex in NetworkManager.Instance.games[unit.match_id].map.HexesInRange(targetable_hex, ability_data.range))
+        if (Time.time >= time + 2)
         {
-            Unit _unit = hex.GetUnit();
-            if (_unit != null && _unit.class_type != unit.class_type)
+            Unit enemy = targetable_hex.GetUnit();
+            enemy.ReceiveDamage(new MagicDamage(unit, ability_data.amount));
+
+            if (!enemy.IsDead())
+                targetable_hex.GetUnit().ccs.Add(new Disarm(unit, enemy, ability_data.cc));
+
+            foreach (Hex hex in NetworkManager.Instance.games[unit.match_id].map.HexesInRange(targetable_hex, 1))
             {
-                _unit.ReceiveDamage(new MagicDamage(unit, ability_data.amount));
-                if (!_unit.IsDead())
-                    FearEnemy(hex);
+                Unit _unit = hex.GetUnit();
+                if (_unit != null && _unit.class_type != unit.class_type)
+                {
+                    _unit.ReceiveDamage(new MagicDamage(unit, ability_data.amount));
+                    if (!_unit.IsDead())
+                        FearEnemy(hex);
+                }
             }
-        }
-        Exit();
+            Exit();
+        }           
     }
 
     public override List<Hex> GetAbilityMoves(Hex _unit_hex)

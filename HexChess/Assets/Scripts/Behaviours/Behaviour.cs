@@ -14,6 +14,7 @@ public abstract class Behaviour
     public virtual void Enter()
     {
         OnStartBehaviour?.Invoke(this);
+        time = Time.time;
     }
     public abstract void Execute();
     public virtual void Exit()

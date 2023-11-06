@@ -1,7 +1,6 @@
 ﻿using Riptide;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using UnityEngine;
 
@@ -9,8 +8,10 @@ public class Receiver
 {
     public void Subscibe()
     {
+        NetworkManager.S_ON_KEEP_ALIVE_REQUEST += OnKeepAliveRequest;
         NetworkManager.S_ON_AUTH_REQUEST += OnAuthenticationRequest;
         NetworkManager.S_ON_SYNC_REQUEST += OnSyncRequest;
+        NetworkManager.S_ON_SYNC_LOST_FRAGMENT_REQUEST += OnSyncLostFragmentRequest;
         NetworkManager.S_ON_ATTACK_REQUEST += OnAttackRequest;
         NetworkManager.S_ON_MOVE_REQUEST += OnMoveRequest;
         NetworkManager.S_ON_SINGLE_TARGET_ABILITY_REQUEST += OnSingleTargetableAbilityRequest;
@@ -22,8 +23,10 @@ public class Receiver
 
     public void UnSubscibe()
     {
+        NetworkManager.S_ON_KEEP_ALIVE_REQUEST -= OnKeepAliveRequest;
         NetworkManager.S_ON_AUTH_REQUEST -= OnAuthenticationRequest;
         NetworkManager.S_ON_SYNC_REQUEST -= OnSyncRequest;
+        NetworkManager.S_ON_SYNC_LOST_FRAGMENT_REQUEST -= OnSyncLostFragmentRequest;
         NetworkManager.S_ON_ATTACK_REQUEST -= OnAttackRequest;
         NetworkManager.S_ON_MOVE_REQUEST -= OnMoveRequest;
         NetworkManager.S_ON_SINGLE_TARGET_ABILITY_REQUEST -= OnSingleTargetableAbilityRequest;
@@ -32,6 +35,9 @@ public class Receiver
         NetworkManager.S_ON_UPGRADE_CLASS_REQUEST -= OnUpgradeClassRequest;
     }
 
+    private void OnKeepAliveRequest(NetMessage message, Connection connection)
+    {
+    }
     private async void OnAuthenticationRequest(NetMessage message, Connection connection)
     {
         NetAuthentication request = message as NetAuthentication;
@@ -42,7 +48,7 @@ public class Receiver
         {
             Player player = NetworkManager.Instance.players[connection.Id];
             player.device_id = request.device_id;
-            player.player_data = _player_data;
+            player.data = _player_data;
 
             NetAuthentication responess = new NetAuthentication()
             {
@@ -60,10 +66,13 @@ public class Receiver
 
         if (NetworkManager.Instance.games.TryGetValue(request.match_id, out Game game))
         {
-            if(NetworkManager.Instance.players.TryGetValue(connection.Id, out Player player))
+            if(!game.object_manager.IsObjectsWorking() && NetworkManager.Instance.players.TryGetValue(connection.Id, out Player player))
             {
                 player.match_id = request.match_id;
                 game.players.Add(player);
+
+                if(game.players.Count == 2)
+                    game.SendMessageToPlayers(new NetReconnect());
 
                 string _json_game = NetworkManager.Serialize(game);
 
@@ -73,6 +82,26 @@ public class Receiver
                     UnityEngine.Debug.Log("OnSyncRequest: _jsong_game is empty");
 
             }           
+        }
+    }
+
+    private void OnSyncLostFragmentRequest(NetMessage message, Connection connection)
+    {
+        NetSyncLostFragment request = message as NetSyncLostFragment;
+
+        if (NetworkManager.Instance.games.TryGetValue(request.match_id, out Game game))
+        {
+            if (NetworkManager.Instance.players.TryGetValue(connection.Id, out Player player))
+            {
+
+                string _json_game = NetworkManager.Serialize(game);
+
+                if (!string.IsNullOrEmpty(_json_game))
+                    SendToClientFromLostFragment(connection, _json_game, request.fragment_index);
+                else
+                    UnityEngine.Debug.Log("OnSyncRequest: _jsong_game is empty");
+
+            }
         }
     }
     private void OnAttackRequest(NetMessage message, Connection connection)
@@ -255,10 +284,8 @@ public class Receiver
         byte[] gameData = System.Text.Encoding.UTF8.GetBytes(json_game);
 
         int MaxFragmentSize = 1200;
-
         // Calculate the total number of fragments needed
         int totalFragments = Mathf.CeilToInt((float)gameData.Length / MaxFragmentSize);
-
         // Split the data into fragments and send the
         for (int fragmentIndex = 0; fragmentIndex < totalFragments; fragmentIndex++)
         {
@@ -267,13 +294,41 @@ public class Receiver
 
             byte[] fragment_data = new byte[size];
             Array.Copy(gameData, offset, fragment_data, 0, size);
-
             // Send the fragment as a string using the SendStringMessage method
             NetSync responess = new NetSync()
             {
                 fragment_index = fragmentIndex,
                 total_fragments = totalFragments - 1,
-                game_data = fragment_data
+                fragment_data = fragment_data,
+                game_data_lenght = gameData.Length
+            };
+            Sender.SendToClient_Reliable(connection.Id, responess);
+        }
+    }
+
+    private void SendToClientFromLostFragment(Connection connection, string json_game, int last_fragment)
+    {
+        byte[] gameData = System.Text.Encoding.UTF8.GetBytes(json_game);
+
+        int MaxFragmentSize = 1200;
+
+        // Calculate the total number of fragments needed
+        int totalFragments = Mathf.CeilToInt((float)gameData.Length / MaxFragmentSize);
+        // Split the data into fragments and send the
+        Debug.Log("START SENDING FROM: " + last_fragment);
+        for (int fragmentIndex = last_fragment; fragmentIndex < totalFragments; fragmentIndex++)
+        {
+            int offset = fragmentIndex * MaxFragmentSize;
+            int size = Mathf.Min(gameData.Length - offset, MaxFragmentSize);
+
+            byte[] fragment_data = new byte[size];
+            Array.Copy(gameData, offset, fragment_data, 0, size);
+            // Send the fragment as a string using the SendStringMessage method
+            NetSync responess = new NetSync()
+            {
+                fragment_index = fragmentIndex,
+                total_fragments = totalFragments - 1,
+                fragment_data = fragment_data
             };
             Sender.SendToClient_Reliable(connection.Id, responess);
         }

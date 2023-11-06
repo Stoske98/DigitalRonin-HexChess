@@ -156,7 +156,7 @@ MonoBehaviour:
   max_clinet_count: 1000
   gameobject_visibility: 1
   update_matches_state_interval: 5
-  keep_alive_interval: 20
+  keep_alive_interval: 5
 --- !u!4 &359779776
 Transform:
   m_ObjectHideFlags: 0

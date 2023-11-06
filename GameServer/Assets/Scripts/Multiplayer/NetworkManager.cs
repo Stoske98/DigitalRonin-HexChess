@@ -4,6 +4,10 @@ using Riptide.Utils;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
+using System.Net.Sockets;
+using System.Net;
+using System.Timers;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -12,7 +16,7 @@ public class Player
     public int connection_id { get; set; }
     public string device_id { get; set; }
     public long match_id { get; set; }
-    public PlayerData player_data { get; set; }
+    public PlayerData data { get; set; }
     public Player(int _id)
     {
         connection_id = _id;
@@ -29,7 +33,8 @@ public class PlayerData
 public enum MatchState
 {
     NOT_READY = 0,
-    READY = 1
+    READY = 1, 
+    FINISHED = 2,
 }
 
 public class NetworkManager : MonoBehaviour
@@ -61,7 +66,7 @@ public class NetworkManager : MonoBehaviour
     [SerializeField] private float update_matches_state_interval;
     private Coroutine poll_update_match_stats_corutine;
     [SerializeField] private float keep_alive_interval;
-    private Coroutine keep_alive_clients_corutine;
+    private Timer keep_alive_clients_timer;
 
     public Dictionary<ushort,Player> players = new Dictionary<ushort,Player>();
 
@@ -74,20 +79,27 @@ public class NetworkManager : MonoBehaviour
     
     private void Start()
     {
-         RiptideLogger.Initialize(Debug.Log, Debug.Log, Debug.LogWarning, Debug.LogError, false);
+         RiptideLogger.Initialize(Debug.Log, Debug.Log, null, Debug.LogError, false);
          Server = new Server();
          Server.MessageReceived += OnRecievedMessage;
          Server.ClientConnected += OnClientConnected;
          Server.ClientDisconnected += OnClientDisconnected;
          Server.Start(port, max_clinet_count);
-
          Reciever = new Receiver();
          Reciever.Subscibe();
 
-         //poll_update_match_stats_corutine = StartCoroutine(UpdateMatchesCoroutine());
-         keep_alive_clients_corutine = StartCoroutine(KeepAliveClients());
-         UpdateMatchesState();
+
+       poll_update_match_stats_corutine = StartCoroutine(UpdateMatchesCoroutine());
+
+       // UpdateMatchesState();
+
+
+        keep_alive_clients_timer = new Timer(keep_alive_interval * 1000);
+        keep_alive_clients_timer.Elapsed += KeepAliveClients;
+        keep_alive_clients_timer.AutoReset = true;
+        keep_alive_clients_timer.Start();
     }
+
     private void Update()
     {
         foreach (Game game in games.Values)
@@ -101,8 +113,8 @@ public class NetworkManager : MonoBehaviour
                 games.Add(game_to_add.match_id, game_to_add);
                 game_to_add.Init();
 
-                //string json = NetworkManager.Serialize(game_to_add);
-                //File.WriteAllText("ChallengeRoyaleGame.json", json);
+               /* string json = NetworkManager.Serialize(game_to_add);
+                File.WriteAllText("ChallengeRoyaleGame.json", json);*/
             }
         }
 
@@ -114,8 +126,11 @@ public class NetworkManager : MonoBehaviour
 
     private void OnApplicationQuit()
     {
-        StopCoroutine(keep_alive_clients_corutine);
+        keep_alive_clients_timer.Stop();
+        keep_alive_clients_timer.Dispose();
+
         StopCoroutine(poll_update_match_stats_corutine);
+
         Server.Stop();
     }
 
@@ -128,27 +143,29 @@ public class NetworkManager : MonoBehaviour
 
     private void OnClientDisconnected(object sender, ServerDisconnectedEventArgs e)
     {
-        players.Remove(e.Client.Id);
+        if (players.TryGetValue(e.Client.Id, out Player player))
+        {
+            if (games.TryGetValue(player.match_id, out Game game))
+            {
+                game.players.RemoveAll(p => p.connection_id == e.Client.Id);
+                if(game.players.Count > 0)
+                {
+                    game.SendMessageToPlayers(new NetDisconnet());
+                }
+
+            }
+
+            players.Remove(e.Client.Id);
+        }
     }
 
     public void DisconnectPlayer(Connection connection)
     {
-        if (players.TryGetValue(connection.Id, out Player player)) 
-        {
-            if(games.TryGetValue(player.match_id, out Game game))
-                game.players.Remove(player);
-
-            players.Remove(connection.Id);
-        }
         Server.DisconnectClient(connection);
     }
-    private IEnumerator KeepAliveClients()
+    private void KeepAliveClients(object sender, ElapsedEventArgs e)
     {
-        while (true)
-        {
-            yield return new WaitForSeconds(keep_alive_interval);
-            Sender.SendToAllClients_Reliable(new NetKeepAlive());
-        }
+        Sender.SendToAllClients_Reliable(new NetKeepAlive());
     }
     private IEnumerator UpdateMatchesCoroutine()
     {
@@ -189,6 +206,9 @@ public class NetworkManager : MonoBehaviour
             case OpCode.ON_SYNC:
                 msg = new NetSync(e.Message);
                 break;
+            case OpCode.ON_SYNC_LOST_FRAGMENT:
+                msg = new NetSyncLostFragment(e.Message);
+                break;
             case OpCode.ON_ATTACK:
                 msg = new NetAttack(e.Message);
                 break;
@@ -219,8 +239,43 @@ public class NetworkManager : MonoBehaviour
             msg.ReceivedOnServer(e.FromConnection);
     }
 
+    public static string GetInternalIP(AddressFamily type)
+    {
+        var host = Dns.GetHostEntry(Dns.GetHostName());
+        foreach (var ip in host.AddressList)
+        {
+            if (ip.AddressFamily == type)
+            {
+                return ip.ToString();
+            }
+        }
+        return "0.0.0.0";
+    }
+    public static string GetExternalIP()
+    {
+        try
+        {
+            var ip = IPAddress.Parse(new WebClient().DownloadString("https://icanhazip.com").Replace("\\r\\n", "").Replace("\\n", "").Trim());
+            return ip.ToString();
+        }
+        catch (Exception)
+        {
+            try
+            {
+                StreamReader sr = new StreamReader(WebRequest.Create("https://checkip.dyndns.org").GetResponse().GetResponseStream());
+                string[] ipAddress = sr.ReadToEnd().Trim().Split(':')[1].Substring(1).Split('<');
+                return ipAddress[0];
+            }
+            catch (Exception)
+            {
+                return "0.0.0.0";
+            }
+        }
+    }
+
 
     #region NetMessages Events
+    public static Action<NetMessage, Connection> S_ON_KEEP_ALIVE_REQUEST;
     public static Action<NetMessage, Connection> S_ON_AUTH_REQUEST;
     public static Action<NetMessage, Connection> S_ON_SYNC_REQUEST;
     public static Action<NetMessage, Connection> S_ON_ATTACK_REQUEST;
@@ -229,6 +284,7 @@ public class NetworkManager : MonoBehaviour
     public static Action<NetMessage, Connection> S_ON_INSTANT_ABILITY_REQUEST;
     public static Action<NetMessage, Connection> S_ON_MULTIPLE_TARGETS_ABILITY_REQUEST;
     public static Action<NetMessage, Connection> S_ON_UPGRADE_CLASS_REQUEST;
+    public static Action<NetMessage, Connection> S_ON_SYNC_LOST_FRAGMENT_REQUEST;
     #endregion
 
     public static string Serialize<T>(T obj)

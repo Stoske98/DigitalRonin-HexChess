@@ -1,8 +1,12 @@
 ﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 
 public class RandomSeedsGenerator
 {
+    private int max_percent_seeds;
+    private int max_ids_seeds;
+    private Random random;
     [JsonConverter(typeof(CustomConverters.FloatQueueConverter))] public Queue<float> random_percent_seeds { get; set; }
     [JsonRequired][JsonConverter(typeof(CustomConverters.StringQueueConverter))] public Queue<string> random_ids_seeds { get; set; }
 
@@ -10,6 +14,27 @@ public class RandomSeedsGenerator
     {
         random_percent_seeds = new Queue<float>();
         random_ids_seeds = new Queue<string>();
+    }
+
+    public RandomSeedsGenerator(int _max_percent_seeds, int _max_ids_seeds)
+    {
+        max_percent_seeds = _max_percent_seeds;
+        max_ids_seeds = _max_ids_seeds;
+        random_percent_seeds = new Queue<float>();
+        random_ids_seeds = new Queue<string>();
+        random = new Random();
+        GenerateRandomPercentSeeds(_max_percent_seeds);
+        GenerateRandomIdsSeeds(_max_ids_seeds);
+    }
+    private void GenerateRandomPercentSeeds(int number_of_seeds)
+    {
+        for (int i = 0; i < number_of_seeds; i++)
+            random_percent_seeds.Enqueue((float)random.NextDouble());
+    }
+    private void GenerateRandomIdsSeeds(int number_of_seeds)
+    {
+        for (int i = 0; i < number_of_seeds; i++)
+            random_ids_seeds.Enqueue(Guid.NewGuid().ToString());
     }
     //float
     public float GetRandomPercentSeed()

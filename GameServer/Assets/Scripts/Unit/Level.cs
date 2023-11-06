@@ -53,7 +53,11 @@ public class Level
                 unit.behaviours.Add(behaviour);
 
                 if (behaviour is ISubscribe subsciber)
+                {
                     subsciber.RegisterEvents();
+                    NetworkManager.Instance.games[unit.match_id].object_manager.AddSubscriber(subsciber);
+
+                }
             }
         }
 

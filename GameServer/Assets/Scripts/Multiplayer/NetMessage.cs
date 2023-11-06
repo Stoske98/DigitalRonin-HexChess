@@ -29,4 +29,8 @@ public enum OpCode
     ON_END_TURN = 9,
     ON_TRAP_ABILITY = 10,
     ON_UPGRADE_CLASS = 11,
+    ON_SYNC_LOST_FRAGMENT = 12,
+    ON_DISCONNECT = 13,
+    ON_RECONNECT = 14,
+    ON_END_GAME = 15,
 }

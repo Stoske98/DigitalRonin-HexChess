@@ -1,12 +1,14 @@
 ﻿using Newtonsoft.Json;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Rendering;
 
-public class Unit : IActiveObject, ISubscribe, IDamageableObject
+public class Unit : IActiveObject,/* ISubscribe,*/IDamageableObject
 {
     public string id { get; set; }
     public string game_object_path { get; set; }
     public int level { get; set; }
+    public bool real { get; set; }
     public Stats stats { get; set; }
     public ClassType class_type { get; set; }
     public UnitType unit_type { get; set; }
@@ -43,6 +45,7 @@ public class Unit : IActiveObject, ISubscribe, IDamageableObject
         is_immune_to_magic = false;
         game_object_path = _game_object_path;
         sprite_path = _sprite_path;
+        real = true;
 
         stats = new Stats();
         events = new UnitEvents();
@@ -168,10 +171,17 @@ public class Unit : IActiveObject, ISubscribe, IDamageableObject
         }
 
         if (behaviours[counter] is ISubscribe unsubscriber)
+        {
             unsubscriber.UnregisterEvents();
+            GameManager.Instance.game.object_manager.RemoveSubscriber(unsubscriber);
 
-        if (behaviour is ISubscribe subscibers)
-            subscibers.RegisterEvents();
+        }
+
+        if (behaviour is ISubscribe subsciber)
+        {
+            subsciber.RegisterEvents();
+            GameManager.Instance.game.object_manager.AddSubscriber(subsciber);
+        }
 
         if (behaviours[counter] is Ability ability_old && behaviour is Ability ability_new)
         {
@@ -307,23 +317,44 @@ public class Unit : IActiveObject, ISubscribe, IDamageableObject
         stats.current_health = 0;
         hex.RemoveObject(this);
         to_do_behaviours.Clear();
+        /*SetAllBoolParameters(false);
+        animator?.SetBool("Death", true);*/
 
-        SetAllBoolParameters(false);
-        animator?.SetBool("Death", true);
+        if (game_object.GetComponent<OnUnitDeath>() != null)
+        {
+            game_object.GetComponent<OnUnitDeath>().Activate();           
+        }
 
         ChallengeRoyaleGame ch_game = GameManager.Instance.game as ChallengeRoyaleGame;
-        ch_game.game_events.OnUnitDeath_Global?.Invoke(this);
-        if (ch_game != null)
+        if (ch_game != null && real)
         {
+            if(class_type == ClassType.Dark)
+            {
+                GameObject go = Object.Instantiate(GameManager.Instance.dark_death_sphere);
+                go.GetComponent<DeathSphereProject>().Prepare(hex.game_object.transform.position, GameManager.Instance.game.map.GetHex(0,0).game_object.transform.position, 4, 60);
+            }else
+            {
+                GameObject go = Object.Instantiate(GameManager.Instance.light_death_sphere);
+                go.GetComponent<DeathSphereProject>().Prepare(hex.game_object.transform.position, GameManager.Instance.game.map.GetHex(0, 0).game_object.transform.position, 4, 60);
+            }
             ch_game.shard_controller.IncreaseShardsOnUnitDeath(class_type, unit_type);
             ch_game.game_events.OnShardChanges_Global?.Invoke(ch_game);
         }
+
+        if (real)
+        {
+            if (class_type == ClassType.Dark)
+                ch_game.death_dark++;
+            else
+                ch_game.death_light++;
+        }
+        ch_game.game_events.OnUnitDeath_Global?.Invoke(this);
     }
     public bool IsDead()
     {
         return stats.current_health <= 0;
     }
-    public virtual void RegisterEvents()
+   /* public virtual void RegisterEvents()
     {
         foreach (Behaviour behaviour in behaviours.ToArray())
         {
@@ -338,7 +369,7 @@ public class Unit : IActiveObject, ISubscribe, IDamageableObject
             if (behaviour is ISubscribe subscriber)
                 subscriber.UnregisterEvents();
         }
-    }
+    }*/
 
     public void UpdateCCsCooldown()
     {
@@ -429,7 +460,11 @@ public class Level
                 unit.behaviours.Add(behaviour);
 
                 if (behaviour is ISubscribe subsciber)
+                {
                     subsciber.RegisterEvents();
+                    GameManager.Instance.game.object_manager.AddSubscriber(subsciber);
+
+                }
             }
         }
 

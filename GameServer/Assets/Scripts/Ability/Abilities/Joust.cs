@@ -101,7 +101,7 @@ public class Joust : TargetableAbility, ITargetableSingleHex, IUpgradable
             enemy = CheckIsEnemyOnDirection(_target_hex, game.GetAllHexesInDirection(Direction.LOWER_LEFT, _cast_unit_hex));
             if (enemy != null)
                 return enemy;
-            enemy = CheckIsEnemyOnDirection(_target_hex, game.GetAllHexesInDirection(Direction.LOWER_LEFT, _cast_unit_hex));
+            enemy = CheckIsEnemyOnDirection(_target_hex, game.GetAllHexesInDirection(Direction.UPPER_LEFT, _cast_unit_hex));
             if (enemy != null)
                 return enemy;
         }

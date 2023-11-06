@@ -4220,6 +4220,7 @@ GameObject:
   m_Component:
   - component: {fileID: 6736583532861673770}
   - component: {fileID: 965618522102787479}
+  - component: {fileID: 6231686939593624457}
   m_Layer: 0
   m_Name: prefab
   m_TagString: LIGHT_KING
@@ -4264,6 +4265,19 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &6231686939593624457
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7489606292522847880}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 401eecc502762e74b98f8378a8dad667, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  prefab_destroyed_model: {fileID: 8613290231447232164, guid: 17d8807ff6f3d3a4d9b4abd4a853dfd8, type: 3}
 --- !u!1 &7663638170966676012
 GameObject:
   m_ObjectHideFlags: 0

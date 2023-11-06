@@ -2575,6 +2575,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5273509613644678003}
   - component: {fileID: 3195301869210111869}
+  - component: {fileID: 6263659396273766444}
   m_Layer: 0
   m_Name: prefab
   m_TagString: LIGHT_KNIGHT
@@ -2619,6 +2620,19 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &6263659396273766444
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6039248802626370954}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 401eecc502762e74b98f8378a8dad667, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  prefab_destroyed_model: {fileID: 5940335719814147816, guid: 0fe8d85b8782d294f988440a4501fe85, type: 3}
 --- !u!1 &6056442212565692481
 GameObject:
   m_ObjectHideFlags: 0

@@ -1,13 +1,15 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Net.Sockets;
 using UnityEngine;
 
-public class Unit : IActiveObject, ISubscribe, IDamageableObject
+public class Unit : IActiveObject, /*ISubscribe,*/ IDamageableObject
 {
     public string id { get; set; }
     public string game_object_path { get; set; }
     public int level { get; set; }
+    public bool real { get; set; }
     public Stats stats { get; set; }
     public ClassType class_type { get; set; }
     public UnitType unit_type { get; set; }
@@ -44,6 +46,7 @@ public class Unit : IActiveObject, ISubscribe, IDamageableObject
         is_immune_to_magic = false;
         game_object_path = _game_object_path;
         sprite_path = _sprite_path;
+        real = true; 
 
         stats = new Stats();
         events = new UnitEvents();
@@ -166,10 +169,17 @@ public class Unit : IActiveObject, ISubscribe, IDamageableObject
             }
         }
         if (behaviours[counter] is ISubscribe unsubscriber)
+        {
             unsubscriber.UnregisterEvents();
+            NetworkManager.Instance.games[match_id].object_manager.RemoveSubscriber(unsubscriber);
 
-        if(behaviour is ISubscribe subscibers)
-            subscibers.RegisterEvents();
+        }
+
+        if(behaviour is ISubscribe subsciber)
+        {
+            subsciber.RegisterEvents();
+            NetworkManager.Instance.games[match_id].object_manager.AddSubscriber(subsciber);
+        }
 
         if (behaviours[counter] is Ability ability_old && behaviour is Ability ability_new)
         {
@@ -309,20 +319,51 @@ public class Unit : IActiveObject, ISubscribe, IDamageableObject
     public void Die(Hex hex)
     {
         stats.current_health = 0;
+
         hex.RemoveObject(this);
         to_do_behaviours.Clear(); 
         IObject.ObjectVisibility(this, Visibility.NONE);
+        game_object.transform.position = new Vector3(100, 100, 100);
 
         ChallengeRoyaleGame ch_game = NetworkManager.Instance.games[match_id] as ChallengeRoyaleGame;
-        if(ch_game != null)
+        if(ch_game != null && real)
             ch_game.shard_controller.IncreaseShardsOnUnitDeath(class_type,unit_type);
+
+        if (real)
+        {
+            if (class_type == ClassType.Dark)
+                ch_game.death_dark++;
+            else
+                ch_game.death_light++;
+
+            if(unit_type == UnitType.King)
+            {
+                NetEndGame responess = new NetEndGame();
+                ClassType winner = ClassType.None;
+
+                if (class_type == ClassType.Light)
+                    winner = ClassType.Dark;
+                else
+                    winner = ClassType.Light;
+                responess.winner = winner;
+                //responess.ip_address = NetworkManager.GetInternalIP(AddressFamily.InterNetwork);
+                responess.ip_address = NetworkManager.GetExternalIP();
+                responess.port = 27000;
+
+                ch_game.SendMessageToPlayers(responess);
+
+                foreach (Player player in ch_game.players)
+                    if (player.data.class_type == winner)
+                        Database.GameIsOver(ch_game.match_id,(int)player.data.account_id);
+            }
+        }
     }
     public bool IsDead()
     {
        return stats.current_health <= 0;
     }
 
-    public virtual void RegisterEvents()
+   /* public virtual void RegisterEvents()
     {
         foreach (Behaviour behaviour in behaviours.ToArray())
         {
@@ -337,7 +378,7 @@ public class Unit : IActiveObject, ISubscribe, IDamageableObject
             if (behaviour is ISubscribe subscriber)
                 subscriber.UnregisterEvents();
         }
-    }
+    }*/
 
     public void UpdateCCsCooldown()
     {

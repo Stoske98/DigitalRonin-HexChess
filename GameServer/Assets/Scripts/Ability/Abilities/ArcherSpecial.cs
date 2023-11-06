@@ -1,12 +1,10 @@
 ﻿using Newtonsoft.Json;
 using System.Collections.Generic;
-using System.Linq;
 
-public class ArcherSpecial : PassiveAbility, IUpgradable
+public class ArcherSpecial : PassiveAbility
 {
-    private int max_range_increment { get; set; }
-    public ArcherSpecial() : base() { max_range_increment = 3; }
-    public ArcherSpecial(Unit _unit, AbilityData _ability_data, string _sprite_path) : base(_unit, _ability_data, _sprite_path) { max_range_increment = 3; }
+    public ArcherSpecial() : base() { }
+    public ArcherSpecial(Unit _unit, AbilityData _ability_data, string _sprite_path) : base(_unit, _ability_data, _sprite_path) { }
 
     public override void Execute()
     {
@@ -14,9 +12,6 @@ public class ArcherSpecial : PassiveAbility, IUpgradable
 
     public override void RegisterEvents()
     {
-        if(unit.GetBehaviour<ArcherMovement>() == null)
-            unit.AddMovementBehaviour(new ArcherMovement(unit, 1));
-
         if (unit.GetBehaviour<ArcherRangedAttack>() == null)
         {
             unit.stats.attack_range = 2;
@@ -26,45 +21,105 @@ public class ArcherSpecial : PassiveAbility, IUpgradable
 
     public override void UnregisterEvents()
     {
-        unit.AddMovementBehaviour(new NormalMovement(unit));
         unit.stats.attack_range = 1;
         unit.AddAttackBehaviour(new MeleeAttack(unit));
     }
 
-   /* private Damage OnStartAttack(Damage damage)
+    public class Powershoot : TargetableAbility, ITargetableSingleHex
     {
-        ability_data.range = 0;
-        return damage;
-    }
-    private void OnGetAttackMoves(Hex hex, List<Hex> list)
-    {
-        if (ability_data.range > 0)
+        Unit enemy = null;
+        [JsonIgnore] public Hex targetable_hex { get; set; }
+        public Powershoot() : base() { }
+        public Powershoot(Unit _unit, AbilityData _ability_data, string _sprite_path) : base(_unit, _ability_data, _sprite_path) { }
+        public override void Execute()
         {
-            Map map = NetworkManager.Instance.games[unit.match_id].map;
+            if (enemy != null)
+                enemy.ReceiveDamage(new MagicDamage(unit, ability_data.amount));
 
-            List<Hex> _new_attack_moves = new List<Hex>();
-            _new_attack_moves.AddRange(map.GetEnemyHexesInDirection(Direction.UP, hex, unit.class_type, unit.stats.attack_range + ability_data.range));
-            _new_attack_moves.AddRange(map.GetEnemyHexesInDirection(Direction.DOWN, hex, unit.class_type, unit.stats.attack_range + ability_data.range));
-            _new_attack_moves.AddRange(map.GetEnemyHexesInDirection(Direction.LOWER_LEFT, hex, unit.class_type, unit.stats.attack_range + ability_data.range));
-            _new_attack_moves.AddRange(map.GetEnemyHexesInDirection(Direction.UPPER_LEFT, hex, unit.class_type, unit.stats.attack_range + ability_data.range));
-            _new_attack_moves.AddRange(map.GetEnemyHexesInDirection(Direction.LOWER_RIGHT, hex, unit.class_type, unit.stats.attack_range + ability_data.range));
-            _new_attack_moves.AddRange(map.GetEnemyHexesInDirection(Direction.UPPER_RIGHT, hex, unit.class_type, unit.stats.attack_range + ability_data.range));
+            enemy = null;
+            Exit();
+        }
 
-            list.AddRange(_new_attack_moves.Except(list).ToList());
+        public override List<Hex> GetAbilityMoves(Hex _unit_hex)
+        {
+            List<Hex> _ability_moves = new List<Hex>();
+
+            Game game = NetworkManager.Instance.games[unit.match_id];
+
+            _ability_moves.AddRange(AvailableMovesInDirection(_unit_hex, game.GetAllHexesInDirection(Direction.UP, _unit_hex)));
+            _ability_moves.AddRange(AvailableMovesInDirection(_unit_hex, game.GetAllHexesInDirection(Direction.DOWN, _unit_hex)));
+            _ability_moves.AddRange(AvailableMovesInDirection(_unit_hex, game.GetAllHexesInDirection(Direction.LOWER_LEFT, _unit_hex)));
+            _ability_moves.AddRange(AvailableMovesInDirection(_unit_hex, game.GetAllHexesInDirection(Direction.UPPER_LEFT, _unit_hex)));
+            _ability_moves.AddRange(AvailableMovesInDirection(_unit_hex, game.GetAllHexesInDirection(Direction.LOWER_RIGHT, _unit_hex)));
+            _ability_moves.AddRange(AvailableMovesInDirection(_unit_hex, game.GetAllHexesInDirection(Direction.UPPER_RIGHT, _unit_hex)));
+
+            return _ability_moves;
+        }
+        public void SetAbility(Hex _target_hex)
+        {
+            enemy = TryToGetEnemyUnit(_target_hex);
+        }
+
+        private List<Hex> AvailableMovesInDirection(Hex center, List<Hex> hexes)
+        {
+            int count = 0;
+            for (int i = 0; i < hexes.Count; i++)
+            {
+                if (!hexes[i].IsWalkable() && hexes[i].GetUnit().class_type != center.GetUnit().class_type)
+                {
+                    count = i;
+                    break;
+                }
+
+                if (i == hexes.Count - 1)
+                {
+                    hexes.Clear();
+                    return hexes;
+                }
+            }
+            for (int i = hexes.Count - 1; i > count; i--)
+                hexes.RemoveAt(i);
+
+            return hexes;
+        }
+
+        private Unit TryToGetEnemyUnit(Hex target_hex)
+        {
+            Game game = NetworkManager.Instance.games[unit.match_id];
+            Hex _cast_unit_hex = game.map.GetHex(unit);
+            if (_cast_unit_hex != null)
+            {
+                Unit enemy = CheckIsEnemyOnDirection(target_hex, game.GetAllHexesInDirection(Direction.UP, _cast_unit_hex));
+                if (enemy != null)
+                    return enemy;
+                enemy = CheckIsEnemyOnDirection(target_hex, game.GetAllHexesInDirection(Direction.DOWN, _cast_unit_hex));
+                if (enemy != null)
+                    return enemy;
+                enemy = CheckIsEnemyOnDirection(target_hex, game.GetAllHexesInDirection(Direction.LOWER_RIGHT, _cast_unit_hex));
+                if (enemy != null)
+                    return enemy;
+                enemy = CheckIsEnemyOnDirection(target_hex, game.GetAllHexesInDirection(Direction.UPPER_RIGHT, _cast_unit_hex));
+                if (enemy != null)
+                    return enemy;
+                enemy = CheckIsEnemyOnDirection(target_hex, game.GetAllHexesInDirection(Direction.LOWER_LEFT, _cast_unit_hex));
+                if (enemy != null)
+                    return enemy;
+                enemy = CheckIsEnemyOnDirection(target_hex, game.GetAllHexesInDirection(Direction.UPPER_LEFT, _cast_unit_hex));
+                if (enemy != null)
+                    return enemy;
+            }
+
+            return null;
+        }
+
+        private Unit CheckIsEnemyOnDirection(Hex target_hex, List<Hex> hexes)
+        {
+            if (hexes.Contains(target_hex))
+                foreach (Hex hex in hexes)
+                    if (!hex.IsWalkable() && hex.GetUnit().class_type != unit.class_type)
+                        return hex.GetUnit();
+
+            return null;
         }
     }
-    private void OnStartMovement(Hex _from_hex, Hex _target_hex)
-    {
-        if (max_range_increment > ability_data.range)
-            ability_data.range += 1;
-
-    }*/
-
-    public void Upgrade()
-    {
-        /*unit.events.OnStartMovement_Local += OnStartMovement;
-        unit.events.OnGetAttackMoves_Local += OnGetAttackMoves;
-        unit.events.OnStartAttack_local += OnStartAttack;*/
-    }
 }
-

@@ -31,6 +31,8 @@ public abstract class Game : ISubscribe
     [JsonIgnore] public GameEvents game_events { get; set; }
     public ObjectManager object_manager { get; set; }
     public RandomSeedsGenerator random_seeds_generator{ get; set; }
+    public int death_light { get; set; }
+    public int death_dark { get; set; }
     [JsonIgnore] public List<Player> players { get; set; }
 
     [JsonIgnore] public bool action_done { get; set; }
@@ -52,6 +54,8 @@ public abstract class Game : ISubscribe
         game_events = new GameEvents();
         object_manager = new ObjectManager();
         random_seeds_generator = new RandomSeedsGenerator(1000, 1000);
+        death_light = 0;
+        death_dark = 0;
 
         move = 1;
         class_on_turn = ClassType.Light;

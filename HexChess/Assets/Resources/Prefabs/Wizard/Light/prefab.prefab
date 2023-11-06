@@ -3925,6 +3925,7 @@ GameObject:
   m_Component:
   - component: {fileID: 6058826623026050982}
   - component: {fileID: 8068958553346248703}
+  - component: {fileID: 1639805810804705220}
   m_Layer: 0
   m_Name: prefab
   m_TagString: LIGHT_WIZARD
@@ -3969,6 +3970,19 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &1639805810804705220
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8079529863172330512}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 401eecc502762e74b98f8378a8dad667, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  prefab_destroyed_model: {fileID: 6761373940877890472, guid: dbe2420a88f270443b5443ffb8717c85, type: 3}
 --- !u!1 &8133320050025860667
 GameObject:
   m_ObjectHideFlags: 0

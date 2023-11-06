@@ -9,6 +9,7 @@ public class ObjectManager
     [JsonIgnore] private List<IObject> objects_to_add { set; get; }
     [JsonIgnore] private List<IObject> objects_to_remove { set; get; }
     [JsonIgnore] private List<IActiveObject> active_objects { set; get; }
+    [JsonRequired][JsonConverter(typeof(CustomConverters.SubscibersListConverter))] public List<ISubscribe> subscribes { set; get; }
 
     public ObjectManager()
     {
@@ -16,6 +17,7 @@ public class ObjectManager
         objects_to_add = new List<IObject>();
         objects_to_remove = new List<IObject>();
         active_objects = new List<IActiveObject>();
+        subscribes = new List<ISubscribe>();
     }
 
     /*public void Init()
@@ -48,10 +50,25 @@ public class ObjectManager
     {
         GameObject.Destroy(obj.game_object);
 
-        if (obj is ISubscribe subscriber)
-            subscriber.UnregisterEvents();
+        if (obj is Unit unit)
+            foreach (var b in unit.behaviours)
+                if(b is ISubscribe subscriber)
+                {
+                    subscriber.UnregisterEvents();
+                    RemoveSubscriber(subscriber);
+                }
 
         objects_to_remove.Add(obj);
+    }
+
+    public void AddSubscriber(ISubscribe subscriber)
+    {
+        subscribes.Add(subscriber);
+    }
+
+    public void RemoveSubscriber(ISubscribe subscribe)
+    {
+        subscribes.Remove(subscribe);
     }
 
     private void UpdateObjects()
