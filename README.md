@@ -7,7 +7,7 @@
 3. Genre	- Strategy
 
 ## What the game looks like
-*** Video : https://www.youtube.com/watch?v=QoZG2WBC3i4 
+### Video : https://www.youtube.com/watch?v=QoZG2WBC3i4 
 ![alt_text](https://github.com/Stoske98/DigitalRonin-HexChess/blob/main/Screenshots/hexagon.jpg)
 ![alt_text](https://github.com/Stoske98/DigitalRonin-HexChess/blob/main/Screenshots/hexagon1.jpg)
 
